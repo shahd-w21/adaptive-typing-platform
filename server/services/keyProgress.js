@@ -56,4 +56,17 @@ async function updateKeyProgress(client, userId, keyStats, { masteryAccuracy, ma
   };
 }
 
-module.exports = { updateKeyProgress };
+// Creates the key rows for a new user: first group in progress, the rest locked
+async function ensureKeyProgress(db, userId) {
+  await db.query(
+    `INSERT INTO key_progress (user_id, key_char, status)
+     SELECT $1::int, k,
+            CASE WHEN g.prerequisite_group_id IS NULL THEN 'in_progress' ELSE 'locked' END
+     FROM key_groups g, regexp_split_to_table(g.keys, '') AS k
+     WHERE g.is_active
+     ON CONFLICT DO NOTHING`,
+    [userId]
+  );
+}
+
+module.exports = { updateKeyProgress, ensureKeyProgress };

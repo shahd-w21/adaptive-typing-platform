@@ -4,7 +4,7 @@ const { verifyToken } = require("../middleware/auth");
 const { generatePracticeText, keyWeight } = require("../utils/textGenerator");
 const { scoreSession } = require("../utils/scoring");
 const { updateKeyProgress } = require("../services/keyProgress");
-
+const { updateStreak } = require("../services/streak");
 
 const router = express.Router();
 
@@ -141,6 +141,8 @@ router.post("/:id/submit", verifyToken, async (req, res) => {
       [xpEarned, XP_PER_LEVEL, req.user.id]
     );
 
+    const streak = await updateStreak(client, req.user.id);
+
     const keyChanges = await updateKeyProgress(client, req.user.id, score.keyStats, {
       masteryAccuracy: settings.mastery_accuracy ?? 95,
       masterySessions: settings.mastery_sessions ?? 3,
@@ -160,18 +162,20 @@ router.post("/:id/submit", verifyToken, async (req, res) => {
       .slice(0, 5);
 
     res.json({
-      net_wpm: netWpm,
-      gross_wpm: grossWpm,
-      accuracy,
-      passed,
-      xp_earned: xpEarned,
-      xp: after.rows[0].xp,
-      level: after.rows[0].level,
-      leveled_up: after.rows[0].level > before.rows[0].level,
-      problem_keys: problemKeys, 
-      mastered_keys: keyChanges.mastered,
-      unlocked_keys: keyChanges.unlocked,
-    });
+    net_wpm: netWpm,
+    gross_wpm: grossWpm,
+    accuracy,
+    passed,
+    xp_earned: xpEarned,
+    xp: after.rows[0].xp,
+    level: after.rows[0].level,
+    leveled_up: after.rows[0].level > before.rows[0].level,
+    problem_keys: problemKeys,
+    mastered_keys: keyChanges.mastered,
+    unlocked_keys: keyChanges.unlocked,
+    streak,
+});
+
   } catch (err) {
     await client.query("ROLLBACK");
     console.error(err);
