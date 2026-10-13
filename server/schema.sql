@@ -53,6 +53,21 @@ CREATE TABLE key_progress (
   accuracy NUMERIC(5,2),
   attempts INT NOT NULL DEFAULT 0,
   review_stage INT NOT NULL DEFAULT 0,       -- spaced review stage
+  CREATE TABLE key_progress (
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  key_char VARCHAR(1) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'locked'
+    CHECK (status IN ('locked', 'in_progress', 'mastered')),
+  baseline_ms NUMERIC(8,2),                  -- from the placement test
+  avg_ms NUMERIC(8,2),                       -- average time to press the key
+  accuracy NUMERIC(5,2),
+  attempts INT NOT NULL DEFAULT 0,
+  review_stage INT NOT NULL DEFAULT 0,       -- spaced review stage
+  good_sessions INT NOT NULL DEFAULT 0,      -- good sessions in a row
+  next_review_at TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (user_id, key_char)
+);
   next_review_at TIMESTAMP,
   updated_at TIMESTAMP DEFAULT NOW(),
   PRIMARY KEY (user_id, key_char)

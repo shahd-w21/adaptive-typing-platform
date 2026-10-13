@@ -1,8 +1,10 @@
 const express = require("express");
 const pool = require("../db");
 const { verifyToken } = require("../middleware/auth");
-const { generatePracticeText } = require("../utils/textGenerator");
+const { generatePracticeText, keyWeight } = require("../utils/textGenerator");
 const { scoreSession } = require("../utils/scoring");
+const { updateKeyProgress } = require("../services/keyProgress");
+
 
 const router = express.Router();
 
@@ -24,13 +26,15 @@ router.post("/start", verifyToken, async (req, res) => {
        ON CONFLICT DO NOTHING`,
       [req.user.id]
     );
-
     const keysResult = await pool.query(
-      `SELECT key_char FROM key_progress
+      `SELECT key_char, status, accuracy, avg_ms FROM key_progress
        WHERE user_id = $1 AND status IN ('in_progress', 'mastered')`,
       [req.user.id]
     );
-    const keys = keysResult.rows.map((r) => r.key_char);
+    const keys = keysResult.rows.map((r) => ({
+      key: r.key_char,
+      weight: keyWeight(r),
+    }));
     if (keys.length === 0) {
       return res.status(500).json({ error: "No unlocked keys. Check key_groups." });
     }
@@ -94,8 +98,12 @@ router.post("/:id/submit", verifyToken, async (req, res) => {
       return res.status(400).json({ error: `Submission rejected: ${problem}` });
     }
 
-    const gateResult = await client.query("SELECT value FROM settings WHERE key = 'accuracy_gate'");
-    const accuracyGate = gateResult.rows[0] ? Number(gateResult.rows[0].value) : 90;
+    const settingsResult = await client.query(
+      "SELECT key, value FROM settings WHERE key IN ('accuracy_gate', 'mastery_accuracy', 'mastery_sessions')"
+    );
+    const settings = {};
+    for (const row of settingsResult.rows) settings[row.key] = Number(row.value);
+    const accuracyGate = settings.accuracy_gate ?? 90;
 
     const netWpm = round2(score.netWpm);
     const grossWpm = round2(score.grossWpm);
@@ -133,6 +141,11 @@ router.post("/:id/submit", verifyToken, async (req, res) => {
       [xpEarned, XP_PER_LEVEL, req.user.id]
     );
 
+    const keyChanges = await updateKeyProgress(client, req.user.id, score.keyStats, {
+      masteryAccuracy: settings.mastery_accuracy ?? 95,
+      masterySessions: settings.mastery_sessions ?? 3,
+    });
+
     await client.query("COMMIT");
 
     const problemKeys = Object.entries(score.keyStats)
@@ -155,7 +168,9 @@ router.post("/:id/submit", verifyToken, async (req, res) => {
       xp: after.rows[0].xp,
       level: after.rows[0].level,
       leveled_up: after.rows[0].level > before.rows[0].level,
-      problem_keys: problemKeys,
+      problem_keys: problemKeys, 
+      mastered_keys: keyChanges.mastered,
+      unlocked_keys: keyChanges.unlocked,
     });
   } catch (err) {
     await client.query("ROLLBACK");
