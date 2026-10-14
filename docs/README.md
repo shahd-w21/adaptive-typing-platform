@@ -1,6 +1,6 @@
 # Documentation index
 
-Last organised: 13 October 2026. The documentation describes the target platform, not the existing implementation.
+Last organised: 14 October 2026. The documentation describes the target platform, not the existing implementation.
 
 ## Reading map
 
@@ -19,7 +19,7 @@ Last organised: 13 October 2026. The documentation describes the target platform
 | [Decisions](decisions/README.md) | Short dated records; proposed and accepted are distinguished |
 | [Current state](context/current-state.md) | Small, maintained handoff of status and next decisions |
 | [Long-form handoff](context/handoff.md) | Project background, rationale and risks |
-| [Design template](../DESIGN.md) | Undecided visual system and screen-design worksheet |
+| [Design brief](../DESIGN.md) | Proposed edclub-inspired tokens and Duolingo-inspired learning patterns; Figma screen/component brief, pending team approval |
 | [Agent instructions](../AGENTS.md) | Concise repository-wide instructions for coding agents |
 
 ## Where information belongs
@@ -28,7 +28,7 @@ Last organised: 13 October 2026. The documentation describes the target platform
 - Routes, field names, errors and agreed examples → API contract.
 - What was decided, why, when and by whom → decisions.
 - What is currently verified or blocked → context/current-state.md.
-- Visual choices → DESIGN.md, once approved.
+- Visual proposals and approved choices → DESIGN.md, with their status explicit.
 - Setup commands and configuration → setup/environment, only marked verified after execution.
 
 Use **Baseline**, **Proposed**, **TBD**, and **Verified** precisely. A document or generated example existing does not make it approved or implemented. Keep a single authoritative definition and link to it instead of copying it into every guide.

@@ -27,7 +27,7 @@ typeflow/
 │   ├── contributing.md
 │   └── decisions/
 ├── AGENTS.md                       # concise repository-wide agent guidance
-├── DESIGN.md                       # unapproved visual-design template
+├── DESIGN.md                       # proposed visual system and Figma brief
 ├── .github/
 │   ├── workflows/ci.yml
 │   ├── pull_request_template.md

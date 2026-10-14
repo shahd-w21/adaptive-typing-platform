@@ -12,6 +12,6 @@ Documentation and planning. Existing application code is known to differ from th
 
 - Teammates: read the [documentation index](docs/README.md), relevant SRS sections and [contribution workflow](docs/contributing.md).
 - AI agents: follow [AGENTS.md](AGENTS.md), then load only task-relevant guides.
-- Before UI implementation: fill and review [DESIGN.md](DESIGN.md); visual choices are not decided.
+- Before Figma/UI work: use [DESIGN.md](DESIGN.md) for the proposed reference-based visual system and screen brief; team approval is still pending.
 
 The SRS defines requirements; guides explain the planned implementation; draft examples remain proposals until reviewed. The adaptive engine selects learning goals and the LLM only supplies validated text.
