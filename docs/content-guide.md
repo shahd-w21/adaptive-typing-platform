@@ -16,6 +16,8 @@ These are examples, not seeded curriculum. Runtime allowed-character and blocked
 
 ## Themes
 
+Here **theme** means an exercise topic/content constraint. Light/Dark appearance is a separate interface preference in [DESIGN.md](../DESIGN.md); it must not change this configuration.
+
 A theme supplies a label, content guidance and compatible word-list references. It does not unlock keys, alter scoring or instruct the LLM to ignore validation. Keep prompt instructions separate from editable theme descriptions.
 
 ```json
@@ -48,3 +50,7 @@ The planned `content:validate` script must fail on invalid content; it is not ye
 All generated and fallback text passes the same applicable checks. Theme and natural prose may relax; locked characters and blocked-content rules may not. Rebuild an impossible focus specification before generation and record the reason. Do not secretly lower coverage requirements to make a validator pass.
 
 Blocked-content matching boundaries, normalisation and false-positive handling remain to be agreed. Test words containing innocent substrings; a substring blacklist is not automatically the intended moderation policy.
+
+## Interface language versus typing content
+
+English/Arabic interface selection (SRS SYS-54) translates controls, helper copy and system explanations only. Assigned passages, authored lesson text, word lists, focus keys/pairs and QWERTY labels stay English; user/forum content stays as authored. Do not feed `uiLocale` into generation prompts, word-list selection, validation or cache compatibility. An Arabic shell presents the English exercise/input/keyboard in an explicit LTR region without rewriting stored characters or adding direction marks to the assignment. Authored content and certificate PDFs are not automatically translated. Translatable interface labels belong in reviewed UI dictionaries, not mutable exercise prose or LLM output.

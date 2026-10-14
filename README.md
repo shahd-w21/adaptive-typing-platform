@@ -1,6 +1,6 @@
 # TypeFlow
 
-An adaptive typing learning platform for a five-person university project. Student and Admin roles; English, desktop and physical QWERTY keyboards.
+An adaptive typing learning platform for a five-person university project. Student and Admin roles; English typing on desktop physical QWERTY keyboards. The target website supports Light/Dark appearance, English/Arabic interface language and desktop/mobile non-typing pages.
 
 [Documentation](docs/README.md) · [Setup](docs/setup.md) · [Architecture](docs/architecture.md) · [Auth](docs/auth.md) · [Environment](docs/environment.md) · [Security](docs/security.md) · [Design](DESIGN.md)
 
@@ -15,3 +15,5 @@ Documentation and planning. Existing application code is known to differ from th
 - Before Figma/UI work: use [DESIGN.md](DESIGN.md) for the proposed reference-based visual system and screen brief; team approval is still pending.
 
 The SRS defines requirements; guides explain the planned implementation; draft examples remain proposals until reviewed. The adaptive engine selects learning goals and the LLM only supplies validated text.
+
+Interface language changes website controls and system explanations, not English exercise content or authored posts. Arabic uses an RTL shell with an English/LTR typing region. Phone typing entry points show desktop guidance. See [decision 0002](docs/decisions/0002-appearance-localisation-responsive.md) for the scope update and [DESIGN.md](DESIGN.md) for both appearance modes and responsive layouts.

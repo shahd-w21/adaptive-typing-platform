@@ -1,6 +1,6 @@
 # TypeFlow: Architecture and Project Structure
 
-Version 1.1 — 13 October 2026
+Version 1.2 — 14 October 2026
 
 This is a proposed structure aligned with [the SRS](srs.md) and [handoff](context/handoff.md). It is not an inventory of the existing codebase, which was not inspected. Paths below are relative to the eventual application repository root; creating these documents does not scaffold the application. See the [documentation index](README.md) for the actual documentation layout.
 
@@ -183,6 +183,7 @@ apps/web/
 │   │   ├── RewardsContext.tsx
 │   │   └── PreferencesContext.tsx
 │   ├── hooks/
+│   ├── i18n/                       # planned en/ar UI dictionaries and direction helpers
 │   ├── components/
 │   │   ├── ui/
 │   │   ├── layout/                 # student/admin shells and navigation
@@ -235,6 +236,18 @@ Page → feature hook → API function → shared HTTP client. Components render
 The recorder emits ordered monotonic events. The reducer replays allowed end-of-buffer operations and mode transitions. Live metrics use shared formulas and are labelled provisional until submission succeeds. The frontend must retain the same submission payload during a network retry, and must not replay reward toasts as new awards when recovering an already-saved result.
 
 Do not let polling or dashboard rendering interfere with typing. Large-text and reduced-pressure settings affect presentation, not official elapsed time. Defer optional sounds until required behaviour is working.
+
+### Presentation, interface language and responsive layouts
+
+SRS SYS-53–56 and [decision 0002](decisions/0002-appearance-localisation-responsive.md) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. This extends the target architecture only; no existing application file or dependency was assessed or created.
+
+PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query still owns the account DTO. Shared user schemas validate the draft `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
+
+Keep reviewed static dictionaries and locale/direction helpers in the proposed frontend `i18n/` area. Use stable error/reason codes with parameters for translated system explanations; the detailed shared shape is still to agree in the [API contract](api-contract.md). No LLM/network translation service is required. Do not select a new localisation dependency or scaffold files during documentation work.
+
+Apply semantic Light/Dark variables before normal rendering; explicit choices override the device, System resolves it. Locale uses `lang`/`dir` and logical layout properties. Arabic shells mirror navigation, while exercise input/text, key/pair strings, physical QWERTY layout and canonical codes remain English/LTR and isolated. Presentation changes cannot remount the recorder or replace text; focus loss retains mode rules. Datasets, raw events, scoring, content caching and certificates stay independent of presentation.
+
+Public/student/admin shells use the same protected services and routes on desktop/mobile. Phone typing entry points show device guidance without creating a scored touch session. Resizing preserves an active attempt and its mode timing/pause behaviour. Non-typing forms, progress, certificates, forum and authorised admin actions remain usable on phones; follow the design matrix rather than inventing a second mobile application.
 
 ## 4. Shared package
 

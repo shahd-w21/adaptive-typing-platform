@@ -2,15 +2,17 @@
 
 **Status: PROPOSED / READY FOR FIGMA EXPLORATION, NOT TEAM-APPROVED OR IMPLEMENTED.**
 
-Version 0.1 · 14 October 2026 · Design owner/reviewer: TBD · Figma file: not created.
+Version 0.2 · 14 October 2026 · Design owner/reviewer: TBD · Figma file: not created.
 
-Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. This document translates those references into TypeFlow without changing product scope or approving unresolved learning policies.
+Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; exact visual values remain proposed. See [decision 0002](docs/decisions/0002-appearance-localisation-responsive.md). Unresolved learning policies remain separate.
 
 ## 1. Read this before designing
 
 The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) for feature boundaries, [API contract](docs/api-contract.md) for draft data shapes, [content guide](docs/content-guide.md) for exercise constraints, and [auth](docs/auth.md)/[security](docs/security.md) for access and privacy. These describe the target product. **Ignore the current application code and do not derive screens from it.**
 
 - TypeFlow teaches English touch typing on a physical desktop QWERTY keyboard. Typing targets viewports at least 1024 CSS pixels wide; other pages adapt to narrow screens.
+- The interface supports English and Arabic. Translate website controls and system explanations, never assigned passages, keyboard letters, authored content or the curriculum. An Arabic interface does not enable Arabic typing lessons.
+- Every screen uses the Light/Dark token modes below. Desktop and mobile page variants share the same features and preferences; phone typing entry points show desktop guidance.
 - Student and Admin are the only account roles. Visitors can access landing, account and public certificate-verification pages.
 - The core journey is assigned text → typing → server-scored official result → updated evidence → explained next activity.
 - Structured lessons, adaptive practice, spaced review, placement and tests share one typing experience with mode-specific controls.
@@ -91,50 +93,62 @@ edclub's homepage CSS defines a warm hero, generous spacing, bold sans-serif hea
 
 Keep the working TypeFlow name. Propose an original keycap/flow-arrow symbol with an Open Sans wordmark; final branding remains open. Illustrations use simple rounded keyboard keys, hands, letters and milestones. Use rounded vector icons at 20/24px with 2px strokes. Finished screens use original TypeFlow assets rather than competitor logos, mascots or copied screenshots.
 
-Light is the baseline theme. Navy landing sections are inverse surfaces, not a dark-mode toggle. A full dark theme needs separate token/contrast work; do not add that setting to baseline mockups.
+Light and Dark are required appearance modes. Keep the warm edclub-inspired Light palette; Dark uses layered deep navy surfaces, soft light text, lilac learning accents, mint progress and light blue focus. These dark values are original TypeFlow proposals, not an extracted edclub dark theme. Avoid pure-black canvases, automatic colour inversion and large bright surfaces around the passage. Navy marketing sections use inverse tokens in both modes.
 
 ## 3. Proposed TypeFlow colour system
 
 Create Figma colour variables with these exact names. Semantic variables may alias primitives. All values are **proposed**, including reused edclub values. Additional tints and dark status colours support readable UI.
 
-| Semantic variable | Hex | Role |
-| --- | --- | --- |
-| `color/bg/page` | `#F5F3F0` | Canvas |
-| `color/bg/surface` | `#FFFFFF` | Cards, inputs, typing stage, dialogs |
-| `color/bg/subtle` | `#F7F7F9` | Muted sections/table headings |
-| `color/bg/inverse` | `#242E3E` | Selected landing sections |
-| `color/text/primary` | `#122947` | Headings, body, upcoming exercise characters |
-| `color/text/secondary` | `#556576` | Supporting copy/metadata |
-| `color/text/inverse` | `#FFFFFF` | Text on navy/purple |
-| `color/border/subtle` | `#E5E7EB` | Decorative separators/card edges |
-| `color/border/control` | `#7C8796` | Outlines identifying interactive controls |
-| `color/action/primary` | `#2B3749` | Main CTA |
-| `color/action/hover` | `#354B63` | Hovered CTA |
-| `color/action/pressed` | `#435F7D` | Pressed CTA |
-| `color/action/link` | `#0666DF` | Links; underline in prose |
-| `color/focus/ring` | `#0666DF` | Focus/current-character caret |
-| `color/learning/accent` | `#8449EB` | Current node/selected learning tab |
-| `color/learning/strong` | `#6D36C4` | Accent hover/review text |
-| `color/learning/soft` | `#F1E9FC` | Selected navigation/review-chip background |
-| `color/success/accent` | `#25CBA9` | Progress decoration/illustration |
-| `color/success/text` | `#186B56` | Positive text/correct characters |
-| `color/success/soft` | `#E8F8F1` | Success/mastered-key backgrounds |
-| `color/warning/accent` | `#CD964D` | Attention icon |
-| `color/warning/text` | `#8A4B08` | Warning text |
-| `color/warning/soft` | `#FFF1DE` | Attention background |
-| `color/error/text` | `#B42318` | Errors/incorrect characters/destructive action |
-| `color/error/soft` | `#FFF0EE` | Error panels/incorrect cells |
-| `color/reward/accent` | `#E0E04C` | Reward decoration |
-| `color/reward/text` | `#684500` | XP/badge labels |
-| `color/reward/soft` | `#FFF7CC` | Earned-reward background |
-| `color/streak/text` | `#9A4D00` | Streak icon/label on white |
-| `color/disabled/bg` | `#E5E7EB` | Disabled fill |
-| `color/disabled/text` | `#556576` | Disabled label; also explain unavailability |
-| `color/overlay` | `#171C26` at 48% | Modal scrim |
+| Semantic variable | Light | Dark | Role |
+| --- | --- | --- | --- |
+| `color/bg/page` | `#F5F3F0` | `#171C26` | Canvas |
+| `color/bg/surface` | `#FFFFFF` | `#242E3E` | Cards, inputs, passage, dialogs |
+| `color/bg/subtle` | `#F7F7F9` | `#2D3A4E` | Muted sections/table headings |
+| `color/bg/inverse` | `#242E3E` | `#101723` | Selected marketing sections |
+| `color/text/primary` | `#122947` | `#F2F4F8` | Main text/upcoming characters |
+| `color/text/secondary` | `#556576` | `#B8C4D6` | Supporting copy/metadata |
+| `color/text/inverse` | `#FFFFFF` | `#F2F4F8` | Text on inverse sections |
+| `color/border/subtle` | `#E5E7EB` | `#3B4B63` | Decorative edges only |
+| `color/border/control` | `#7C8796` | `#7F90A8` | Identifying control outlines |
+| `color/action/primary` | `#2B3749` | `#C4A7FF` | Main CTA fill |
+| `color/action/hover` | `#354B63` | `#D6C2FF` | Hovered CTA fill |
+| `color/action/pressed` | `#435F7D` | `#B495EB` | Pressed CTA fill |
+| `color/action/foreground` | `#FFFFFF` | `#171C26` | Text/icons on all primary CTA states |
+| `color/action/link` | `#0666DF` | `#8DC2FF` | Underlined prose links |
+| `color/focus/ring` | `#0666DF` | `#8DC2FF` | Focus/current-character caret |
+| `color/learning/accent` | `#8449EB` | `#C4A7FF` | Current node/learning accent |
+| `color/learning/foreground` | `#FFFFFF` | `#171C26` | Text/icons on solid accent nodes |
+| `color/learning/strong` | `#6D36C4` | `#D6C2FF` | Review text on learning-soft |
+| `color/learning/soft` | `#F1E9FC` | `#392B53` | Selection/review-chip background |
+| `color/learning/lip` | `#6D36C4` | `#8060AB` | Decorative node lip |
+| `color/success/accent` | `#25CBA9` | `#52D8B5` | Progress decoration |
+| `color/success/text` | `#186B56` | `#8BE3C6` | Success/correct characters |
+| `color/success/soft` | `#E8F8F1` | `#173D35` | Success/mastered backgrounds |
+| `color/warning/accent` | `#CD964D` | `#EDBD76` | Attention icon |
+| `color/warning/text` | `#8A4B08` | `#FFD08A` | Warning text |
+| `color/warning/soft` | `#FFF1DE` | `#44341E` | Attention background |
+| `color/error/text` | `#B42318` | `#FFB4AD` | Errors/incorrect characters/destructive text |
+| `color/error/soft` | `#FFF0EE` | `#4A292F` | Error panels/cells |
+| `color/reward/accent` | `#E0E04C` | `#E5DE72` | Reward decoration |
+| `color/reward/text` | `#684500` | `#F2E595` | XP/badge labels |
+| `color/reward/soft` | `#FFF7CC` | `#3D3820` | Earned-reward background |
+| `color/streak/text` | `#9A4D00` | `#FFBE80` | Streak icon/label on surface |
+| `color/disabled/bg` | `#E5E7EB` | `#303B4C` | Disabled fill |
+| `color/disabled/text` | `#556576` | `#ADB9C9` | Disabled label/explanation |
+| `color/overlay` | `#171C26` at 48% | `#0B1018` at 72% | Modal scrim |
 
-Do not use bright teal, citrus or gold as small text on white. Keep instructional text at full opacity. Decorative borders cannot be the only cue identifying an interactive control. The source's lighter blue link is replaced with its darker blue for TypeFlow links.
+Use each mode's semantic foreground/background pair. Primary button/node text uses its dedicated foreground token, not inverse-section text: white text on the dark theme's light-lilac CTA is unsuitable. Keep instructional text at full opacity. Do not use decorative accent colours as untested small text or sole control outlines. The source's lighter blue link is replaced with its darker blue in Light mode.
 
-### 3.1 Contrast evidence and target
+### 3.1 Appearance control and persistence
+
+- Show a labeled **Appearance** menu in public/student/admin headers and in mobile navigation; repeat it under Profile → Appearance & language. Options: **Light**, **Dark**, **System**. The stored default is System; resolve it to Light/Dark from the device preference, with Light fallback if unavailable. Figma has only the two rendered modes; System is a selection state, not a third palette.
+- Use sun/moon/device icons plus text and a selected check; never rely on an unlabeled icon or ambiguous toggle. Keyboard and screen-reader users can identify the current choice.
+- Resolve initial appearance before the main screen renders to avoid a light flash on dark pages. System follows device changes only while selected; explicit Light/Dark overrides it.
+- Signed-in users save the preference on their own account; saved account preferences win at sign-in. Visitors remember only allowlisted appearance/locale values locally. See SRS section 10.5 and the draft preference contract; do not add a theme environment variable.
+- Saving shows pending/success/failure. Failure restores the last confirmed value and offers Retry. Theme changes recolour the existing view without remounting the recorder, navigating or resetting an assignment. Opening a preference control still follows mode focus/pause rules.
+- Apply tokens to all pages, portal dialogs, menus, charts, keyboard states and illustrations. Dark cards use borders and layered fills rather than bright shadows. Keep original assets legible in both modes; do not invert images globally.
+
+### 3.2 Contrast evidence and target
 
 Proposed accessibility target: WCAG 2.2 AA contrast, at least 4.5:1 for normal text and 3:1 for large text and essential non-text indicators. This is a design target; rendered conformance is not yet verified.
 
@@ -152,8 +166,22 @@ These opaque sRGB pairs were calculated during this documentation task using rel
 | Error `#B42318` / `#FFF0EE` | 5.93:1 |
 | Warning `#8A4B08` / `#FFF1DE` | 6.11:1 |
 | Reward `#684500` / `#FFF7CC` | 7.96:1 |
+| Dark primary `#F2F4F8` / surface `#242E3E` | 12.42:1 |
+| Dark secondary `#B8C4D6` / page `#171C26` | 9.67:1 |
+| Dark secondary `#B8C4D6` / subtle `#2D3A4E` | 6.52:1 |
+| Dark CTA foreground `#171C26` / fill `#C4A7FF` | 8.39:1 |
+| Dark CTA foreground `#171C26` / pressed `#B495EB` | 6.86:1 |
+| Dark link/focus `#8DC2FF` / surface `#242E3E` | 7.36:1 |
+| Dark link/focus `#8DC2FF` / subtle `#2D3A4E` | 6.18:1 |
+| Dark success `#8BE3C6` / `#173D35` | 7.92:1 |
+| Dark error `#FFB4AD` / `#4A292F` | 7.51:1 |
+| Dark warning `#FFD08A` / `#44341E` | 8.34:1 |
+| Dark reward `#F2E595` / `#3D3820` | 9.20:1 |
+| Dark control border `#7F90A8` / subtle `#2D3A4E` | 3.53:1 |
 
-Check all actual text/icon/chart/focus pairings in Figma; these calculations do not verify rendering, transparency or unlisted combinations. On inverse surfaces use a white focus ring with a navy separation gap.
+Check all actual text/icon/chart/focus pairings in Figma, including selected status chips and hovered controls; these calculations do not verify rendering, transparency or unlisted combinations. On inverse marketing surfaces use a light ring with a navy separation gap. See [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html). All listed ratios are rounded for reporting; pass/fail uses unrounded values.
+
+Documentation verification on 14 October 2026: all 35 semantic colour variables have Light/Dark values; 62 opaque semantic foreground/background checks passed their 4.5:1 text or 3:1 non-text targets. The matrix covered body/secondary text, primary-button states, links, focus, control outlines, learning/status/reward text and inverse surfaces. Translucent overlays, rendered charts/illustrations and browser states still need visual verification.
 
 ## 4. Proposed typography
 
@@ -165,6 +193,7 @@ Retain edclub's Open Sans/Lato pairing. Add **IBM Plex Mono** for aligned exerci
 | Body/navigation/forms | Lato 400/700 | Arial, sans-serif |
 | Exercise/key legends | IBM Plex Mono 400/500 | Consolas, Courier New, monospace |
 | Metrics | Lato 700, tabular numerals | Arial, sans-serif |
+| Arabic interface, headings/body | Noto Sans Arabic 400/700/800 | Tahoma, Arial, sans-serif |
 
 Lato 700 and IBM Plex Mono are TypeFlow additions; only Lato 400 was explicitly loaded in the inspected global CSS. If a font is unavailable in Figma, annotate temporary use of its fallback.
 
@@ -186,6 +215,26 @@ Lato 700 and IBM Plex Mono are TypeFlow additions; only Lato 400 was explicitly 
 | `Keyboard/Legend` | 16 / 24px | IBM Plex Mono 500 | Key labels |
 
 Use zero tracking by default and left-aligned copy; never justify. Body lines should usually stay within 60–75 characters. Preserve exercise spaces, disable ligatures and keep glyph advances stable. Visual wrapping must not alter the assigned passage. Represent space errors with a visible marker and accessible description. Large text also enlarges surrounding instructions without clipping. Check `i/l/1`, `O/0`, punctuation and space markers before approving the typing font.
+
+For Arabic interface text, align to logical start (right), use [Noto Sans Arabic](https://fonts.google.com/noto/specimen/Noto+Sans+Arabic) with the corresponding role size/weight, and increase body/label line height to at least 1.6× size. Allow wrapping and taller controls rather than truncating Arabic or shrinking fonts. Arabic runs retain normal shaping/ligatures and zero letter spacing; the monospace/no-ligature rule applies only to English exercise text. Never use all-caps transformations on Arabic.
+
+### 4.1 Interface language: English / العربية
+
+| Concern | Required design |
+| --- | --- |
+| Selector | Globe + visible **Language / اللغة** label; choices **English** and **العربية** in their own names, with current choice marked. No country flags. |
+| Location | Public/student/admin header, mobile navigation and Profile → Appearance & language; available before login. |
+| Default/save | English (`en`) initially; explicit choice Arabic (`ar`). Guest local choice persists; signed-in account choice persists across devices and takes precedence at login. Locale is independent of timezone and theme. |
+| Translated UI | Navigation, forms, buttons, help, validation/status messages, chart labels, device guidance, system-authored learning explanations and certificate disclaimer. Stable translation keys/codes keep meanings equivalent. |
+| Content boundary | Assigned passages, authored lesson/content text, word lists, focus letters/pairs, keyboard legends and user/forum posts stay in their original language. No automatic translation or new content-language selector. Certificates/PDF content is not automatically translated; surround it with equivalent localized explanation. |
+| RTL shell | Arabic uses RTL reading order, right-aligned labels and navigation at inline-start (right). English is LTR. Mirror directional navigation arrows; do not mirror wordmarks, universal icons, charts' data chronology or physical keyboard geometry. |
+| English island | Passage/input, caret progression and QWERTY guide remain `lang="en"`, `dir="ltr"`, left aligned in either shell. Isolate key/pair chips, emails, codes and metric units to prevent bidirectional reordering. |
+| Data formatting | Localize ordinary UI dates consistently with the saved timezone; do not reassign streak days. Keep exercise/test metrics, durations and verification codes using Western digits and explicit units for consistency. Labels can be Arabic. |
+| Failure/loading | Keep current language/content visible while loading a dictionary. Missing messages fall back to English; show an English fallback annotation in prototype review and require complete translations before release. |
+
+Use HTML `lang`/`dir` semantics and logical layout properties in the eventual implementation, following [W3C direction guidance](https://www.w3.org/International/questions/qa-html-dir). Dynamic system explanations should use agreed reason codes/parameters and reviewed dictionaries, never an LLM translation of session text. Editing display locale must not alter generation language/specifications, persisted events, raw accuracy, mastery or certificates. A language update preserves the current assignment and input; focus loss follows the active mode rather than creating a special pause.
+
+Suggested control labels for the prototype (Arabic wording still needs native-language review): **Appearance / المظهر**, **Light / فاتح**, **Dark / داكن**, **System / النظام**, **Language / اللغة**. Add helper copy: “Changes the website interface. Typing exercises stay in English.” / “يغيّر لغة واجهة الموقع فقط. تبقى تمارين الكتابة باللغة الإنجليزية.”
 
 ## 5. Layout, shape and motion tokens
 
@@ -217,7 +266,7 @@ Frame heights are viewport sizes, not fixed page heights. Use auto-layout and sc
 | Shell | Composition | Responsive behaviour |
 | --- | --- | --- |
 | Public | Wordmark, Log in/Get started, centred content, footer with verification link | Stack sections; keep account actions accessible |
-| Student | Left navigation, header, primary content, optional goal/review rail | At 1280px and above use content + rail. At 1024–1279px move rail below. Below 1024px use drawer + one column for non-typing pages. |
+| Student | Inline-start navigation (left in English/right in Arabic), header, primary content, optional goal/review rail | At 1280px and above use content + rail. At 1024–1279px move rail below. Below 1024px use drawer + one column for non-typing pages. |
 | Study | Exit/mode/preferences top bar, progress, passage, keyboard guide | Centred 960px maximum; no dashboard rail. Below 1024px show desktop/physical-keyboard guidance and return action, not mobile typing. |
 | Admin | Role-labeled navigation, header, tables/editors | Drawer navigation, wrapped filters, labeled contained table scrolling where necessary |
 
@@ -226,6 +275,37 @@ Student navigation: **Dashboard, Learning path, Practice, Review, Tests, Progres
 Admin navigation: **Overview, Users, Content, Learning settings, Moderation, Certificates, Audit**. Content includes Word lists, Blocked words, Themes and Key groups. Admin tools use their own shell; a role label does not grant access to private student records.
 
 Narrow-screen menus have a labeled keyboard-accessible trigger. Charts resize and offer data alternatives; metric cards stack. Device guidance must not discard an already-active attempt: resizing/focus changes preserve the current mode's timing semantics.
+
+#### Desktop layout
+
+- Primary frame 1440 × 1024; also check 1280px and minimum typing viewport 1024 × 768. Use 12 content columns with 24px gaps and 32px gutters at wide desktop; compact desktop uses 24px gutters. Side navigation stays 224px and the optional rail 280px where space permits.
+- Dashboard: recommendation/path/history in the main column, goals/review in the rail. Path and progress may use side-by-side map/detail views. Result metrics form one row of four when space permits.
+- Forms remain readable rather than stretching across all columns; authentication is capped at 440px. Admin tables use full available width with filters above and visible row actions.
+- Study stays centred with a 960px maximum, passage-first hierarchy and complete physical-QWERTY guide. Secondary help can scroll at short heights, but the active line and essential controls must stay reachable.
+- Both themes preserve identical geometry. Arabic mirrors shell placement/reading order while retaining LTR exercise, keyboard, codes and chart chronology.
+
+#### Mobile-phone layout
+
+- Primary frame 390 × 844; validate at 320, 360 and 430 CSS pixels. Use four columns, 16px gutters, 16px card padding, 16px gaps and a 64px minimum header that can grow for text. Cards/forms become one column with no fixed viewport-height clipping.
+- Header: compact TypeFlow wordmark, labeled menu trigger and account action. The drawer contains the full navigation, Appearance and Language choices, account/settings and logout. Mark the current page; opening/closing handles focus. RTL drawer opens from the right; LTR from the left. Avoid a crowded bottom bar with nine destinations.
+- Landing stacks copy/illustration/CTA; account fields and main actions fill available width. Dashboard keeps recommendation first, then goal/review and recent sessions. A practice CTA opens device guidance; account, progress and forum remain usable.
+- Path becomes a compact vertical list of group/activity cards with lock/review explanations. Keep physical key order unchanged if a map is shown; offer a readable key-state list when the full map would be too small.
+- Result/history metrics stack into two columns when readable, one at 320px or with large text. Forum preserves reply/report/accepted-answer actions, wrapping user text and long titles. Certificates stack status/details/actions with a readable unproctored label.
+- Progress charts fit their container with fewer axis labels and a full data-table alternative. History/admin tables may become labeled record cards; genuinely two-dimensional data can scroll inside a labeled region, not the whole page. Required moderation/user/content/settings actions stay available.
+- Dialogs become near-full-width sheets or full-height panels with internal scrolling, visible close/cancel, safe-area padding and reachable actions above the software keyboard. Do not use hover-only controls.
+- Typing/placement/test launch shows “Continue on a desktop with a physical English QWERTY keyboard.” with Back to dashboard. Do not create a scored touch-keyboard session or crop a desktop stage into a phone frame. Screen width alone does not waive the desktop/physical-keyboard scope.
+- Reflow preserves feature priority and state rather than merely shrinking fonts. Controls retain at least 44px touch targets. Verify Arabic wrapping, 200% text size and 320px reflow, following [W3C reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html).
+
+#### Responsive/theme/language coverage
+
+| Inventory | Desktop | Mobile phone |
+| --- | --- | --- |
+| Public/account, dashboard/path, progress/achievements, certificates, forum, profile and all admin pages | Full feature layout in Light/Dark and English/Arabic | Adapted functional layout in Light/Dark and English/Arabic |
+| Practice/review/placement/test setup | Full setup with device/mode rules | Summary and desktop guidance; no scored attempt launch |
+| Active typing and mode controls | Full stage at supported desktop sizes | Device guidance; an existing attempt retains mode timing/state on resize |
+| Saved results, errors and empty states | Full readable states | Reflowed readable states; no horizontal page overflow |
+
+Use shared components and mode/locale/viewport properties for this matrix. Tablet is an intermediate reflow check, not a separate mobile-typing feature. Do not hide functionality simply because an Admin page is viewed on a phone.
 
 ### 5.3 Shape and elevation
 
@@ -240,9 +320,11 @@ Narrow-screen menus have a labeled keyboard-accessible trigger. Charts resize an
 | `Effect/Card` | 0 2px 8px, `#122947` at 6% | Selective card elevation |
 | `Effect/Popover` | 0 8px 24px, `#122947` at 12% | Popovers/dialogs |
 | `Effect/PrimaryLip` | 0 3px 0, `#171C26` | Optional main learning CTA depth |
-| `Effect/NodeLip` | 0 4px 0, `#6D36C4` | Current path node |
+| `Effect/NodeLip` | 0 4px 0, `color/learning/lip` | Current path node in either mode |
 
 Normal dashboard/admin surfaces use flat borders. Raised lips are reserved for main learning actions/path nodes. Standard action height 48px, compact 40px where needed; icon-only hit areas at least 44 × 44px. Focus ring 3px with 2px separation; no clipping by cards or sticky headers.
+
+The listed card/popover shadow colours describe Light mode. In Dark mode use minimal black shadow plus the semantic border/surface layers; retain the node lip's mode binding. Certificate PDFs keep their independent print-friendly styling; changing website appearance does not regenerate or invert them.
 
 ### 5.4 Motion
 
@@ -267,10 +349,10 @@ Sections reflect the configured prerequisite graph; do not invent final group na
 | Path presentation | Visual treatment | Meaning/action |
 | --- | --- | --- |
 | Locked | Neutral node, lock, prerequisite text | View why locked; Start unavailable |
-| Available | White node, navy outline, activity icon | Start eligible activity |
+| Available | Surface-fill node, control outline, activity icon | Start eligible activity |
 | Recommended next | Purple 72px node, 4px bottom lip, adjacent label | Primary Start plus engine reason |
 | In progress | Blue outline, dot/progress cue, text | Evidence still developing |
-| Mastered | Success-soft node, dark teal check, label | Confirmed server evidence |
+| Mastered | Success-soft node, success-text check, label | Confirmed server evidence |
 | Review due | Separate review chip/icon beside underlying state | Start review; does not replace mastery state |
 | Insufficient evidence | “More practice needed” and sample status | Explain unknown evidence, not fabricated 0% mastery |
 
@@ -305,9 +387,11 @@ Build components before screens. Bind semantic variables/text styles; states are
 
 | Component / properties | Requirements |
 | --- | --- |
-| `Action/Button` — primary/secondary/ghost/destructive; regular/compact; default/hover/pressed/focus/disabled/loading | Navy primary; outlined white secondary; persistent loading label |
+| `Action/Button` — primary/secondary/ghost/destructive; regular/compact; default/hover/pressed/focus/disabled/loading | Semantic primary fill/foreground; outlined surface secondary; persistent loading label; both themes |
 | `Form/Field` — text/email/password/select; default/focus/error/disabled/loading | Visible label/helper/error; no placeholder-only labels; labeled password toggle |
 | `Form/Preference` — checkbox/switch/radio | Selected mark/label, keyboard interaction, save success/failure |
+| `Preferences/Appearance` — light/dark/system; default/focus/saving/error | Text/icon/check selection; System resolves to a rendered mode; header and profile variants |
+| `Preferences/Language` — en/ar; default/focus/loading/error | Own-language labels, globe, selection mark and English-content helper; LTR/RTL-safe |
 | `Nav/Item` — selected/unselected/focus; badge | Soft-purple selection, icon/weight cue, real counts |
 | `Surface/Card` — default/selected/interactive | 20px radius/24px padding; interactive outline/focus |
 | `Feedback/Banner` — info/success/warning/error | Icon/title/explanation/action; colour is supplementary |
@@ -335,10 +419,10 @@ Relevant requirements: SYS-10–32, SYS-46–47 and SYS-50–51; SRS sections 8�
 
 Arrange inside the study shell:
 
-1. **Top bar:** Exit, mode, Large text and Reduced pressure. Explain abandonment before active exit/restart.
+1. **Top bar:** Exit, mode, Large text and Reduced pressure; compact Appearance/Language menu. Explain abandonment before active exit/restart and respect mode focus rules when using preferences.
 2. **Activity header:** Title, focus chips and reason. Intentional restricted-alphabet exercises are labeled “Key drill” with a brief explanation.
 3. **Progress:** Passage progress for untimed modes; selected duration/time remaining for tests unless visually hidden. Hidden timing still runs.
-4. **Typing surface:** White card, 32–48px padding, exact passage/current position. Keep active line visible without jarring scrolling.
+4. **Typing surface:** Semantic surface card, 32–48px padding, exact English/LTR passage/current position in either theme/interface language. Keep active line visible without jarring scrolling.
 5. **Live metrics:** “Live · provisional”, gross WPM and raw accuracy. Reduced pressure hides live speed/timer emphasis while retaining progress/instructions.
 6. **QWERTY guide:** Next expected key; Shift hints only for permitted assignments. Informational guide, not a touch keyboard.
 7. **Controls/help:** Pause/Resume only where allowed; Restart and keyboard guidance. Shortcuts cannot collide with exercise letters or captured controls.
@@ -347,10 +431,10 @@ Arrange inside the study shell:
 
 | State | Non-colour cue | Colour |
 | --- | --- | --- |
-| Upcoming | Plain glyph, no completion underline | Primary navy on white |
+| Upcoming | Plain glyph, no completion underline | Primary text on surface in the selected mode |
 | Current | Caret/outline/current-position cue | Blue caret, primary glyph |
-| Correct | Thin solid completion underline | Dark teal; optional success tint |
-| Incorrect | Thick/double underline, tinted cell, persistent error summary | Dark red on error-soft |
+| Correct | Thin solid completion underline | Success-text token; optional success-soft tint |
+| Incorrect | Thick/double underline, tinted cell, persistent error summary | Error-text token on error-soft |
 | Wrong space | Visible space marker with matching state/description | Error semantic colours |
 
 Do not replace assigned characters with decoration. Keep glyphs aligned across states. An accessible error summary can describe the latest mismatch/current position without announcing every keystroke. Screen-reader interaction requires prototyping and actual assistive-technology testing; tokens do not prove it works.
@@ -399,7 +483,7 @@ These are **screen labels, not agreed browser URLs or new API endpoints**. Use a
 | My certificates / certificates | Issued/revoked list, detail/PDF/verification link | SYS-37–38; PDF retry does not erase issuance |
 | Public verification / certificates | Code lookup/link, status/public fields, unproctored explanation | SYS-38; consented name, issue date, duration, metrics, code/status only |
 | Forum list/thread/compose / forum | Threads/replies, accepted answer, report; list/search proposal | SYS-39–40; student access; guest reading TBD |
-| Profile/preferences / profile | Name/timezone/target/goal/accessibility/deletion | SYS-9, SYS-48; future-session target, separate public-name consent |
+| Profile/preferences / profile | Name/timezone/target/goal/accessibility, Appearance & language, deletion | SYS-9, SYS-48, SYS-53–56; saved presentation settings, future-session target, separate public-name consent |
 | Admin overview / admin + analytics | Windowed usage, comparable performance, problem keys, validation/fallback rates | SYS-44; periods/denominators, no invented measurements |
 | Admin users / admin | Search/status, protected admin creation, deactivate/delete | SYS-6, SYS-41, SYS-45, SYS-48; last-admin protection |
 | Admin content / admin + generation | Lists/blocked words/themes/groups, prerequisites, validation preview/activation | SYS-25, SYS-42, SYS-51; feasible fallback checks |
@@ -414,7 +498,7 @@ Deletion views explain personal history, authored text and certificate identity/
 
 **Dashboard, 1440 × 1024:** 224px sidebar, 72px header, 32px main gutters. Flexible content + 280px rail, 24px gap. Main: title/greeting, large recommendation with reason/focus/Start, compact path preview, recent sessions. Rail: daily goal, streak/level and due review. Compact desktop moves rail below. Counts/XP are labeled fixtures.
 
-**Typing, 1440 × 1024 and 1024 × 768:** 960px centred study shell; compact header, activity/reason, progress, white passage, provisional metrics, guide and controls. Fit active passage/essential controls at minimum desktop; secondary help may scroll. Include large-text, reduced-pressure, paused, timed and save-retry variants.
+**Typing, 1440 × 1024 and 1024 × 768:** 960px centred study shell; compact header, activity/reason, progress, mode-bound passage surface, provisional metrics, guide and controls. Fit active passage/essential controls at minimum desktop; secondary help may scroll. Include both themes, Arabic shell with unchanged English passage, large-text, reduced-pressure, paused, timed and save-retry variants. Its phone counterpart is device guidance.
 
 **Official result, 1440 × 1024:** mode-specific completion heading + **Official result**. Metric row: Net WPM, Gross WPM, Raw accuracy, Final accuracy, each explicitly labeled. Follow with key/pair evidence, applicable rewards, next recommendation; Continue primary, View progress/Return secondary. Placement says “Placement estimate” with official saved measurements and provisional ability evidence; omit XP/certificates. Tests omit curriculum/mastery-change claims.
 
@@ -433,6 +517,7 @@ Admin metrics explain reporting windows/denominators. Raw streams, tokens, inter
 - Non-colour character cues follow section 8; key/path states have text/icons. Hover information also appears on focus/click.
 - Real labels/headings/units/action names. Do not announce every glyph/live WPM assertively; announce important transitions/errors without flooding assistive technology.
 - Review zoom/reflow, large text, reduced motion/pressure and forced-colour behaviour. No clipped critical controls.
+- Check Light/Dark, English/Arabic, LTR/RTL and desktop/mobile together. Translation and preference failures preserve useful content, field values, privacy-safe messages and the active session.
 - Honest loading/empty states: preparing, saving, first use, no history/review/certificates/filter matches; offer useful next actions.
 - Error recovery respects mode rules. Permission/session-expiry messages do not reveal another student's data.
 - Rate limits use server retry guidance; no invented cooldowns. Reset/resend acknowledgements do not expose email existence.
@@ -448,18 +533,18 @@ This is a prototype brief, not permission to implement code/change the SRS. Use 
 ### 11.1 File organisation
 
 1. `00 Brief & sources` — status, sources, scope, limits, open decisions.
-2. `01 Foundations` — variables, typography, spacing/grids, radius/effects/focus.
+2. `01 Foundations` — Light/Dark variables, English/Arabic typography, desktop/mobile grids, radius/effects/focus.
 3. `02 Components` — sets, variants and interaction documentation.
 4. `03 Student core` — dashboard, path/map, practice/review, typing/results.
 5. `04 Accounts & public` — landing/auth, placement entry, verification.
 6. `05 Progress & community` — history, achievements, certificates, forum/preferences.
 7. `06 Administration` — analytics/management workflows.
-8. `07 Responsive & accessibility` — minimum desktop, narrow non-typing, accessibility variants.
+8. `07 Responsive & accessibility` — full desktop/phone inventory, RTL/LTR matrix, minimum typing desktop, device guidance and accessibility variants.
 9. `08 Prototypes & review` — journeys and unresolved questions.
 
 ### 11.2 Construction rules
 
-- Create colour primitives then semantic aliases, one Light mode. Separate number collections for spacing/layout/radius/motion; reusable text/effect styles.
+- Create colour primitives then semantic aliases with **Light** and **Dark** modes. System resolves to one of these. Keep locale/direction and viewport separate from colour modes; use locale strings, mirrored layout variants and desktop/mobile component properties. Separate number collections for spacing/layout/radius/motion; reusable text/effect styles.
 - Use auto-layout, constraints and component instances. Purpose-based names: `Recommendation/Reason`, `Typing/Passage`, `Metric/Raw accuracy`.
 - Compose dashboard, typing and official result first; reuse their shell/metrics/feedback across modes.
 - Preparing/submitting/retryable are UI states, not invented backend enums.
@@ -467,6 +552,7 @@ This is a prototype brief, not permission to implement code/change the SRS. Use 
 - Example beginner passage: `asdf asdf asdf`, only where `a/s/d/f` and spaces are explicitly allowed. Not final curriculum or sufficient test text. No locked punctuation/digits/uppercase for decoration.
 - Annotate missing data as **Contract to agree**, especially key evidence, reward events, prerequisite detail and certificate DTOs; do not invent endpoints.
 - Include focus/disabled/loading/empty/error variants, tab order, focus-return and responsive notes.
+- Deliver each inventory screen/group in the desktop/mobile × Light/Dark × English/Arabic matrix from section 5.2 using instances; phone typing gets device guidance. Include Appearance & language controls, System-selected state, RTL mixed-text examples, save failure/retry and unchanged-English-passage comparisons.
 - Use original TypeFlow illustrations/icons; no competitor brand downloads needed.
 
 ### 11.3 Required clickable journeys
@@ -482,6 +568,8 @@ This is a prototype brief, not permission to implement code/change the SRS. Use 
 | Forum | List → thread/reply → owner accepts answer; report → moderation |
 | Admin content/settings | Edit → validation failure/success → activation/new version → audited outcome |
 | Deletion | Preferences → effects → confirm → signed-out completion/downstream placeholders |
+| Appearance | Header/profile selector → Light/Dark/System → saved preference → navigation/reload; failure/retry state |
+| Interface language | English → العربية → RTL shell with unchanged English content → saved preference → mobile/desktop navigation |
 
 Required review frames: first use, locked prerequisites, insufficient evidence, no review due, large text, reduced pressure/motion, narrow desktop guidance, missing metrics, rate limit, permission denied, retry, invalid token, PDF failure and no-history charts. Simulated prototypes do not verify scoring, email, persistence or accessibility.
 
@@ -491,13 +579,14 @@ Concrete enough for Figma exploration; team approval and implementation evidence
 
 - [x] Reference declarations extracted with source links.
 - [x] Proposed tokens, components, layouts and full screen inventory specified.
-- [x] Selected opaque colour-pair contrast calculations completed.
+- [x] Selected Light/Dark opaque colour-pair contrast calculations completed.
+- [x] Required appearance, English/Arabic interface and desktop/mobile behaviour documented with a scope decision.
 - [ ] Design owner/reviewer and Figma link assigned.
 - [ ] Anchor screens reviewed by team.
-- [ ] Branding, font licences/assets and typing glyph legibility reviewed.
+- [ ] Branding, Latin/Arabic font licences/assets, Arabic translation and typing glyph legibility reviewed.
 - [ ] Curriculum/targets, reward policies and certificate rules approved in owning documents.
 - [ ] Missing DTOs and public forum-reading policy agreed.
-- [ ] Responsive/keyboard/screen-reader/rendered contrast checks completed.
+- [ ] Desktop/mobile × Light/Dark × English/Arabic responsive, keyboard, screen-reader and rendered contrast checks completed.
 - [ ] Final visual approval/date recorded.
 
 Begin anchor-screen exploration with labeled sample data/configurable UI. Do not treat policy TBDs as agreed behaviour. Update the SRS/decision records if a later team choice changes requirements.

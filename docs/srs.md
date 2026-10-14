@@ -6,11 +6,11 @@ Prepared by: [Team member names]
 Course: [Course name and code]  
 Supervisor: [Instructor name]  
 Misr International University  
-Version: 1.1 — 13 October 2026
+Version: 1.2 — 14 October 2026
 
 ## 1. Preface and document status
 
-This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. It replaces version 1.0 of the supplied SRS and incorporates the document review. No implementation was inspected to produce this revision.
+This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.2 extends the reviewed v1.1 baseline with owner-requested Light/Dark appearance, English/Arabic interface localisation and explicit desktop/mobile presentation. No implementation was inspected to produce this revision. See [decision 0002](decisions/0002-appearance-localisation-responsive.md).
 
 This SRS is the requirements baseline. [context/handoff.md](context/handoff.md) explains decisions and remaining questions. [architecture.md](architecture.md) proposes an implementation structure; it does not add requirements. Start at the [documentation index](README.md) for teammate and agent guides.
 
@@ -34,11 +34,13 @@ The objectives are to:
 
 ### 2.2 Scope
 
-**In scope:** email/password accounts, verification and reset; placement; key-group lessons; adaptive practice; spaced review; timed and certified tests; progress and gamification; certificate PDFs and public verification; forum moderation; content, user and settings administration.
+**In scope:** email/password accounts, verification and reset; placement; key-group lessons; adaptive practice; spaced review; timed and certified tests; progress and gamification; certificate PDFs and public verification; forum moderation; content, user and settings administration; Light/Dark appearance; English/Arabic interface switching; desktop and mobile layouts for non-typing pages.
 
-**Out of scope:** mobile typing, touch keyboards, layouts other than QWERTY, languages other than English, instructor accounts, classes, multiplayer, payments, native apps, Google sign-in, leaderboards, CSV export and AI coaching notes. Optional additions require a scope decision; they are not hidden requirements.
+**Out of scope:** mobile typing, touch keyboards, layouts other than QWERTY, typing/curriculum languages other than English, automatic translation of authored/user content or certificate PDFs, interface languages beyond English/Arabic, instructor accounts, classes, multiplayer, payments, native apps, Google sign-in, leaderboards, CSV export and AI coaching notes. Optional additions require a scope decision; they are not hidden requirements.
 
 Student and Admin are the only account roles. Guest describes an unauthenticated visitor, not a stored role. Non-typing pages should remain usable on narrow screens; the typing experience targets desktop screens at least 1024 CSS pixels wide.
+
+Arabic localisation applies to interface controls and system-authored explanations, not assigned passages, word lists, physical QWERTY geometry or authored content. Mobile users can access non-typing functions, including administration when authorised, but typing entry points show desktop/physical-keyboard guidance. Responsive design does not expand supported typing devices.
 
 ### 2.3 System overview
 
@@ -104,6 +106,8 @@ The external systems are the LLM API and email service. An Admin account does no
 6. Students can take timed tests and qualifying certified tests, download certificates and share verification codes.
 7. Students can create forum threads, reply, accept answers on their own threads and report posts.
 8. Admins can manage users, content, thresholds, forum moderation and certificate status, and view platform health and usage.
+9. Visitors and signed-in users can select Light, Dark or System appearance and English or Arabic interface language independently of English typing content and timezone.
+10. Non-typing pages remain usable on desktop and mobile phones in both themes/languages; preferences persist without changing scoring or active assignments.
 
 ## 7. Functional system requirements
 
@@ -211,6 +215,15 @@ Original SYS-1 through SYS-45 identifiers are retained so existing references re
 | SYS-51 | Apply the fallback feasibility and constraint-relaxation rules in section 9 and record any permitted relaxation. |
 | SYS-52 | Run durable, retry-safe retention and generation maintenance jobs with catch-up after downtime. |
 
+### 7.11 Appearance, interface language and responsive presentation
+
+| ID | Requirement |
+| --- | --- |
+| SYS-53 | Provide Light and Dark appearance on public, Student and Admin screens with a labeled Light/Dark/System selector. System resolves the device preference and explicit Light/Dark overrides it. Apply the chosen mode to controls, charts, passage feedback and overlays without resetting active session state. |
+| SYS-54 | Provide an English/Arabic interface selector; translate navigation, controls, help, status/validation labels and system-authored explanations. Arabic uses an RTL shell while English assigned passages/input, key/pair strings and the physical QWERTY guide remain English/LTR. Interface locale shall not translate authored content, change generation/scoring or select another typing language. |
+| SYS-55 | Provide desktop and mobile-phone layouts for every non-typing page and required state, including authorised administration, in both themes and interface languages. Mobile typing entry points show device guidance without creating a scored touch session. Resizing/focus changes preserve the existing mode's pause/timing rules. |
+| SYS-56 | Persist account appearance/interface preferences for the owner and safe local choices for visitors. Define sign-in precedence, defaults and recovery in section 10.5. Validate allowlisted preference values, merge partial updates without overwriting unrelated fields, and show save failure/retry without a false saved state. |
+
 ## 8. Typing, scoring and mode contract
 
 ### 8.1 Input and replay
@@ -314,6 +327,8 @@ Use HTTPS, validated server inputs, ownership checks, CSRF protection, explicit 
 
 Support keyboard navigation, visible focus, adequate contrast, non-colour error indicators, large text and reduced-pressure mode. Do not capture typing outside the exercise. Test the exercise in current desktop Chrome, Edge and Firefox, recording actual versions at release.
 
+Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; large text and essential non-text indicators at least 3:1. Test actual foreground/background states, not only palette swatches. Non-typing content shall reflow at 320 CSS pixels without page-wide horizontal scrolling; genuinely two-dimensional data may scroll within an accessible region. Responsive controls should offer at least 44 × 44 CSS pixel hit areas. Verify keyboard, screen-reader, zoom and Arabic mixed-direction behaviour. [DESIGN.md](../DESIGN.md) owns proposed colours, typography, layout breakpoints and reference frames, not scoring thresholds.
+
 ### 10.3 Reliability and maintainability
 
 Session submission is atomic and retry-safe. Concurrent results must not lose learning updates. External calls occur outside database transactions. Jobs persist enough state to catch up after a sleeping host resumes, and repeated executions must be safe. Maintain documented backup and restore procedures; verify one restore before release. Hosting limitations must be disclosed in the demo/report.
@@ -329,6 +344,14 @@ Account deletion revokes authentication and removes profile data, tokens, logs, 
 Public certificate verification exposes only the consented certificate display name, issue date, test duration, metrics, status and verification code; never email or keystroke data. Explain these fields before issuing a certificate. Backup expiry, non-raw operational retention and audit retention durations are **TBD** before production use.
 
 Timezone changes affect future activity-day assignment, not previously awarded days. Record timezone and local date with qualifying activity. Define XP, level thresholds, daily-goal units, minimum session activity and timezone-change handling in versioned reward configuration before gamification implementation.
+
+### 10.5 Presentation preferences and localisation boundary
+
+Default appearance is System, resolved to Light/Dark from the device with Light fallback. Default interface is English; users explicitly choose Arabic. Visitors retain only allowlisted appearance/locale choices locally. At sign-in, confirmed account preferences take precedence; absent account values use the defaults. Guest choices are not silently written to an account. Account updates are owner-only, survive later sign-ins/devices and merge only submitted fields. Pending or failed saves must not be presented as persisted; on failure restore the last confirmed value and offer Retry. On logout, remove the account-scoped preference cache and resolve the visitor's own choice/default so shared devices do not inherit another account's settings.
+
+Appearance/locale are presentation preferences, separate from versioned learning settings, content themes and the student's timezone. Changing them must not remount/reset the recorder, alter assignments/events, unlock characters, recompute old results, move streak days or change certificate issuance. Opening controls still obeys the mode's ordinary focus-loss rules. UI dates may be locale-formatted using the existing saved timezone; exercise/test numbers, durations and verification codes use Western digits with explicit units. Certificate/PDF and user-authored content remain in their existing language; surrounding UI/disclaimers can be localised.
+
+Use reviewed translation dictionaries with stable message/error/reason codes and parameters rather than translating LLM exercise text. Missing interface messages fall back to English without hiding essential information; translation completeness must be checked before release. Language/direction markup distinguishes the Arabic shell from English typing regions. Locale dictionaries are presentation assets and do not belong in generation specifications. Account deletion removes persisted preferences with the profile.
 
 ## 11. Technology and constraints
 
@@ -393,10 +416,10 @@ Figure 3. Core conceptual relationships, not a complete database schema. A sessi
 | Progress and achievements | Comparable trends, heat map, history, badges and levels |
 | Certificates and public verification | List, PDF, status and public verification |
 | Forum | Threads, replies, accepted answer, reports |
-| Profile/settings | Name, timezone, target, daily goal, accessibility, deletion |
+| Profile/settings | Name, timezone, target, daily goal, accessibility, Appearance & language, deletion |
 | Admin | Analytics, users, content, settings, moderation, certificates and audit |
 
-This is a page inventory, not a prototype. Produce wireframes separately if required by the course; they are not supplied in this revision.
+This is a page inventory, not a prototype. Use [DESIGN.md](../DESIGN.md) for the proposed desktop/mobile and Light/Dark × English/Arabic screen brief; no Figma prototype or working UI is verified by these documents.
 
 ## 13. Scenarios and use cases
 
@@ -455,6 +478,8 @@ Precondition: a feasible spec. Check compatible validated cache, otherwise call 
 
 Use unit tests for replay, formulas, eligibility rules, adaptation and fallback feasibility; integration tests for ownership, atomic updates, retries, concurrency, revocation and deletion; browser tests for the full typing flow, accessibility and mode controls. Include fixed scoring examples covering correction, pauses, unfinished timed text and zero denominators. Map each SYS requirement to a test or manual acceptance check before release.
 
+For SYS-53–56 verify both appearance modes and System resolution; English/Arabic selection, RTL/LTR isolation and unchanged English assignments; desktop/mobile reflow and device guidance; account/visitor precedence, logout, reload and save failure; unchanged recorder/timing/scoring across presentation changes. Record rendered contrast and keyboard/screen-reader results separately from token calculations.
+
 Compare adaptive and fixed-curriculum practice using the same simulated typist profiles, initial conditions, practice budgets and a common held-out assessment. Use multiple random seeds and report variability. Include slow-accurate, fast-inaccurate, novice and uneven-key profiles. Tune on separate simulation profiles from those used for final reporting. Simulated learning assumptions must not inherently reward the adaptive policy.
 
 Simulation shows behaviour under stated assumptions, not proof that humans learn faster. A small consented classmate pilot can assess usability and provide limited learning evidence; report its sample size, duration and limitations.
@@ -467,7 +492,7 @@ Core adaptive behaviour, validated fallback and evaluation take priority. Forum,
 
 ## 17. Future enhancements
 
-Instructor/class support, additional layouts/languages, multiplayer, optional sign-in providers and recalibration from real learner data may be considered after the required baseline is complete.
+Instructor/class support, additional keyboard layouts/typing languages, interface languages beyond English/Arabic, multiplayer, optional sign-in providers and recalibration from real learner data may be considered after the required baseline is complete.
 
 ## 18. References
 

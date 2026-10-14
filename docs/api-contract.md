@@ -1,6 +1,6 @@
 # API contract
 
-**Status: DRAFT, version 0.1, 13 October 2026. No phase contract is approved and no endpoint is verified.** This is a concrete starting proposal for the phase meeting, not a claim about current routes. Required behaviour comes from the [SRS](srs.md).
+**Status: DRAFT, version 0.2, 14 October 2026. No phase contract is approved and no endpoint is verified.** This is a concrete starting proposal for the phase meeting, not a claim about current routes. Required behaviour comes from the [SRS](srs.md), including SYS-53–56 for appearance, English/Arabic interface and responsive presentation.
 
 ## Conventions to agree
 
@@ -34,10 +34,10 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 | `POST /auth/resend-verification` | Public, rate-limited | Email → safe acknowledgement |
 | `POST /auth/login` | Public, rate-limited | Email/password → public user DTO + cookie |
 | `POST /auth/logout` | Authenticated | Revoke current session, clear cookie |
-| `GET /auth/me` | Authenticated | Public user DTO |
+| `GET /auth/me` | Authenticated | Public user DTO including own presentation preferences |
 | `POST /auth/forgot-password` | Public, rate-limited | Email → same acknowledgement whether account exists or not |
 | `POST /auth/reset-password` | Public, rate-limited | Token/new password → acknowledgement; revoke sessions |
-| `PATCH /users/me` | Owner | Allowlisted profile/preferences fields → updated DTO |
+| `PATCH /users/me` | Owner (Student or Admin) | Allowlisted profile/preferences fields → updated DTO; partial preference merge |
 | `DELETE /users/me` | Owner | Deletion confirmation contract TBD → completion/status |
 | `POST /sessions` | Student | Mode/options → server assignment |
 | `POST /sessions/:id/submit` | Owner | Events/finish time → official result |
@@ -55,6 +55,37 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 
 Outside the base path: proposed `GET /health/live` and `GET /health/ready`. Placement, review and both test types share `/sessions`; mode selects behaviour. No Google-login endpoint.
 
+## Presentation-preference draft
+
+Required behaviour is recorded in [decision 0002](decisions/0002-appearance-localisation-responsive.md); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
+
+- Proposed `preferences.themePreference`: `light`, `dark` or `system`; default `system`. Return the stored choice, not a device-specific resolved mode.
+- Proposed `preferences.uiLocale`: `en` or `ar`; default `en`. Interface language never becomes a generation/content-language parameter. JSON numbers/UTC timestamps, IDs, codes, raw events and assignment text keep canonical representations.
+- `GET /auth/me` and the login user DTO include these owner-only fields. Absent account preferences resolve the SRS defaults. Visitor choices are local allowlisted values, not unauthenticated account updates; account values win at login. SRS section 10.5 owns logout and save-failure rules.
+- `PATCH /users/me` validates enums and merges only provided nested keys with current stored preferences. Omitted profile/preference fields remain unchanged; do not replace the whole preferences object from a stale read. Apply owner/active-account/CSRF checks for Students and Admins. Unsupported locales fail validation instead of reaching a dictionary/file path unchecked.
+
+Illustrative request:
+
+```json
+{"preferences":{"themePreference":"dark","uiLocale":"ar"}}
+```
+
+Illustrative preference fragment in the updated user DTO (not a complete response):
+
+```json
+{"preferences":{"themePreference":"dark","uiLocale":"ar"}}
+```
+
+Partial update example:
+
+```json
+{"preferences":{"uiLocale":"en"}}
+```
+
+After that request, the previously stored dark appearance remains. Identical retries of these set-value preferences are harmless. Confirm complete schemas, partial-update conflict semantics and mocks during phase agreement; these examples do not approve an entire public user DTO.
+
+Localise UI messages through stable codes and reviewed dictionaries. Existing `error.code` identifies a translation; retain a safe English fallback. Adaptive explanations need an agreed reason code plus safe parameters alongside an English fallback reason; exact fields remain **Contract to agree**, not implemented fields. Never translate/modify assignment text, forum/user content or certificate PDFs to satisfy `uiLocale`. Desktop/mobile and theme use the same APIs and role checks.
+
 ## Initial JSON examples
 
 ### Login
@@ -68,7 +99,7 @@ Request to `POST /auth/login`:
 Proposed 200 response (authentication cookie is set separately):
 
 ```json
-{"user":{"id":"example-user","displayName":"Layla","role":"student","emailVerified":true}}
+{"user":{"id":"example-user","displayName":"Layla","role":"student","emailVerified":true,"preferences":{"themePreference":"system","uiLocale":"en"}}}
 ```
 
 ### Start

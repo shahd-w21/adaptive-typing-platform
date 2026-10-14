@@ -15,7 +15,7 @@ Git, the team's pinned Node.js/npm versions, Docker with Compose for local Postg
 3. Provide safe environment examples and copy them to the agreed ignored local environment files. Obtain secrets through the team's private channel.
 4. Start local database/email services, apply committed migrations and seed development content using verified scripts.
 5. Start the web/API processes; record actual URLs and ports.
-6. Verify registration/email, login, fallback practice, submission and saved results. Confirm the dedicated test database is separate.
+6. Verify registration/email, login, fallback practice, submission and saved results. Confirm the dedicated test database is separate. Then verify Light/Dark/System, English/Arabic UI, desktop/mobile non-typing layouts and preference persistence using the matrix in [testing](testing.md); English exercise content and mode timing stay unchanged.
 
 ## Command register
 

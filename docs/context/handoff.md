@@ -1,6 +1,6 @@
 # TypeFlow: Handoff Context
 
-Version 1.1 — 13 October 2026
+Version 1.2 — 14 October 2026
 
 Read this with [the SRS](../srs.md) and [architecture](../architecture.md). The SRS defines required behaviour. This file explains the reasoning, scope and open decisions. Architecture describes implementation boundaries. For a quick task handoff, start with [current state](current-state.md).
 
@@ -15,6 +15,7 @@ This revision was created from the supplied documents and their review. The exis
 - Working name: TypeFlow; final branding remains open.
 - Only Student and Admin are stored account roles. Guest means unauthenticated access.
 - English, physical QWERTY keyboards and desktop typing only.
+- English/Arabic interface, Light/Dark appearance and desktop/mobile non-typing layouts are required; Arabic UI never changes the English curriculum. See [decision 0002](../decisions/0002-appearance-localisation-responsive.md) and [DESIGN.md](../../DESIGN.md).
 
 The central loop is: assign text → capture typing → replay and score on the server → update key/pair evidence → select the next focus → supply validated text. Progress, gamification, certificates, forum and admin tools support this loop.
 
@@ -26,7 +27,7 @@ The central loop is: assign text → capture typing → replay and score on the 
 4. Resolve a conflict by updating the documents together; do not silently select the easiest interpretation.
 5. Record consequential decisions with the date, reason and affected requirements.
 
-Version 1.1 applies the review recommendations. Some previously unspecified behaviour now has explicit initial design defaults. These defaults are starting policies, not research findings. Items labelled TBD are genuinely unresolved.
+SRS v1.1 applied the review recommendations; v1.2 adds the owner's appearance, English/Arabic interface and responsive-presentation requirements. Initial design defaults are starting policies, not research findings. Items labelled TBD remain unresolved; new documentation is not implementation evidence.
 
 ## 3. Core decisions to preserve
 
@@ -100,6 +101,8 @@ Do not copy numerical parameters into this file as another independent source. S
 - Google sign-in is deferred. Remove its buttons, routes and environment variables from baseline plans.
 - Leaderboards, CSV export, AI coaching notes and review emails are outside the required baseline.
 - Large text and reduced-pressure mode remain required; sound effects are optional.
+- Appearance and UI language are independent presentation preferences. System resolves Light/Dark; English/Arabic changes the interface shell and system messages only. Persist own-account choices with visitor/account precedence and logout cleanup as specified in SRS section 10.5; do not put locale/theme in generation or scoring.
+- Mobile supports non-typing pages, including authorised administration. Typing remains desktop/physical English QWERTY; phone launch shows device guidance. Arabic shell layout is RTL while passages/input/keyboard remain English/LTR.
 - The SRS contains renderable Mermaid diagrams. They must be rendered when exporting a final submission.
 - The page list is explicitly an inventory. It does not count as a visual prototype.
 - Historical claims that no repository/code exists have been removed.

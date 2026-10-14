@@ -9,6 +9,7 @@
 | Pure unit tests | Replay, scoring denominators, timing, accuracy gate, missing evidence, mastery/review, feasible fallback |
 | Database integration | Ownership, atomic rollback, duplicate submission, concurrent updates, unique rewards, revocation, deletion |
 | Browser flow | Register/verify → type → official result; focus/pause, restart, deadline, accessibility and network retry |
+| Presentation/localisation | Light/Dark/System, English/Arabic RTL/LTR, desktop/mobile non-typing layouts, owner/guest preferences, unchanged English typing state |
 | Content validation | Word/group/theme references, allowed alphabet, coverage feasibility, blocked text and cache versions |
 | Performance | SRS workload and reference environment; warm/cold results separately |
 
@@ -35,8 +36,30 @@ For each implemented requirement, add a row or link to a tracked test. Do not ma
 | SYS-46 | Lost response, identical retry | TBD | Not run | TBD |
 | SYS-47 | Two sessions update the same student | TBD | Not run | TBD |
 | SYS-48 | Reset/deactivation invalidates old session | TBD | Not run | TBD |
+| SYS-53 | Light/Dark/System applies consistently without session reset | Presentation matrix below | Not run | TBD |
+| SYS-54 | English/Arabic UI, English/LTR exercises and stable scoring | Localisation checks below | Not run | TBD |
+| SYS-55 | Desktop/mobile feature parity outside typing; device guidance | Responsive checks below | Not run | TBD |
+| SYS-56 | Preference defaults, ownership, partial merge and failure recovery | Persistence checks below | Not run | TBD |
 
 Expand to cover all requirements before release. Use a dedicated test database with a positive identity check before any reset. Never run destructive test setup against shared development or production data.
+
+## Appearance, interface language and responsive acceptance
+
+SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns proposed tokens, frame sizes and layouts. These checks are planned, not executed browser evidence.
+
+| Area | Required checks |
+| --- | --- |
+| Appearance | Light/Dark on public/student/admin, passage/key feedback, dialogs/menus/charts; System follows device changes, explicit selection overrides; initial render avoids theme flash; PDF styling unchanged |
+| Contrast/accessibility | Actual text/status/button/focus combinations in both themes, including hover/disabled/selected states; keyboard order/focus return, reduced motion/pressure, large text, forced colours and screen-reader labels |
+| Interface locale | English/Arabic controls, help/errors/system explanations; own-name selector; Arabic `lang`/RTL shell with isolated English/LTR passage/input, key/pair labels, QWERTY geometry, emails/codes/units; reviewed translations and safe English fallback |
+| Content invariants | Same exact assignment/events/spec and permitted characters before/after theme/locale changes; authored/forum content and PDF not translated; identical replay/official metrics and learning updates |
+| Active sessions | Changing preferences/viewport preserves recorder/buffer/assignment; ordinary mode focus-loss/pause/deadline rules still apply; save retry retains payload and does not repeat rewards |
+| Responsive | Every non-typing page and edge state at desktop/minimum desktop and 320–430px phone widths in both modes/locales; no page-wide overflow, Arabic wrapping, reachable drawer/forms/actions, 200% text size, data alternatives and contained two-dimensional tables |
+| Mobile typing boundary | Practice/review/placement/test launch shows desktop/physical-English-QWERTY guidance without creating a scored touch session; existing attempts retain timing/state after resize |
+| Preference persistence | System/English defaults, allowed visitor local choices, owner-only account updates, account precedence at login, reload/cross-device persistence, logout account-cache cleanup, save-failure rollback/retry |
+| Partial update/privacy | Changing locale retains theme/other fields; concurrent different-field updates do not overwrite unrelated settings; invalid enum/locale denied, other-user update denied, CSRF/active-account checks, no auth/PII in visitor preference storage |
+
+Compare desktop/mobile × Light/Dark × English/Arabic fixtures; System is a resolver test, not a third rendered palette. Record exact desktop/mobile browser versions and assistive technologies when implementation is tested; no browser is claimed verified by a Figma prototype. Theme/locale must not change the saved timezone or qualifying streak date. Keep machine-readable API values canonical while formatting display labels.
 
 ## Adaptive evaluation
 

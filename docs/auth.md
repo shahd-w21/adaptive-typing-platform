@@ -16,6 +16,8 @@
 
 Students access their own sessions, statistics and certificates. Admin routes require the Admin role server-side and audit material actions. Public verification returns only approved certificate fields. Frontend guards improve navigation but cannot grant access. Protect creation of additional admins and prevent removing the last active admin.
 
+Students and Admins can read/update their own appearance and English/Arabic interface preferences through the draft account contract, with active-account/ownership/CSRF checks. Visitors store only allowlisted local appearance/locale values and cannot update an account. At login, use confirmed account preferences; on logout discard account-scoped preference cache and resolve visitor choice/default. Localisation retains generic reset/resend responses and safe error meanings in both languages; theme, RTL and mobile navigation never change authorisation. SRS section 10.5 owns defaults/persistence rules.
+
 ## Decide before implementation
 
 - Revocation design: server-side session records or equivalent effective strategy; JWT claims and lookup rules.

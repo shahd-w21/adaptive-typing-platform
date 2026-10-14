@@ -22,6 +22,7 @@ There are no Google-auth variables in the baseline. Exact defaults, required/opt
 - Validate configuration on startup with useful errors that identify the missing name without disclosing the value.
 - Give each deployed secret an owner and rotation procedure; record references, not secret values.
 - Learning thresholds, reward policies and content rules belong in versioned business settings. Do not override captured session rules with an untracked environment change.
+- Light/Dark/System and English/Arabic interface choices are account/visitor presentation preferences, not environment variables or content-theme settings. Bundled dictionaries contain no secrets; locale never selects arbitrary paths or a different typing language. See SRS section 10.5 and [DESIGN.md](../DESIGN.md).
 
 ## Deployment worksheet
 

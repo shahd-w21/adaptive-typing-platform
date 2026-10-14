@@ -14,6 +14,7 @@
 | SQL/analytics | Parameterised queries; no interpolation of user values into SQL |
 | Public certificate endpoint | Allowlisted public fields only; unguessable code is not a licence to expose private data |
 | Logs/errors | Omit passwords, tokens, cookies, database credentials and raw keystroke bodies |
+| Presentation preferences/dictionaries | Validate owner-only enum updates and merge partial fields; map supported UI locales to bundled dictionaries, never arbitrary paths/HTML; visitor storage contains no auth or personal records |
 
 ## Review checklist
 
@@ -26,6 +27,7 @@
 - [ ] Admin changes and certificate revocations are audited with minimal metadata.
 - [ ] Public DTOs omit internal records, token hashes and private learning data.
 - [ ] Production mocks, fake-user headers and test credentials are disabled.
+- [ ] Light/Dark, English/Arabic and desktop/mobile variants preserve ownership, safe error wording and privacy; mixed-direction user content stays escaped/isolated and is never injected as translated HTML.
 
 ## Privacy and operations
 

@@ -6,7 +6,7 @@ Last organised: 14 October 2026. The documentation describes the target platform
 
 | Document | Purpose and status |
 | --- | --- |
-| [SRS](srs.md) | Requirements baseline; numerical defaults and TBDs are labelled |
+| [SRS](srs.md) | v1.2 requirements including Light/Dark, English/Arabic UI and responsive non-typing pages; numerical defaults/TBDs labelled |
 | [Architecture](architecture.md) | Proposed structure, module boundaries and data flows |
 | [API contract](api-contract.md) | Draft route inventory, JSON examples and phase agreement template |
 | [Setup](setup.md) | Onboarding plan; executable commands not yet verified |
@@ -19,7 +19,7 @@ Last organised: 14 October 2026. The documentation describes the target platform
 | [Decisions](decisions/README.md) | Short dated records; proposed and accepted are distinguished |
 | [Current state](context/current-state.md) | Small, maintained handoff of status and next decisions |
 | [Long-form handoff](context/handoff.md) | Project background, rationale and risks |
-| [Design brief](../DESIGN.md) | Proposed edclub-inspired tokens and Duolingo-inspired learning patterns; Figma screen/component brief, pending team approval |
+| [Design brief](../DESIGN.md) | Proposed Light/Dark tokens, English/Arabic RTL/LTR rules and desktop/mobile Figma matrix; visual review pending |
 | [Agent instructions](../AGENTS.md) | Concise repository-wide instructions for coding agents |
 
 ## Where information belongs
@@ -34,3 +34,5 @@ Last organised: 14 October 2026. The documentation describes the target platform
 Use **Baseline**, **Proposed**, **TBD**, and **Verified** precisely. A document or generated example existing does not make it approved or implemented. Keep a single authoritative definition and link to it instead of copying it into every guide.
 
 The `context/` directory contains human-readable project context, not hidden agent memory. Maintain it in version control without secrets, private transcripts or individual chat histories.
+
+Appearance/language/responsive scope is recorded in [decision 0002](decisions/0002-appearance-localisation-responsive.md). UI locale is separate from English typing content, and mobile page support does not add mobile typing. Exact visual values and API field shapes remain proposals; no implementation is verified.

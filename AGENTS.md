@@ -28,6 +28,7 @@ The SRS owns product requirements. Accepted decisions explain changes; update th
 ## Engineering rules
 
 - Preserve Student/Admin scope, desktop English QWERTY and the agreed TypeScript stack.
+- Support Light/Dark appearance, English/Arabic interface and desktop/mobile non-typing layouts per SRS SYS-53–56. Interface language never changes English exercise content; Arabic shells keep the passage/input/QWERTY guide LTR. Mobile typing remains out of scope.
 - Keep scoring and adaptation pure. Pass settings in; keep database/network code outside.
 - The server replays assigned-text events and computes official scores. Use raw accuracy for progression. Do not treat plausible browser logs as proof of human input.
 - Reuse shared schemas/formulas. Keep one authoritative session lifecycle across modes.
