@@ -6,11 +6,11 @@ Prepared by: [Team member names]
 Course: [Course name and code]  
 Supervisor: [Instructor name]  
 Misr International University  
-Version: 1.2 — 14 October 2026
+Version: 1.3 — 15 October 2026
 
 ## 1. Preface and document status
 
-This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.2 extends the reviewed v1.1 baseline with owner-requested Light/Dark appearance, English/Arabic interface localisation and explicit desktop/mobile presentation. No implementation was inspected to produce this revision. See [decision 0002](decisions/0002-appearance-localisation-responsive.md).
+This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.3 adopts JavaScript and root-level `client/` / `server/`, retaining Tailwind CSS and the v1.2 Light/Dark, English/Arabic interface and desktop/mobile presentation scope. No implementation was inspected to produce this revision. See [decision 0002](decisions/0002-appearance-localisation-responsive.md) and [decision 0003](decisions/0003-javascript-client-server.md).
 
 This SRS is the requirements baseline. [context/handoff.md](context/handoff.md) explains decisions and remaining questions. [architecture.md](architecture.md) proposes an implementation structure; it does not add requirements. Start at the [documentation index](README.md) for teammate and agent guides.
 
@@ -333,7 +333,7 @@ Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; la
 
 Session submission is atomic and retry-safe. Concurrent results must not lose learning updates. External calls occur outside database transactions. Jobs persist enough state to catch up after a sleeping host resumes, and repeated executions must be safe. Maintain documented backup and restore procedures; verify one restore before release. Hosting limitations must be disclosed in the demo/report.
 
-Use TypeScript, pure scoring/adaptive functions, committed database migrations, automated checks and reviewed pull requests. Version scoring, engine configuration and content rules. Defaults live in code; active settings are validated data passed into pure functions.
+Use JavaScript ES modules, JSX for React components, pure scoring/adaptive functions, committed migrations, lint/tests/build checks and reviewed pull requests. Share Zod runtime schemas and metric functions, validating data at boundaries. The frontend lives in root-level `client/` and the backend in root-level `server/`. Version scoring, engine configuration and content rules. Defaults live in code; active settings are validated data passed into pure functions.
 
 ### 10.4 Privacy, retention and deletion
 
@@ -357,9 +357,9 @@ Use reviewed translation dictionaries with stable message/error/reason codes and
 
 | Layer | Agreed technology |
 | --- | --- |
-| Front end | React, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, shadcn/ui |
-| Forms/contracts | React Hook Form, Zod; shared schemas/types and metric functions |
-| Back end | Node.js, Express, TypeScript, cookie JWT authentication, bcrypt |
+| Front end | React, JavaScript, Vite, Tailwind CSS, React Router, TanStack Query, shadcn/ui |
+| Forms/contracts | React Hook Form, Zod; shared runtime schemas, JSON contracts and metric functions |
+| Back end | Node.js, Express, JavaScript, cookie JWT authentication, bcrypt |
 | Database | PostgreSQL with Prisma; parameterised SQL where appropriate |
 | Integrations | Server-only OpenAI-compatible LLM API, SMTP, PDF renderer |
 | Development | npm workspaces, Docker for PostgreSQL and Mailpit, GitHub Actions, Vitest |

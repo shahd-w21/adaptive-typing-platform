@@ -6,6 +6,8 @@ An adaptive typing learning platform for a five-person university project. Stude
 
 ## Current status
 
+The team uses JavaScript/JSX with Tailwind CSS: root-level `client/` for React, `server/` for Express, and `packages/shared/` for runtime Zod schemas/formulas. See [decision 0003](docs/decisions/0003-javascript-client-server.md). This documentation change does not migrate application code.
+
 Documentation and planning. Existing application code is known to differ from the target plan and was intentionally not inspected during documentation work. No setup command, endpoint or feature is claimed to be implemented. See [current state](docs/context/current-state.md).
 
 ## Start here

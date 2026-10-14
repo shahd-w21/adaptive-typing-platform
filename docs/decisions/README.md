@@ -8,5 +8,6 @@ Copy [TEMPLATE.md](TEMPLATE.md). Use Proposed, Accepted, Rejected or Superseded.
 | --- | --- | --- |
 | [0001](0001-documentation-organisation.md) | Accepted for this documentation task | Repository documentation layout and code boundary |
 | [0002](0002-appearance-localisation-responsive.md) | Accepted scope; visual tokens/API shapes Proposed | Light/Dark, English/Arabic UI and desktop/mobile non-typing presentation |
+| [0003](0003-javascript-client-server.md) | Accepted team decision | JavaScript/JSX, retained Tailwind CSS and root-level client/server |
 
 Earlier product decisions remain in the SRS/handoff; do not invent approval dates or teammate names to backfill records. Add records when those choices are revisited. For a superseded decision, retain its history and link the replacement.

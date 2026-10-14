@@ -1,23 +1,24 @@
 # TypeFlow: Architecture and Project Structure
 
-Version 1.2 — 14 October 2026
+Version 1.3 — 15 October 2026
 
 This is a proposed structure aligned with [the SRS](srs.md) and [handoff](context/handoff.md). It is not an inventory of the existing codebase, which was not inspected. Paths below are relative to the eventual application repository root; creating these documents does not scaffold the application. See the [documentation index](README.md) for the actual documentation layout.
 
 ## 1. Repository layout
 
+Use JavaScript ES modules (`import`/`export`), `.jsx` for React components and `.js` for other modules. Tailwind CSS remains the styling choice. `client/` and `server/` sit directly at the repository root; shared code remains in `packages/shared/`. See [decision 0003](decisions/0003-javascript-client-server.md). Planned npm workspaces reference `client`, `server` and `packages/shared`; exact package names, exports and scripts will be verified during implementation.
+
 ```text
 typeflow/
-├── apps/
-│   ├── web/
-│   └── api/
+├── client/                         # React frontend (JavaScript/JSX)
+├── server/                         # Express backend (JavaScript)
 ├── packages/
 │   └── shared/
 ├── docs/
 │   ├── srs.md
 │   ├── context/                    # handoff and current-state notes
 │   ├── architecture.md
-│   ├── api-contract.md              # created during contract agreement
+│   ├── api-contract.md              # draft; agreed at phase boundaries
 │   ├── testing.md                   # verification and evaluation guide
 │   ├── content-guide.md
 │   ├── setup.md
@@ -39,81 +40,80 @@ typeflow/
 ├── .nvmrc
 ├── .prettierrc
 ├── eslint.config.js
-├── tsconfig.base.json
 ├── package.json                    # npm workspaces and root scripts
 └── README.md
 ```
 
-Root scripts should cover development, database startup/migrations/seeding, lint, type-check, tests, build, simulation and content validation. Do not create empty application files just to match this tree; add each module when its first behaviour is implemented. Documentation now exists for the planned workflows; its existence does not mean the corresponding application behaviour is implemented. Exact commands remain unverified in setup.md.
+Root scripts should cover development, database startup/migrations/seeding, lint, tests, build, simulation and content validation. Do not create empty application files just to match this tree; add each module when its first behaviour is implemented. Documentation now exists for the planned workflows; its existence does not mean the corresponding application behaviour is implemented. Exact commands remain unverified in setup.md.
 
 ## 2. Backend layout
 
 ```text
-apps/api/
+server/
 ├── prisma/
 │   ├── schema.prisma
 │   ├── migrations/
-│   ├── seed.ts
+│   ├── seed.js
 │   └── content/
 │       ├── keygroups.json
 │       ├── wordlists/
 │       ├── themes.json
 │       └── blocked-words.txt
 ├── src/
-│   ├── server.ts                   # startup and graceful shutdown
-│   ├── app.ts                      # Express application assembly
-│   ├── routes.ts                   # mounts /api/v1 modules
-│   ├── config/env.ts               # validated environment values
-│   ├── db/prisma.ts
+│   ├── server.js                   # startup and graceful shutdown
+│   ├── app.js                      # Express application assembly
+│   ├── routes.js                   # mounts /api/v1 modules
+│   ├── config/env.js               # validated environment values
+│   ├── db/prisma.js
 │   ├── middleware/
-│   │   ├── auth.ts                 # JWT, revocation and active account check
-│   │   ├── requireRole.ts
-│   │   ├── csrf.ts
-│   │   ├── validate.ts
-│   │   ├── rateLimit.ts
-│   │   ├── errorHandler.ts
-│   │   └── notFound.ts
+│   │   ├── auth.js                 # JWT, revocation and active account check
+│   │   ├── requireRole.js
+│   │   ├── csrf.js
+│   │   ├── validate.js
+│   │   ├── rateLimit.js
+│   │   ├── errorHandler.js
+│   │   └── notFound.js
 │   ├── utils/
-│   │   ├── AppError.ts
-│   │   ├── logger.ts
-│   │   ├── tokens.ts               # signed auth and hashed one-time tokens
-│   │   └── time.ts
+│   │   ├── AppError.js
+│   │   ├── logger.js
+│   │   ├── tokens.js               # signed auth and hashed one-time tokens
+│   │   └── time.js
 │   ├── modules/
 │   │   ├── auth/                   # register, verify, login, reset, revocation
 │   │   ├── users/                  # profile, settings, coordinated deletion
 │   │   ├── scoring/                # PURE
-│   │   │   ├── replay.ts
-│   │   │   ├── logValidator.ts
-│   │   │   ├── evidence.ts         # eligible key/pair samples
-│   │   │   ├── scoreSession.ts     # uses shared metric functions
-│   │   │   └── *.test.ts
+│   │   │   ├── replay.js
+│   │   │   ├── logValidator.js
+│   │   │   ├── evidence.js         # eligible key/pair samples
+│   │   │   ├── scoreSession.js     # uses shared metric functions
+│   │   │   └── *.test.js
 │   │   ├── adaptive/               # PURE; settings passed as arguments
-│   │   │   ├── defaults.ts
-│   │   │   ├── statsUpdate.ts
-│   │   │   ├── weakness.ts
-│   │   │   ├── focusSelection.ts
-│   │   │   ├── difficulty.ts
-│   │   │   ├── mastery.ts
-│   │   │   ├── spacedReview.ts
-│   │   │   ├── placement.ts
-│   │   │   ├── buildSpec.ts
-│   │   │   └── *.test.ts
+│   │   │   ├── defaults.js
+│   │   │   ├── statsUpdate.js
+│   │   │   ├── weakness.js
+│   │   │   ├── focusSelection.js
+│   │   │   ├── difficulty.js
+│   │   │   ├── mastery.js
+│   │   │   ├── spacedReview.js
+│   │   │   ├── placement.js
+│   │   │   ├── buildSpec.js
+│   │   │   └── *.test.js
 │   │   ├── typing/                 # ONE session lifecycle for all modes
-│   │   │   ├── routes.ts
-│   │   │   ├── controller.ts
-│   │   │   ├── startSession.ts
-│   │   │   ├── submitSession.ts
-│   │   │   ├── abandonSession.ts
-│   │   │   └── repository.ts
+│   │   │   ├── routes.js
+│   │   │   ├── controller.js
+│   │   │   ├── startSession.js
+│   │   │   ├── submitSession.js
+│   │   │   ├── abandonSession.js
+│   │   │   └── repository.js
 │   │   ├── stats/                  # reads and transaction-scoped writes
 │   │   ├── path/                   # keyboard map and recommended activity
 │   │   ├── generation/
-│   │   │   ├── service.ts
-│   │   │   ├── feasibility.ts
-│   │   │   ├── validator.ts
-│   │   │   ├── fallbackGenerator.ts
-│   │   │   ├── cache.ts
-│   │   │   └── *.test.ts
+│   │   │   ├── service.js
+│   │   │   ├── feasibility.js
+│   │   │   ├── validator.js
+│   │   │   ├── fallbackGenerator.js
+│   │   │   ├── cache.js
+│   │   │   └── *.test.js
 │   │   ├── gamification/           # pure reward rules + persistence helpers
 │   │   ├── certificates/           # eligibility, records, revoke, verify, PDF
 │   │   ├── forum/                  # threads, replies, accepted answer, reports
@@ -125,20 +125,19 @@ apps/api/
 │   │   ├── mailer/                 # SMTP client and templates
 │   │   └── pdf/                    # certificate document rendering
 │   ├── jobs/
-│   │   ├── runner.ts               # scheduled execution and restart catch-up
-│   │   ├── pregenerateTexts.ts
-│   │   └── purgeKeystrokeLogs.ts
+│   │   ├── runner.js               # scheduled execution and restart catch-up
+│   │   ├── pregenerateTexts.js
+│   │   └── purgeKeystrokeLogs.js
 │   └── scripts/
 │       ├── simulate/              # typists, policies, common assessment
-│       ├── generate-texts.ts
-│       └── validate-content.ts
+│       ├── generate-texts.js
+│       └── validate-content.js
 ├── tests/
 │   ├── fixtures/
-│   ├── setup.ts                    # verifies dedicated typeflow_test database
+│   ├── setup.js                    # verifies dedicated typeflow_test database
 │   └── integration/
 ├── package.json
-├── tsconfig.json
-└── vitest.config.ts
+└── vitest.config.js
 ```
 
 Feature folders may use routes, controller, service, repository and local schemas as needed. A controller translates HTTP; a service coordinates behaviour. Database access belongs in explicit repository/query functions where that makes the boundary useful. Do not add empty layers for a trivial operation.
@@ -156,56 +155,56 @@ Feature folders may use routes, controller, service, repository and local schema
 ## 3. Frontend layout
 
 ```text
-apps/web/
+client/
 ├── public/
 │   └── favicon.svg
 ├── src/
-│   ├── main.tsx
-│   ├── App.tsx
+│   ├── main.jsx
+│   ├── App.jsx
 │   ├── app/
-│   │   ├── router.tsx
-│   │   ├── providers.tsx
-│   │   ├── queryClient.ts
-│   │   └── ErrorBoundary.tsx
+│   │   ├── router.jsx
+│   │   ├── providers.jsx
+│   │   ├── queryClient.js
+│   │   └── ErrorBoundary.jsx
 │   ├── api/
-│   │   ├── client.ts               # credentials, base URL, safe 401 handling
-│   │   ├── auth.ts
-│   │   ├── users.ts
-│   │   ├── sessions.ts
-│   │   ├── path.ts
-│   │   ├── progress.ts
-│   │   ├── gamification.ts
-│   │   ├── certificates.ts
-│   │   ├── forum.ts
-│   │   └── admin.ts
+│   │   ├── client.js               # credentials, base URL, safe 401 handling
+│   │   ├── auth.js
+│   │   ├── users.js
+│   │   ├── sessions.js
+│   │   ├── path.js
+│   │   ├── progress.js
+│   │   ├── gamification.js
+│   │   ├── certificates.js
+│   │   ├── forum.js
+│   │   └── admin.js
 │   ├── context/
-│   │   ├── AuthContext.tsx
-│   │   ├── RewardsContext.tsx
-│   │   └── PreferencesContext.tsx
+│   │   ├── AuthContext.jsx
+│   │   ├── RewardsContext.jsx
+│   │   └── PreferencesContext.jsx
 │   ├── hooks/
 │   ├── i18n/                       # planned en/ar UI dictionaries and direction helpers
 │   ├── components/
 │   │   ├── ui/
 │   │   ├── layout/                 # student/admin shells and navigation
-│   │   ├── RequireAuth.tsx
-│   │   ├── RequireRole.tsx
-│   │   ├── Loading.tsx
-│   │   ├── ErrorMessage.tsx
-│   │   ├── EmptyState.tsx
-│   │   └── ConfirmDialog.tsx
+│   │   ├── RequireAuth.jsx
+│   │   ├── RequireRole.jsx
+│   │   ├── Loading.jsx
+│   │   ├── ErrorMessage.jsx
+│   │   ├── EmptyState.jsx
+│   │   └── ConfirmDialog.jsx
 │   ├── features/
 │   │   ├── auth/
 │   │   ├── placement/
 │   │   ├── dashboard/
 │   │   ├── keyboard-map/
 │   │   ├── typing/
-│   │   │   ├── pages/TypingSessionPage.tsx
+│   │   │   ├── pages/TypingSessionPage.jsx
 │   │   │   ├── components/         # display, input, keyboard, controls, stats
 │   │   │   ├── engine/
-│   │   │   │   ├── keystrokeRecorder.ts
-│   │   │   │   ├── typingReducer.ts
-│   │   │   │   ├── liveMetrics.ts  # calls shared formulas
-│   │   │   │   └── *.test.ts
+│   │   │   │   ├── keystrokeRecorder.js
+│   │   │   │   ├── typingReducer.js
+│   │   │   │   ├── liveMetrics.js  # calls shared formulas
+│   │   │   │   └── *.test.js
 │   │   │   └── hooks/              # start, record, submit, recover result
 │   │   ├── result/
 │   │   ├── tests/                  # UI for timed/certified session modes
@@ -217,15 +216,14 @@ apps/web/
 │   │   ├── profile/
 │   │   └── admin/
 │   ├── lib/
-│   │   ├── utils.ts
-│   │   └── queryKeys.ts
+│   │   ├── utils.js
+│   │   └── queryKeys.js
 │   ├── mocks/                      # schema-checked development fixtures
 │   ├── styles/index.css
-│   └── types/                      # browser-only types
+│   └── schemas/                    # browser-only runtime schemas, if needed
 ├── tests/e2e/
 ├── index.html
-├── vite.config.ts
-├── tsconfig.json
+├── vite.config.js
 ├── components.json
 ├── .env.example
 └── package.json
@@ -254,28 +252,29 @@ Public/student/admin shells use the same protected services and routes on deskto
 ```text
 packages/shared/
 ├── src/
-│   ├── index.ts
-│   ├── enums.ts                    # Role, SessionMode, status, source
-│   ├── auth.ts
-│   ├── user.ts
-│   ├── keystroke.ts                # discriminated event schemas
-│   ├── spec.ts
-│   ├── session.ts                  # assignment, submission, official result
-│   ├── modeRules.ts                # common rule shapes, no database reads
-│   ├── settings.ts                 # versioned configuration schemas
-│   ├── metrics.ts                  # one implementation of four formulas
-│   ├── path.ts
-│   ├── stats.ts
-│   ├── gamification.ts
-│   ├── certificates.ts
-│   ├── forum.ts
-│   ├── admin.ts
-│   └── errors.ts
-├── package.json
-└── tsconfig.json
+│   ├── index.js
+│   ├── enums.js                    # runtime constants/Zod enums: Role, SessionMode, status, source
+│   ├── auth.js
+│   ├── user.js
+│   ├── keystroke.js                # discriminated event schemas
+│   ├── spec.js
+│   ├── session.js                  # assignment, submission, official result
+│   ├── modeRules.js                # common rule shapes, no database reads
+│   ├── settings.js                 # versioned configuration schemas
+│   ├── metrics.js                  # one implementation of four formulas
+│   ├── path.js
+│   ├── stats.js
+│   ├── gamification.js
+│   ├── certificates.js
+│   ├── forum.js
+│   ├── admin.js
+│   └── errors.js
+└── package.json
 ```
 
-Use Zod schemas with inferred TypeScript types. Separate public DTOs from database records; never export token hashes, internal moderation data or private profile fields by accident. Sharing formulas does not make a client score authoritative: the server derives all formula inputs independently.
+Use shared Zod schemas for runtime validation and documented JSON contracts. Optional JSDoc can explain function inputs and outputs; generated or inferred static types are not required. Separate public DTOs from database records; never export token hashes, internal moderation data or private profile fields by accident. Sharing formulas does not make a client score authoritative: the server derives all formula inputs independently.
+
+Use runtime constants or Zod enums in `enums.js`. The shared package exposes JavaScript modules through agreed package exports without a static-type compilation step. Validate requests, external responses and configuration at their boundaries; keep fixtures aligned with those schemas.
 
 ## 5. Data model and persistence invariants
 
@@ -356,7 +355,7 @@ Example API configuration groups: environment/port, database URL, allowed client
 
 Web environment: `VITE_API_URL` and an explicitly development-only mock toggle if needed. Values prefixed `VITE_` are public. There are no Google client-ID variables in this baseline. Real backend authentication must never accept a development fake-user header in production.
 
-CI: reproducible install → lint/type-check → dedicated PostgreSQL test service → migrations → relevant unit/integration checks and content validation → build. Add browser smoke checks for the typing flow. Test setup must verify the dedicated test database before destructive resets; never reuse a development or production connection. Protect `main` with passing checks and review.
+CI: reproducible install → JavaScript linting → dedicated PostgreSQL test service → migrations → relevant unit/integration checks and content validation → build. Add browser smoke checks for the typing flow. Test setup must verify the dedicated test database before destructive resets; never reuse a development or production connection. Protect `main` with passing checks and review.
 
 Deployment: run committed migrations in a controlled release step, configure HTTPS/cookies/origins, verify email and fallback behaviour, and document rollback/recovery. Back up the database and verify a restore. Show measured free-host cold-start and capacity limits rather than assuming the performance targets were met.
 

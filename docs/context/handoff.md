@@ -1,6 +1,6 @@
 # TypeFlow: Handoff Context
 
-Version 1.2 — 14 October 2026
+Version 1.3 — 15 October 2026
 
 Read this with [the SRS](../srs.md) and [architecture](../architecture.md). The SRS defines required behaviour. This file explains the reasoning, scope and open decisions. Architecture describes implementation boundaries. For a quick task handoff, start with [current state](current-state.md).
 
@@ -27,7 +27,7 @@ The central loop is: assign text → capture typing → replay and score on the 
 4. Resolve a conflict by updating the documents together; do not silently select the easiest interpretation.
 5. Record consequential decisions with the date, reason and affected requirements.
 
-SRS v1.1 applied the review recommendations; v1.2 adds the owner's appearance, English/Arabic interface and responsive-presentation requirements. Initial design defaults are starting policies, not research findings. Items labelled TBD remain unresolved; new documentation is not implementation evidence.
+SRS v1.1 applied the review recommendations; v1.2 added appearance, English/Arabic interface and responsive-presentation requirements. Version 1.3 adopts the team's JavaScript and root-level client/server decision while retaining Tailwind CSS. Initial design defaults are starting policies, not research findings. Items labelled TBD remain unresolved; new documentation is not implementation evidence.
 
 ## 3. Core decisions to preserve
 
@@ -63,18 +63,18 @@ The transaction saves a result and its applicable learning/reward/certificate re
 
 | Decision | Reason |
 | --- | --- |
-| React + Vite + TypeScript | Familiar front end and explicit shared contracts |
-| Node + Express + TypeScript | One language across browser, server and shared rules |
+| React + Vite + JavaScript | Familiar front end and explicit shared contracts |
+| Node + Express + JavaScript | One language across browser, server and shared rules |
 | PostgreSQL + Prisma | Relational data, migrations, constraints and transactions |
 | TanStack Query | Server-data caching and mutations without an extra global-state library |
 | Local state plus limited Context | Auth, rewards and user preferences; do not duplicate server data unnecessarily |
 | Tailwind + shadcn/ui; React Hook Form + Zod | Consistent UI and validated forms |
 | JWT in an httpOnly cookie | Keeps token contents out of direct JavaScript reads; still requires CSRF/XSS protections and revocation |
-| npm workspaces | One repository, two applications, shared schemas and formulas |
+| npm workspaces | Root-level `client/`, `server/` and `packages/shared/`; shared runtime schemas and formulas |
 | Docker for PostgreSQL and Mailpit in development | Reproducible supporting services while applications run locally |
 | GitHub Actions and reviewed PRs | Automated checks and regular integration |
 
-TypeScript is decided, not an open JavaScript-vs-TypeScript question. No Redis, distributed queues, microservices, Kubernetes, Redux or Next.js is required for this scope. Do not change the stack without a concrete project need.
+JavaScript is the team decision as of 15 October 2026; use JSX for React components and retain Tailwind CSS. See [decision 0003](../decisions/0003-javascript-client-server.md). No Redis, distributed queues, microservices, Kubernetes, Redux or Next.js is required for this scope. Do not change the stack without a concrete project need.
 
 Use Prisma for ordinary data access. Use parameterised SQL where a query is clearer or demonstrably needs it; joins alone are not a reason to bypass the ORM. Keep analytics SQL in dedicated query modules and validate returned shapes. Pin dependency versions when implementation begins; these documents do not claim current setup commands are verified.
 
@@ -159,7 +159,7 @@ Each phase starts with a contract meeting, includes a mid-phase sync and ends wi
 
 Assign the strongest relevant developers to typing input and engine/scoring. Use short reviewed PRs, integrate daily and protect `main`. Owners coordinate shared files and review changes; ownership is not a blanket ban on another teammate making a necessary reviewed change. Schema migrations receive a designated owner's review.
 
-Each task should list dependencies, contract, files likely touched, implementation steps and a concrete “done when” check. Do not mark a phase done until its demo works end to end. Run lint, type-check, relevant tests and build in CI. Keep schema, shared contracts and environment examples aligned.
+Each task should list dependencies, contract, files likely touched, implementation steps and a concrete “done when” check. Do not mark a phase done until its demo works end to end. Run lint, relevant tests and build in CI. Keep schema, shared contracts and environment examples aligned.
 
 ## 10. Working instructions for the next collaborator
 

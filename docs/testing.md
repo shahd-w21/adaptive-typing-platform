@@ -4,6 +4,8 @@
 
 ## Test layers
 
+Use `.test.js` for JavaScript tests and `.jsx` where a React test renders JSX. Cover `client/`, `server/` and the shared package as appropriate. Baseline checks are JavaScript linting, runtime validation, tests and build; static-type checking is not required.
+
 | Layer | Highest-value checks |
 | --- | --- |
 | Pure unit tests | Replay, scoring denominators, timing, accuracy gate, missing evidence, mastery/review, feasible fallback |

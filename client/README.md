@@ -15,4 +15,4 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 ## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+TypeFlow uses JavaScript ES modules and `.jsx` components with Tailwind CSS. Use JavaScript/React lint rules, shared Zod runtime validation, tests and the Vite build. Exact lint configuration and commands remain unverified; follow [setup](../docs/setup.md). The frontend is this root-level `client/` folder, backend is `server/`, and shared schemas/formulas belong in `packages/shared/`. See [decision 0003](../docs/decisions/0003-javascript-client-server.md).

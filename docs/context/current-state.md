@@ -1,11 +1,12 @@
 # Current state
 
-Updated: 14 October 2026. Update this short file when status changes; replace stale statements rather than accumulating a diary.
+Updated: 15 October 2026. Update this short file when status changes; replace stale statements rather than accumulating a diary.
 
 | Area | Status |
 | --- | --- |
 | Current phase | Documentation and planning |
-| Requirements | SRS v1.2 includes owner-requested Light/Dark, English/Arabic UI and desktop/mobile non-typing layouts; learning-policy TBDs remain |
+| Requirements | SRS v1.3 adopts JavaScript/client/server and preserves the v1.2 Light/Dark, English/Arabic UI and responsive scope; learning-policy TBDs remain |
+| Language and folders | JavaScript/JSX with Tailwind CSS; root-level `client/` and `server/`; shared runtime schemas/formulas in `packages/shared/` |
 | Architecture | Target proposal, not a map of the existing code |
 | Application | Known mismatch with docs; implementation intentionally not inspected |
 | API | Draft examples; no phase contract agreed yet |
@@ -18,6 +19,8 @@ Updated: 14 October 2026. Update this short file when status changes; replace st
 Documentation lives in this repository's `docs/`, with `AGENTS.md`, `README.md` and `DESIGN.md` at its root. During documentation work, leave the application untouched. A future explicit implementation task can inspect and change the relevant code without treating the proposed tree as permission to rewrite everything.
 
 ## Next decisions
+
+The language/folder choice is recorded in [decision 0003](../decisions/0003-javascript-client-server.md). Only documentation changed; application files, configurations and dependencies were not migrated or verified.
 
 1. Confirm deadline, course deliverables and whether a trained model is required.
 2. Agree the first phase scope, owners and API contracts before parallel implementation.

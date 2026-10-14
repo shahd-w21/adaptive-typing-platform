@@ -4,6 +4,8 @@ Last organised: 14 October 2026. The documentation describes the target platform
 
 ## Reading map
 
+The team uses JavaScript/JSX with Tailwind CSS, root-level `client/` and `server/`, and `packages/shared/` for runtime schemas/formulas. This language/folder decision was recorded on 15 October 2026 in [decision 0003](decisions/0003-javascript-client-server.md).
+
 | Document | Purpose and status |
 | --- | --- |
 | [SRS](srs.md) | v1.2 requirements including Light/Dark, English/Arabic UI and responsive non-typing pages; numerical defaults/TBDs labelled |

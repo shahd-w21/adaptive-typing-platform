@@ -10,11 +10,13 @@ Git, the team's pinned Node.js/npm versions, Docker with Compose for local Postg
 
 ## First implementation setup
 
+The target is JavaScript ES modules, React `.jsx` components and Tailwind CSS. Frontend/backend folders are root-level `client/` and `server/`, with shared JavaScript schemas/formulas in `packages/shared/`. Workspace scripts coordinate them once verified. Use ESLint, runtime Zod validation, tests and builds; a static-type compiler/check script is not required. See [decision 0003](decisions/0003-javascript-client-server.md).
+
 1. Inspect the actual package manifests and existing structure after implementation is authorised. Compare them with the target architecture; agree the smallest migration needed.
 2. Pin compatible tool/dependency versions and commit the package lockfile.
 3. Provide safe environment examples and copy them to the agreed ignored local environment files. Obtain secrets through the team's private channel.
 4. Start local database/email services, apply committed migrations and seed development content using verified scripts.
-5. Start the web/API processes; record actual URLs and ports.
+5. Start the client/server processes; record actual URLs and ports.
 6. Verify registration/email, login, fallback practice, submission and saved results. Confirm the dedicated test database is separate. Then verify Light/Dark/System, English/Arabic UI, desktop/mobile non-typing layouts and preference persistence using the matrix in [testing](testing.md); English exercise content and mode timing stay unchanged.
 
 ## Command register
@@ -28,7 +30,7 @@ The following are desired script names, **not currently verified commands**. Rep
 | Apply development migrations | `npm run db:migrate` | No |
 | Seed development content | `npm run db:seed` | No |
 | Run applications | `npm run dev` | No |
-| Lint/type-check | `npm run lint`, `npm run typecheck` | No |
+| JavaScript linting | `npm run lint` | No |
 | Tests/build | `npm test`, `npm run build` | No |
 | Content checks/simulation | `npm run content:validate`, `npm run simulate` | No |
 

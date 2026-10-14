@@ -383,7 +383,7 @@ Reward persistence and accurate practice. A failed review can return a key to in
 
 ## 7. Figma component catalogue
 
-Build components before screens. Bind semantic variables/text styles; states are variants, not detached copies. Keep components compatible with the planned Tailwind/shadcn/ui stack without prescribing new dependencies.
+Build components before screens. Bind semantic variables/text styles; states are variants, not detached copies. Keep components compatible with the planned Tailwind/shadcn/ui stack without prescribing new dependencies. Implementation targets JavaScript/JSX in root-level `client/`, shared runtime schemas in `packages/shared/` and backend behaviour in `server/`. The language/folder decision does not change the proposed visual system.
 
 | Component / properties | Requirements |
 | --- | --- |

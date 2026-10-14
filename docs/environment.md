@@ -16,6 +16,8 @@ There are no Google-auth variables in the baseline. Exact defaults, required/opt
 
 ## Rules
 
+Planned local environment examples belong in `client/.env.example` and `server/.env.example`. Root configuration may support workspace/Docker tooling; keep server secrets out of the Vite client. These are documentation paths, not a request to create or move configuration files.
+
 - Commit fake examples, never credentials, real connection strings or private tokens. Never paste secrets into issues, AI prompts, screenshots or documentation.
 - Keep development, test and production databases and credentials separate. CI supplies its own test connection.
 - Anything bundled into the browser, including `VITE_` variables, is public. Browser configuration must not contain LLM, SMTP, database or JWT secrets.
