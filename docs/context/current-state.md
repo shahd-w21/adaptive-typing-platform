@@ -11,6 +11,7 @@ Updated: 15 October 2026. Update this short file when status changes; replace st
 | Application | Known mismatch with docs; implementation intentionally not inspected |
 | API | Draft examples; no phase contract agreed yet |
 | Setup/tests | Commands and application behaviour unverified |
+| Documentation review | Added database/AI handoff guides and route/review checklists from the owner-supplied reference; current SRS and accepted decisions remain authoritative |
 | Visual design | DESIGN.md v0.2 proposes 35 paired Light/Dark tokens, Arabic RTL rules and desktop/mobile screen matrix; 62 opaque contrast checks passed; no Figma file or rendered UI verification |
 | Presentation scope | Decision 0002 records required appearance/interface/responsive support; preference DTOs and visual values remain proposed; English desktop typing scope preserved |
 

@@ -41,3 +41,5 @@ Record the OS, versions, working directory, command, expected result and last su
 Check missing variables and occupied ports without printing secrets. For authentication failures, compare actual origins/cookies with the agreed auth configuration. For practice generation failures, check local fallback/content validation before blaming the LLM.
 
 Before deployment, add the verified host/release steps here: migration owner, health URLs, HTTPS/origins, secret provisioning, backup/restore evidence, job catch-up, rollback procedure and cold-start limits. These remain TBD; no deployment is implied by this guide.
+
+Use the [database guide](database.md) when diagnosing migration drift or seed problems. Do not reset a database or delete a Docker volume as routine troubleshooting; identify the affected environment and data before an explicitly authorised disposable-data reset.

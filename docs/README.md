@@ -1,6 +1,6 @@
 # Documentation index
 
-Last organised: 14 October 2026. The documentation describes the target platform, not the existing implementation.
+Last organised: 15 October 2026. The documentation describes the target platform, not the existing implementation.
 
 ## Reading map
 
@@ -8,8 +8,9 @@ The team uses JavaScript/JSX with Tailwind CSS, root-level `client/` and `server
 
 | Document | Purpose and status |
 | --- | --- |
-| [SRS](srs.md) | v1.2 requirements including Light/Dark, English/Arabic UI and responsive non-typing pages; numerical defaults/TBDs labelled |
+| [SRS](srs.md) | v1.3 requirements; JavaScript/client/server and existing presentation scope; numerical defaults/TBDs labelled |
 | [Architecture](architecture.md) | Proposed structure, module boundaries and data flows |
+| [Database](database.md) | Migration, transaction, seed and SQL-result handling guidance; implementation unverified |
 | [API contract](api-contract.md) | Draft route inventory, JSON examples and phase agreement template |
 | [Setup](setup.md) | Onboarding plan; executable commands not yet verified |
 | [Environment](environment.md) | Planned variable inventory, ownership and secret handling |
@@ -17,6 +18,7 @@ The team uses JavaScript/JSX with Tailwind CSS, root-level `client/` and `server
 | [Security](security.md) | Security/privacy implementation and review checklist |
 | [Content guide](content-guide.md) | Authoring words, themes, groups and fallback coverage |
 | [Contributing](contributing.md) | Human/agent task workflow, reviews and definition of done |
+| [AI workflow](ai-workflow.md) | Bounded agent tasks, contract-valid fixtures, Figma handoff and review |
 | [Testing](testing.md) | Acceptance evidence, scoring examples and evaluation plan |
 | [Decisions](decisions/README.md) | Short dated records; proposed and accepted are distinguished |
 | [Current state](context/current-state.md) | Small, maintained handoff of status and next decisions |

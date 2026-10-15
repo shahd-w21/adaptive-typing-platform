@@ -18,6 +18,22 @@ Students access their own sessions, statistics and certificates. Admin routes re
 
 Students and Admins can read/update their own appearance and English/Arabic interface preferences through the draft account contract, with active-account/ownership/CSRF checks. Visitors store only allowlisted local appearance/locale values and cannot update an account. At login, use confirmed account preferences; on logout discard account-scoped preference cache and resolve visitor choice/default. Localisation retains generic reset/resend responses and safe error meanings in both languages; theme, RTL and mobile navigation never change authorisation. SRS section 10.5 owns defaults/persistence rules.
 
+## Route access and review
+
+The following matrix summarises existing requirements; it grants no additional administrative access to private learner data.
+
+| Action | Guest | Student | Admin |
+| --- | --- | --- | --- |
+| Public certificate verification | Yes, allowlisted fields | Same public view | Same public view |
+| Own account appearance/language preferences | Local visitor values only | Own account | Own account |
+| Placement/practice/tests and learner history | No | Own assignments/data | No implicit learner access |
+| Accept a forum answer | No | Own thread only | No additional privilege specified |
+| Manage users/content/settings and moderate posts | No | No | Explicit protected admin actions |
+
+Public forum reading and any additional admin learner-data views remain subject to their explicit contract/scope decision.
+
+For each new route, review params/query/body schemas, authentication, role, ownership, CSRF for state changes, rate/size limits, safe response fields and documented errors. Test unauthenticated requests, the wrong role, another user's resource and the successful authorised case. A route being hidden by the UI is not an authorisation test.
+
 ## Decide before implementation
 
 - Revocation design: server-side session records or equivalent effective strategy; JWT claims and lookup rules.

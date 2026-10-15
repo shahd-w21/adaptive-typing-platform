@@ -168,6 +168,25 @@ An identical accepted retry returns the same saved result without side effects; 
 
 ## Phase agreement record
 
+Track status per endpoint, not only for the whole document: **Draft → Agreed → Implemented → Verified**. Agreed identifies a dated team-reviewed contract; Implemented links code; Verified links passing acceptance evidence. A mock response or a successful happy path alone does not make a route Verified. Unreviewed draft examples remain proposals.
+
+Use this compact record when an endpoint enters a phase:
+
+```text
+Method/path and status:
+Phase / contract version / agreement date:
+Request schema export and response schema export:
+Authentication, role and ownership:
+Body/param/query fields, units, optional/null rules:
+Success example and validation/permission/error examples:
+Rate/body limits, expiry and retry/concurrency behaviour:
+Pagination/filter/sort rules where applicable:
+Frontend/backend owners and compatibility plan:
+Implementation and verification evidence:
+```
+
+Use the same shared JavaScript Zod schema names in the contract, server validation and development fixtures. Coordinate a changed schema with both consumers. Keep draft exploration possible, but agree the shared boundary before dependent feature integration.
+
 Fill this for each phase and retain previous agreements when evolving the contract:
 
 | Field | Value |

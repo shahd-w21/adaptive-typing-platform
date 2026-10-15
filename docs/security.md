@@ -38,3 +38,9 @@ Agree audit/operational/backup retention before production. Verify a backup rest
 For suspected exposure, notify the team's designated owner privately, restrict access, rotate affected secrets and record a sanitised incident note. Incident owner/channel: TBD. Do not publish credentials or exploit details in a public issue.
 
 Certificates are unproctored. Plausible forged client logs remain possible; do not market integrity heuristics as identity verification or proof of human typing.
+
+## Committed or disclosed secrets
+
+Treat an exposed credential as compromised even if its file/commit is later removed. Notify the designated owner privately and revoke/rotate the affected credential through the provider's controls. For a signing-key compromise, address active session invalidation as part of recovery. Replace stored examples with fake values and check CI output, artifacts and screenshots for further exposure. Coordinate any repository-history cleanup with teammates; deleting history alone does not revoke a credential.
+
+Before release, review dependency/security scan findings with their affected versions, reachability and remediation. Record exceptions with an owner; do not automatically run broad dependency upgrades or claim that a clean scan proves the application secure.

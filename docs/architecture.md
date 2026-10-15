@@ -18,6 +18,8 @@ typeflow/
 │   ├── srs.md
 │   ├── context/                    # handoff and current-state notes
 │   ├── architecture.md
+│   ├── database.md                 # practical persistence/migration guide
+│   ├── ai-workflow.md              # task prompts and Figma handoff
 │   ├── api-contract.md              # draft; agreed at phase boundaries
 │   ├── testing.md                   # verification and evaluation guide
 │   ├── content-guide.md
@@ -151,6 +153,9 @@ Feature folders may use routes, controller, service, repository and local schema
 5. Database helpers accept the current transaction client when participating in a submission.
 6. Runtime settings are loaded by services and passed into functions. Pure modules never query settings themselves.
 7. LLM, email and PDF calls never run inside a result-saving transaction.
+8. Pure modules do not read `process.env`, `Date.now()` or global random generators. Pass the effective time and random source/seed in where required, so simulations/tests can reproduce behaviour. Browser event capture remains responsible for reading its monotonic clock outside pure replay functions.
+
+Database implementation practices are in [database.md](database.md); presentation-to-feature handoff is in [ai-workflow.md](ai-workflow.md).
 
 ## 3. Frontend layout
 

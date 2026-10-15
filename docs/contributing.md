@@ -14,6 +14,16 @@ Use a short feature branch and focused PR; do not push directly to `main`. Prese
 
 For AI-assisted work, give the agent the task, scope, relevant contract and completion check. The author remains responsible for reviewing generated changes and evidence. Do not run two agents editing the same files without explicit coordination. Never paste secrets into prompts.
 
+Use [ai-workflow.md](ai-workflow.md) for a bounded task prompt and the Figma-to-feature handoff. Use [database.md](database.md) for schema changes rather than guessing commands from the proposed folder tree.
+
+## Phase boundaries and parallel work
+
+At phase start, agree the routes/shared schemas, pure function inputs/outputs, needed schema changes and shared UI props. Assign owners/reviewers and define the end-to-end demo. Each task should depend on earlier deliverables, a current agreed contract or an explicitly named development fixture; record external blockers early.
+
+Use a mid-phase sync to compare actual payloads and function outputs against those contracts. Keep fixtures schema-valid and replace the demonstrated path with real services before the integration demo. End the phase by running the complete user journey and its relevant failure/retry case; individual screenshots are not integration evidence.
+
+Keep shared-file edits small and coordinated, including `server/prisma/schema.prisma`, server routes, `client/src/app/router.jsx`, providers, query keys, shared exports and environment examples. Prefer a quick reviewed PR rather than waiting for an entire ownership area to finish. Track allocation stays with the team; the reference material's fixed tracks are not adopted here.
+
 ## Definition of done
 
 - Requested behaviour is implemented or the requested document is complete.
