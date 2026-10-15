@@ -1,10 +1,10 @@
 # TypeFlow — agent instructions
 
-The current work is documentation/planning. Follow the user's task scope. For documentation tasks, keep application code/configuration out of scope unless the user explicitly authorises inspection or implementation. Do not scaffold the target structure, install dependencies or run migrations to make a document appear correct.
+The current work is foundation setup. Follow the user's task scope. A teammate has pending frontend work based on the commit before the documentation refactor. Preserve all existing `client/` files, `DESIGN.md`, `docs/context/current-state.md`, and his `docs/frontend-design-plan.md` / `docs/README.md` paths during this setup. Only the additive `client/.env.example` belongs to setup. Do not recreate his screens, contexts, hooks, styles, translations or typing engine. See the handoff in `docs/development.md`. For documentation-only tasks, keep application changes out of scope.
 
 ## Read selectively
 
-Start with [current state](docs/context/current-state.md) and the task. Use the [README](README.md) for onboarding and commands, then only the relevant reference:
+Start with the task and [foundation status](docs/development.md#foundation-status-and-frontend-handoff). The teammate-owned [current state](docs/context/current-state.md) is preserved at its documentation-phase baseline until integration. Use the [README](README.md) for onboarding and commands, then only the relevant reference:
 
 | Task | Reference |
 | --- | --- |

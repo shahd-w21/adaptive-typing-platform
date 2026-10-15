@@ -1,10 +1,32 @@
 # Development guide
 
-Start with the [README quick start](../README.md#quick-start). This guide explains the documented target setup, PostgreSQL connections and database work. Existing application code is outside this documentation revision; commands and scripts must be implemented/verified during foundations before onboarding is declared working.
+Start with the [README quick start](../README.md#quick-start). Root workspace commands now target the new foundation in `server/src/`; old backend modules remain preserved and unmounted. The teammate's frontend implementation is still pending integration. See the status and handoff below.
+
+## Foundation status and frontend handoff
+
+Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated here. Tailwind integration and client API wiring should be verified together with his actual implementation after it arrives.
+
+The initial database migration contains only the account foundation (`User` and Student/Admin roles). Auth sessions/tokens, curriculum, learning and rewards arrive in their feature phases. No seed command exists yet. Prisma 7 uses the PostgreSQL driver adapter and the JavaScript client generator; generated output is ignored. See [Prisma's upgrade documentation](https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7).
+
+New server source and tests have local ES-module boundaries. The old server package remains CommonJS to preserve old files; new code uses ES modules. Root scripts start only `server/src/server.js`. Do not run the old SQL bootstrap against the new databases.
+
+Root `package-lock.json` is authoritative for workspace installs. Nested lockfiles remain untouched during the handoff and should not be independently regenerated. CI installs from the root. Do not run a repository-wide formatter over the teammate's incoming files.
+
+**Verification:** checks are recorded here after execution; a running health endpoint does not establish authentication or frontend feature correctness. CI is configured but a remote CI run requires the changes to be committed/pushed by the team.
+
+To integrate the teammate's older-base work safely:
+
+1. He should create a feature branch and commit his local design work there before pulling or merging; inspect `git diff --cached` before committing and exclude `.env`, dependencies and generated output.
+2. Once the setup changes are committed and shared, fetch and merge the team's setup branch into his feature branch. Use the actual branch name agreed by the team. Keep a normal merge history; there is no need to force-push.
+3. Frontend files in the screenshots have no setup edits. The earlier documentation refactor can still cause conflicts, especially `docs/README.md` (deleted by the refactor) and `docs/context/current-state.md`. Review these manually. Move useful old-index notes to root README/development/contributing, retain the consolidated layout, and reconcile status to include both setup and design. Do not select “ours” or “theirs” for every conflict.
+4. Preserve his design changes to `DESIGN.md` while retaining corrected links from the refactor. Review his new frontend-design-plan for unique information before deciding whether it belongs in DESIGN/contributing.
+5. Run root `npm install` if his dependency manifests changed; resolve manifests first and regenerate the root lockfile rather than hand-merging lockfile contents. Then run lint, tests and build, and inspect the design in the browser. A clean Git merge alone does not prove runtime integration.
+
+No merge or commit is performed automatically by setup. Screenshots identify the protected paths, but cannot guarantee the contents of a future commit or guarantee zero conflicts with the earlier refactor.
 
 ## Local services
 
-The documented development setup runs Node applications on the host and PostgreSQL/Mailpit in Docker Compose. The foundation owner should configure the following contract:
+The development setup runs Node applications on the host and PostgreSQL/Mailpit in Docker Compose:
 
 | Service | Compose name | Host address | Local settings |
 | --- | --- | --- | --- |
@@ -16,7 +38,7 @@ The documented development setup runs Node applications on the host and PostgreS
 
 These credentials are disposable local examples, never production values. Bind database/email ports to loopback. Persist PostgreSQL 16 data in a named volume mounted at `/var/lib/postgresql/data`; changing container environment variables later does not rewrite credentials in an existing database volume. See the [official PostgreSQL image documentation](https://hub.docker.com/_/postgres).
 
-`npm run db:up` is the documented root wrapper for `docker compose up -d db mailpit`; `npm run db:stop` wraps `docker compose stop db mailpit`. Agree exact image pins and implement the wrappers in foundations. Ordinary stop/start preserves the database volume.
+`npm run db:up` wraps `docker compose up -d --wait db mailpit`; `npm run db:stop` wraps `docker compose stop db mailpit`. Image versions are pinned in Compose. Ordinary stop/start preserves the database volume.
 
 ## Connect to PostgreSQL
 
@@ -47,11 +69,11 @@ CREATE DATABASE typeflow_test OWNER typeflow;
 
 Skip creation for objects that already exist. Use the same connection fields in the GUI and `.env`; use your actual credentials if different. Native PostgreSQL users still need the local email service if testing verification/reset through Mailpit.
 
-PostgreSQL CLI reference: [psql documentation](https://www.postgresql.org/docs/16/app-psql.html). No local database is created or changed by this documentation task.
+PostgreSQL CLI reference: [psql documentation](https://www.postgresql.org/docs/16/app-psql.html).
 
 ## Environment variables
 
-The foundation phase supplies `server/.env.example` and `client/.env.example`. Copy them once as shown in the README; preserve local overrides after pulling changes. Restart the affected process after changing its environment.
+Run `npm run setup:env` to create local files from `server/.env.example` and `client/.env.example` without replacing existing files. It generates a random local JWT secret for a newly created server environment. Restart the affected process after changing its environment.
 
 Documented `server/.env` example:
 
@@ -90,28 +112,28 @@ VITE_API_URL=http://localhost:5000/api/v1
 | Accuracy/mastery/reward/certificate thresholds | Versioned business settings | Not untracked environment overrides |
 | Appearance/UI locale | Account/visitor preferences | Not environment variables or exercise-content language |
 
-The examples define the target contract, not environment names verified against current source. Validate runtime configuration at startup with errors that name missing variables without disclosing values. Update safe examples and this guide whenever an environment contract changes. Keep local/test/production credentials separate.
+Foundation startup validates NODE_ENV, PORT, CLIENT_URL and DATABASE_URL without exposing their values. JWT and SMTP values are reserved for authentication/email implementation; future phases must validate them before enabling those features. Keep local/test/production credentials separate.
 
 ## Database workflow
 
-Prisma owns the planned schema and migrations in `server/prisma/`. Root script names are defined in the README; their working directory/schema resolution must be implemented so teammates do not guess paths.
+Prisma owns schema and migrations in `server/prisma/`. Root scripts resolve the server config and schema automatically. Run `npm run db:generate` after install or schema changes. Database wrappers refuse production mode, non-loopback hosts and databases other than the expected `typeflow_dev` or `typeflow_test`; deployment tooling is a future task.
 
 | Situation | Documented action |
 | --- | --- |
 | First clone or pulling committed schema changes | `npm run db:migrate` applies existing migrations to the development database only |
 | You intentionally change the schema | Coordinate with schema reviewer; `npm run db:migration:create -- --name short-description` creates a development migration |
-| Development content needs loading | `npm run db:seed` reconciles stable IDs/upserts without erasing learner progress |
+| Development content needs loading | Deferred to the content phase; future `db:seed` must reconcile stable IDs/upserts without erasing progress |
 | Inspect data in a browser | `npm run db:studio` opens Prisma Studio for the development database |
 | Integration tests | `npm run test:integration` explicitly targets `TEST_DATABASE_URL`, with an identity check before resets |
 | Deployment | Controlled release applies committed migrations; production procedure reviewed before release |
 
-For the documented Compose database, create the separate test database once:
+Fresh Compose volumes create the separate test database automatically. For an existing volume or native PostgreSQL, create it once if missing:
 
 ```powershell
 docker compose exec db createdb -U typeflow typeflow_test
 ```
 
-An “already exists” message means it is already created. Merely defining `TEST_DATABASE_URL` does not redirect a migration/test process; the integration script must explicitly use it, initialise its schema and refuse a development/production target.
+An “already exists” message means it is already created. The integration wrapper validates TEST_DATABASE_URL, passes it explicitly as DATABASE_URL to migrations/tests, applies committed migrations, and checks database identity. Current integration checks read the test database without resetting it.
 
 Never edit an applied shared migration or use `db push` on shared data. Review generated SQL for dropped data, backfills, defaults and compatibility; test both a fresh database and an upgrade. Do not reset the database or delete volumes as a routine fix for drift. Seeded demo accounts must be synthetic and local-only; do not commit real passwords or silently reset existing roles/passwords.
 
@@ -123,6 +145,7 @@ Use Prisma for ordinary access and parameterised SQL where it makes complex repo
 | --- | --- |
 | Docker cannot connect | Start Docker Desktop/the Docker engine, then retry `npm run db:up` |
 | Port 5432 is occupied | Check whether local PostgreSQL already owns it; use that instance or change the documented port and connection URL together |
+| Windows forbids binding port 5432 | Put `TYPEFLOW_DB_PORT=55432` in an ignored root `.env`; change both database URLs in `server/.env` to port 55432, then rerun `npm run db:up`. pgAdmin uses the same host port; container-internal commands still use 5432. Preserve any existing root `.env` values. |
 | Database connection refused | Check readiness, host/port and whether Node runs on host or in a container |
 | Password authentication fails | Match the stored database credentials; container environment changes do not reset an existing volume's password |
 | Database exists but tables are missing | Apply committed migrations to the correct development database |

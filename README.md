@@ -2,7 +2,7 @@
 
 An adaptive typing tutor built by a five-person university team. JavaScript, React, Tailwind CSS, Express and PostgreSQL/Prisma. Student and Admin roles; English typing on physical QWERTY keyboards, with English/Arabic interface and Light/Dark appearance.
 
-**Development status:** this README defines the target onboarding workflow. Application code is outside this documentation revision. The foundation phase must supply and verify the scripts/configuration below before this can be called a tested setup. Product requirements remain in the SRS.
+**Development status:** foundation tooling is being established. The new server entry point is `server/src/server.js`; existing backend files remain preserved but are not mounted by it. Product endpoints and your teammate's pending Figma frontend are not yet integrated. Product requirements remain in the SRS. See the [setup verification and frontend handoff](docs/development.md#foundation-status-and-frontend-handoff) for the current boundary.
 
 ## Quick start
 
@@ -10,7 +10,7 @@ Commands below are for PowerShell, run from the repository root unless stated ot
 
 ### 1. Prerequisites and clone
 
-Install Git, Node.js/npm compatible with the team's pinned dependencies, and Docker Desktop with its engine running. The foundation owner pins the exact Node version in `.nvmrc`. PostgreSQL runs in Docker; you do not need a separate database installation. A native PostgreSQL alternative is in the development guide.
+Install Git, Node.js 24.14.0 (pinned in `.nvmrc`), npm 11, and Docker Desktop with its Linux engine running. PostgreSQL runs in Docker; you do not need a separate database installation. A native PostgreSQL alternative is in the development guide.
 
 ```powershell
 git clone https://github.com/shahd-w21/adaptive-typing-platform.git
@@ -18,15 +18,15 @@ cd adaptive-typing-platform
 npm install
 ```
 
-The documented root package uses npm workspaces for `client`, `server` and `packages/shared`. One root install supplies all three. After a lockfile is committed, use `npm ci` for clean reproducible installs.
+The root package uses npm workspaces for `client`, `server` and `packages/shared`. One root install supplies all three. Use `npm ci` for clean reproducible installs from the root lockfile. Existing nested lockfiles are preserved to avoid disrupting the pending frontend work; root commands use the root lockfile.
 
 ### 2. Configure your local environment
 
-Copy the examples once; do not overwrite an existing `.env` after pulling changes:
+Create local environment files and a random signing secret; this helper preserves existing files:
 
 ```powershell
-Copy-Item server/.env.example server/.env
-Copy-Item client/.env.example client/.env
+npm run setup:env
+npm run db:generate
 ```
 
 Edit `server/.env` so it points to your local database:
@@ -38,7 +38,7 @@ PORT=5000
 CLIENT_URL=http://localhost:5173
 ```
 
-Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Set your own generated `JWT_SECRET` and the local Mailpit settings from the [environment example](docs/development.md#environment-variables). The username/password above are local development examples. Never commit actual `.env` files or put server secrets in `VITE_` values.
+Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Existing environment files may need the values from the [environment example](docs/development.md#environment-variables); the helper never replaces them. The username/password above are local development examples. Never commit actual `.env` files or put server secrets in `VITE_` values. Auth and SMTP settings are reserved for the next phase, not proof that those features work.
 
 ### 3. Start PostgreSQL and initialise the database
 
@@ -46,10 +46,9 @@ Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Set your own g
 npm run db:up
 docker compose exec db pg_isready -U typeflow -d typeflow_dev
 npm run db:migrate
-npm run db:seed
 ```
 
-`db:up` starts the documented `db` and `mailpit` services. Wait for PostgreSQL to accept connections before applying migrations. `db:migrate` applies committed migrations; `db:seed` loads/reconciles development content. Neither command should erase existing learner progress.
+`db:up` starts `db` and `mailpit` and waits for service readiness. `db:migrate` applies committed migrations to local `typeflow_dev`. The initial migration contains an account table only; no users or curriculum are seeded. Fresh Docker volumes also create `typeflow_test`. Never run the legacy `server/schema.sql` as part of this setup.
 
 To open a database terminal:
 
@@ -75,7 +74,7 @@ The root script starts the client and server together. Keep that terminal open; 
 | Database readiness | http://localhost:5000/health/ready |
 | Email inbox | http://localhost:8025 |
 
-Verify a page loads, readiness reports database access, and a registration email reaches Mailpit. Do not infer a completed feature from a running process. All addresses above are the target configuration, not claims about the current checkout.
+Verify the existing client page loads and `/health/ready` reports database access. `/health/live` reports whether the process is running. `/api/v1` is reserved for future feature routes and currently returns 404. Mailpit captures local email, but registration/email delivery is a later authentication-phase check. The pending Figma pages are not required for foundation checks.
 
 ## Every day
 
@@ -91,13 +90,11 @@ Pull the latest changes, run `npm install` if dependency manifests changed, appl
 | `npm run test:integration` | Run database/API checks against the separate test database |
 | `npm run build` | Verify production application builds |
 | `npm run db:migrate` | Apply committed development migrations |
-| `npm run db:seed` | Load/reconcile development content |
+| `npm run db:generate` | Generate the Prisma JavaScript client after install/schema changes |
 | `npm run db:studio` | Inspect development data in Prisma Studio |
-| `npm run content:validate` | Check curriculum content |
-| `npm run simulate` | Evaluate adaptive behaviour with simulated typists |
 | `npm run db:stop` | Stop supporting services while keeping stored data |
 
-This table is the root-script contract for foundations to implement, not a list discovered from the application. Before a PR, run lint, relevant tests and build; report failures or missing scripts. Create migrations only when intentionally changing the schema: see [database workflow](docs/development.md#database-workflow). Do not delete database volumes as an everyday cleanup step.
+Before a PR, run lint, relevant tests and build; report failures or missing checks. `db:seed`, `content:validate` and `simulate` are deferred until their content/engine phases; no success-only placeholder scripts exist. Create migrations only when intentionally changing the schema: see [database workflow](docs/development.md#database-workflow). Do not delete database volumes as an everyday cleanup step. Root checks cover the new foundation and existing client; preserved legacy server modules are not part of the new application or test scope.
 
 ## Where to work
 
