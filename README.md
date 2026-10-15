@@ -2,11 +2,11 @@
 
 An adaptive typing tutor built by a five-person university team. JavaScript, React, Tailwind CSS, Express and PostgreSQL/Prisma. Student and Admin roles; English typing on physical QWERTY keyboards, with English/Arabic interface and Light/Dark appearance.
 
-**Development status:** foundation tooling is being established. The new server entry point is `server/src/server.js`; existing backend files remain preserved but are not mounted by it. Product endpoints and your teammate's pending Figma frontend are not yet integrated. Product requirements remain in the SRS. See the [setup verification and frontend handoff](docs/development.md#foundation-status-and-frontend-handoff) for the current boundary.
+**Development status:** your teammate's account/profile, practice/scoring, key-progress, dashboard/progress, reward and admin-check work is migrated into the ES-module server in `server/src/`, using Prisma. The pending Figma frontend is not integrated yet. These are migrated prototype features, not completion of every SRS requirement. See [migration and verification](docs/development.md#foundation-status-and-frontend-handoff) and the [API migration map](docs/api-contract.md#teammate-backend-migration).
 
 ## Quick start
 
-Commands below are for PowerShell, run from the repository root unless stated otherwise. On macOS/Linux, use `cp` instead of `Copy-Item`.
+Run commands from the repository root unless stated otherwise. The npm commands work in PowerShell and macOS/Linux shells.
 
 ### 1. Prerequisites and clone
 
@@ -18,7 +18,7 @@ cd adaptive-typing-platform
 npm install
 ```
 
-The root package uses npm workspaces for `client`, `server` and `packages/shared`. One root install supplies all three. Use `npm ci` for clean reproducible installs from the root lockfile. Existing nested lockfiles are preserved to avoid disrupting the pending frontend work; root commands use the root lockfile.
+The root package uses npm workspaces for `client`, `server` and `packages/shared`. One root install supplies all three. Use `npm ci` for clean reproducible installs from the root lockfile. The old client lockfile is temporarily preserved for the teammate's handoff; do not run separate installs inside client/server.
 
 ### 2. Configure your local environment
 
@@ -38,7 +38,7 @@ PORT=5000
 CLIENT_URL=http://localhost:5173
 ```
 
-Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Existing environment files may need the values from the [environment example](docs/development.md#environment-variables); the helper never replaces them. The username/password above are local development examples. Never commit actual `.env` files or put server secrets in `VITE_` values. Auth and SMTP settings are reserved for the next phase, not proof that those features work.
+Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Existing environment files may need the values from the [environment example](docs/development.md#environment-variables); the helper never replaces them. JWT_SECRET must be a generated secret of at least 32 characters. Local email uses Mailpit on SMTP port 1025. Never commit actual `.env` files or put server secrets in `VITE_` values.
 
 ### 3. Start PostgreSQL and initialise the database
 
@@ -46,9 +46,10 @@ Use `VITE_API_URL=http://localhost:5000/api/v1` in `client/.env`. Existing envir
 npm run db:up
 docker compose exec db pg_isready -U typeflow -d typeflow_dev
 npm run db:migrate
+npm run db:seed
 ```
 
-`db:up` starts `db` and `mailpit` and waits for service readiness. `db:migrate` applies committed migrations to local `typeflow_dev`. The initial migration contains an account table only; no users or curriculum are seeded. Fresh Docker volumes also create `typeflow_test`. Never run the legacy `server/schema.sql` as part of this setup.
+`db:up` starts PostgreSQL and Mailpit and waits for readiness. `db:migrate` applies committed migrations to local `typeflow_dev`. `db:seed` adds missing starter key groups and an immutable development policy without replacing existing content or creating accounts. Fresh Docker volumes also create `typeflow_test`. Prisma migrations are the only schema setup path; existing data is preserved.
 
 To open a database terminal:
 
@@ -56,7 +57,7 @@ To open a database terminal:
 docker compose exec db psql -U typeflow -d typeflow_dev
 ```
 
-For pgAdmin/DBeaver: **host** `localhost`, **port** `5432`, **database** `typeflow_dev`, **user** `typeflow`, **password** `typeflow_local_only`. Detailed connection, test-database and native PostgreSQL instructions are in the [development guide](docs/development.md#connect-to-postgresql).
+For pgAdmin/DBeaver: **host** `localhost`, **port** `5432`, **database** `typeflow_dev`, **user** `typeflow`, **password** `typeflow_local_only`. If port 5432 is unavailable, follow the [port override instructions](docs/development.md#troubleshooting) and use the override in both database URLs and your database tool. Detailed connection, test-database and native PostgreSQL instructions are in the [development guide](docs/development.md#connect-to-postgresql).
 
 ### 4. Start development
 
@@ -74,7 +75,7 @@ The root script starts the client and server together. Keep that terminal open; 
 | Database readiness | http://localhost:5000/health/ready |
 | Email inbox | http://localhost:8025 |
 
-Verify the existing client page loads and `/health/ready` reports database access. `/health/live` reports whether the process is running. `/api/v1` is reserved for future feature routes and currently returns 404. Mailpit captures local email, but registration/email delivery is a later authentication-phase check. The pending Figma pages are not required for foundation checks.
+Verify the existing client page loads and `/health/ready` reports database access. Account and practice APIs run under `/api/v1`; the base URL itself has no index page. Verification/reset links appear in Mailpit. Login uses an httpOnly cookie and returns a CSRF token required on authenticated writes. Use the [implemented contract](docs/api-contract.md#teammate-backend-migration) when connecting the pending Figma frontend.
 
 ## Every day
 
@@ -88,13 +89,14 @@ Pull the latest changes, run `npm install` if dependency manifests changed, appl
 | `npm run lint` | Check JavaScript/React code style and common errors |
 | `npm test` | Run unit tests |
 | `npm run test:integration` | Run database/API checks against the separate test database |
-| `npm run build` | Verify production application builds |
+| `npm run build` | Generate Prisma client, build frontend, check server entry syntax |
 | `npm run db:migrate` | Apply committed development migrations |
 | `npm run db:generate` | Generate the Prisma JavaScript client after install/schema changes |
+| `npm run db:seed` | Add missing migrated starter curriculum/policy; preserve accounts/content |
 | `npm run db:studio` | Inspect development data in Prisma Studio |
 | `npm run db:stop` | Stop supporting services while keeping stored data |
 
-Before a PR, run lint, relevant tests and build; report failures or missing checks. `db:seed`, `content:validate` and `simulate` are deferred until their content/engine phases; no success-only placeholder scripts exist. Create migrations only when intentionally changing the schema: see [database workflow](docs/development.md#database-workflow). Do not delete database volumes as an everyday cleanup step. Root checks cover the new foundation and existing client; preserved legacy server modules are not part of the new application or test scope.
+Before a PR, run lint, relevant tests and build; report failures or missing checks. `content:validate` and `simulate` remain deferred. Create migrations only when intentionally changing the schema: see [database workflow](docs/development.md#database-workflow). Do not delete database volumes as an everyday cleanup step. Current checks cover the migrated backend and existing client, not the pending Figma frontend or all future product features.
 
 ## Where to work
 

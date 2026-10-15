@@ -28,6 +28,19 @@ test('invalid configuration names fields without leaking values', () => {
   assert.throws(() => parseEnvironment({ DATABASE_URL: 'secret', CLIENT_URL: 'secret', PORT: 0 }), error =>
     /DATABASE_URL/.test(error.message) && /PORT/.test(error.message) && !/secret/.test(error.message));
 });
+test('configuration accepts supported URLs and rejects invalid protocols', () => {
+  const valid = { DATABASE_URL: 'postgresql://localhost/typeflow_dev', CLIENT_URL: clientUrl, JWT_SECRET: 'test-only-secret-with-at-least-32-characters' };
+  assert.equal(parseEnvironment(valid).PORT, 5000);
+  assert.equal(parseEnvironment(valid).NODE_ENV, 'development');
+  for (const value of ['not-a-url', 'file:///secret', 'https://example.com/database']) {
+    assert.throws(() => parseEnvironment({ ...valid, DATABASE_URL: value }), {
+      message: 'Invalid environment: DATABASE_URL',
+    });
+  }
+  assert.throws(() => parseEnvironment({ ...valid, CLIENT_URL: 'file:///secret' }), {
+    message: 'Invalid environment: CLIENT_URL',
+  });
+});
 test('test database guard refuses development, remote and malformed targets', () => {
   for (const url of ['postgresql://localhost/typeflow_dev', 'postgresql://remote/typeflow_test', 'bad', 'https://localhost/typeflow_test']) {
     assert.throws(() => assertLocalDatabase(url, 'typeflow_test'));

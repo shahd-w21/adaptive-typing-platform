@@ -1,6 +1,39 @@
 # API contract
 
-**Status: DRAFT, version 0.2, 14 October 2026. No phase contract is approved and no endpoint is verified.** This is a concrete starting proposal for the phase meeting, not a claim about current routes. Required behaviour comes from the [SRS](srs.md), including SYS-53–56 for appearance, English/Arabic interface and responsive presentation.
+**Status: target contract remains DRAFT; migrated endpoint details below describe current code.** Implemented does not imply team approval of every draft field or completion of every SRS requirement. Required behaviour comes from the [SRS](srs.md). The teammate's backend migration and its explicit differences are recorded below; other examples remain proposals.
+
+## Teammate backend migration
+
+Source: teammate work in commit `68d311f`. CommonJS/pg code has been relocated and adapted to ES-module feature services, Prisma persistence, shared validation/formulas, injected dependencies and a single `/api/v1` router. No frontend files are changed. Integration tests live in `server/tests/integration/features.test.js`; logic tests replace the old manual scripts with hardcoded demo credentials.
+
+| Previous route under `/api` | Current route under `/api/v1` | Implementation |
+| --- | --- | --- |
+| `POST /auth/signup` | `POST /auth/register` (`/auth/signup` alias) | `modules/auth/routes.js` and `service.js` |
+| `/auth/verify-email`, `/resend-verification`, `/login`, `/logout`, `/me`, `/forgot-password`, `/reset-password` | Same suffixes under `/auth` | Auth service, hashed one-use email tokens, revocable sessions, SMTP integration |
+| `GET/PATCH/DELETE /profile` | `GET/PATCH/DELETE /users/me` | `modules/users/` |
+| `POST /profile/password` | `POST /users/me/password` | Password check/update and session revocation |
+| `POST /sessions/start` | `POST /sessions` (`/sessions/start` alias) | Practice assignment, captured policy and owned session |
+| `POST /sessions/:id/submit` | Same suffix | Shared event schemas, replay, atomic persistence and safe retries |
+| `GET /keyboard` | `GET /path` or `/path/keyboard` | Groups, per-key statistics/status and recommendation |
+| `GET /dashboard` | `GET /dashboard` | Profile summary, XP/level/streak, daily goal, recommendation and recent sessions |
+| `GET /progress` | `GET /progress` | Completed practice history and per-key data |
+| `GET /admin/ping` | `GET /admin/ping` | Live server-side Admin check |
+
+Additional supporting routes: `GET /sessions`, `GET /sessions/:id`, `POST /sessions/:id/abandon`, `GET /gamification`. The old `/api` prefix is not mounted. IDs are now opaque UUID strings. Old SQL data is not automatically imported; account hashes remain bcrypt-compatible for a future reviewed data import if needed.
+
+Implemented request details:
+
+- Register/login/resend/forgot use `email` and password fields shown below; register and reset accept optional matching `confirmPassword`. Registration ignores a submitted role and creates Student.
+- Verification uses `{token}`. Reset uses `{token,password,confirmPassword?}`. Password change uses `{currentPassword,newPassword,confirmPassword}`. Deletion uses `{password}`.
+- Profiles use camelCase: `name`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, and partial `preferences` (`themePreference`, `uiLocale`). Replies contain `{user}`; login/me include only allowlisted public user fields. Roles in public DTOs are `student`/`admin`.
+- Login sets the httpOnly `token` cookie and returns `{user,csrfToken}`; `GET /auth/me` returns a fresh representation of the same session's CSRF token. Send cookies and `X-CSRF-Token` on authenticated POST/PATCH/DELETE calls. Logout revokes the server record; password reset/change revoke all sessions. Explicitly different browser Origins are rejected.
+- Start accepts `{mode:"practice"}` (or `{}`) and returns `{sessionId,mode,text,source,issuedAt,expiresAt,rules}`. Only practice was implemented in the teammate's server; other modes are not silently mapped to it.
+- Submit uses the canonical `events`/`finishTimeMs` shape below. The old `{keystrokes:[{typed_char,t_ms}]}` wire shape is replaced, not accepted as authoritative scores. Practice must finish on its last completing insert; pause/resume are supported. Maximum 5000 events and 512 KiB JSON body.
+- Results contain `sessionId,status,metrics,passed,rewards,xpEarned,xp,level,leveledUp,streak,masteredKeys,unlockedKeys,problemKeys,certificate`. `certificate` is null. Metrics use SRS formulas; accuracy gating uses unrounded raw accuracy. Identical retries return the saved JSON; different payloads conflict. Current history returns at most 100 sessions; pagination/filter contracts remain draft.
+
+Preserved intent with deliberate corrections: no destructive schema bootstrap; pure generation/replay; all official scores derived server-side; current SRS formulas and mastery evidence replace old placeholders; raw accuracy gates mastery/unlocks; user row locks and bounded serialization retries protect concurrent updates; result/log/stat/reward writes share one transaction. Raw logs expire separately from results and retry hashes. Last-active-admin deletion remains protected. Email calls are outside transactions and tokens are not logged.
+
+The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned reward/integrity defaults are prototype migration policy, pending the open team decisions. Full pair statistics, placement/review/timed/certified modes, difficulty progression, AI text generation, badges, certificates, forum and full admin APIs remain unimplemented. Their existing schema concepts are retained, including the one-accepted-answer-per-thread index. This migration does not certify the entire SRS or approve the remaining draft contract.
 
 ## Conventions to agree
 

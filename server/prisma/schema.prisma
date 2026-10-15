@@ -12,7 +12,6 @@ enum Role {
   ADMIN
 }
 
-// Initial account foundation only; auth sessions/tokens arrive with the auth phase.
 model User {
   id              String    @id @default(uuid()) @db.Uuid
   email           String    @unique
@@ -22,4 +21,206 @@ model User {
   emailVerifiedAt DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  name             String?
+  timezone         String    @default("UTC")
+  targetWpm        Int       @default(40)
+  dailyGoalMinutes Int       @default(10)
+  largeText        Boolean   @default(false)
+  reducedPressure  Boolean   @default(false)
+  themePreference  String    @default("system")
+  uiLocale         String    @default("en")
+  placementDone    Boolean   @default(false)
+  xp               Int       @default(0)
+  level            Int       @default(1)
+  streak           Int       @default(0)
+  lastPracticeDate String?
+  authSessions     AuthSession[]
+  emailTokens      EmailToken[]
+  keyStats         KeyStat[]
+  typingSessions   TypingSession[]
+  activities       DailyActivity[]
+  badges           UserBadge[]
+  certificates     Certificate[]
+  forumThreads     ForumThread[]
+  forumPosts       ForumPost[]
+  forumReports     ForumReport[]
+  auditLogs        AdminAuditLog[]
+}
+
+model AuthSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  @@index([userId])
+}
+
+model EmailToken {
+  hash      String   @id
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String
+  expiresAt DateTime
+  @@index([userId, purpose])
+}
+
+model KeyGroup {
+  id             Int       @id
+  name           String
+  keys           String
+  prerequisiteId Int?
+  prerequisite   KeyGroup? @relation("Prerequisites", fields: [prerequisiteId], references: [id])
+  successors     KeyGroup[] @relation("Prerequisites")
+  isActive       Boolean   @default(true)
+}
+
+model KeyStat {
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key            String
+  status         String   @default("locked")
+  accuracy       Float?
+  avgMs          Float?
+  attempts       Int      @default(0)
+  latencySamples Int      @default(0)
+  sessions       Int      @default(0)
+  updatedAt      DateTime @updatedAt
+  @@id([userId, key])
+}
+
+model SettingVersion {
+  id        String   @id
+  values    Json
+  createdAt DateTime @default(now())
+}
+
+model TypingSession {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode           String   @default("practice")
+  text           String
+  source         String   @default("fallback")
+  status         String   @default("created")
+  rules          Json
+  settingsId     String
+  engineVersion  String   @default("teammate-migration-v1")
+  startedAt      DateTime @default(now())
+  expiresAt      DateTime
+  completedAt    DateTime?
+  durationMs     Float?
+  grossWpm       Float?
+  netWpm         Float?
+  rawAccuracy    Float?
+  finalAccuracy  Float?
+  xpEarned       Int      @default(0)
+  payloadHash    String?
+  result         Json?
+  log            KeystrokeLog?
+  certificate    Certificate?
+  @@index([userId, startedAt])
+}
+
+model KeystrokeLog {
+  sessionId String        @id @db.Uuid
+  session   TypingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  events    Json
+  expiresAt DateTime
+}
+
+model DailyActivity {
+  userId      String @db.Uuid
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  localDate   String
+  timezone    String
+  durationMs  Float  @default(0)
+  @@id([userId, localDate])
+}
+
+// Existing teammate schema concepts retained; no new feature endpoints implied.
+model Badge {
+  id          Int @id @default(autoincrement())
+  code        String @unique
+  name        String
+  description String?
+  users       UserBadge[]
+}
+model UserBadge {
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId Int
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+  @@id([userId, badgeId])
+}
+model Certificate {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String? @unique @db.Uuid
+  session TypingSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  code String @unique
+  netWpm Float
+  accuracy Float
+  isRevoked Boolean @default(false)
+  issuedAt DateTime @default(now())
+}
+model ForumThread {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  isPinned Boolean @default(false)
+  isHidden Boolean @default(false)
+  createdAt DateTime @default(now())
+  posts ForumPost[]
+}
+model ForumPost {
+  id String @id @default(uuid()) @db.Uuid
+  threadId String @db.Uuid
+  thread ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content String
+  isHidden Boolean @default(false)
+  isAccepted Boolean @default(false)
+  createdAt DateTime @default(now())
+  reports ForumReport[]
+}
+model ForumReport {
+  id String @id @default(uuid()) @db.Uuid
+  postId String @db.Uuid
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporterId String @db.Uuid
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason String?
+  status String @default("open")
+  createdAt DateTime @default(now())
+}
+model AdminAuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  adminId String? @db.Uuid
+  admin User? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  action String
+  targetType String?
+  targetId String?
+  details Json?
+  createdAt DateTime @default(now())
+}
+model Theme {
+  id Int @id @default(autoincrement())
+  name String @unique
+  isActive Boolean @default(true)
+  words Word[]
+}
+model Word {
+  id Int @id @default(autoincrement())
+  word String @unique
+  themeId Int?
+  theme Theme? @relation(fields: [themeId], references: [id], onDelete: SetNull)
+}
+model BlockedWord {
+  word String @id
 }

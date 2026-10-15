@@ -9,8 +9,8 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const server = fileURLToPath(new URL('../server/', import.meta.url));
 dotenv.config({ path: fileURLToPath(new URL('../server/.env', import.meta.url)), quiet: true });
 const [operation, ...extra] = process.argv.slice(2);
-const commands = { migrate: ['migrate', 'deploy'], create: ['migrate', 'dev'], studio: ['studio'], test: ['migrate', 'deploy'] };
-if (!(operation in commands)) throw new Error('Expected migrate, create, studio or test');
+const commands = { migrate: ['migrate', 'deploy'], create: ['migrate', 'dev'], studio: ['studio'], test: ['migrate', 'deploy'], seed: [] };
+if (!Object.hasOwn(commands, operation)) throw new Error('Expected migrate, create, studio, test or seed');
 if (process.env.NODE_ENV === 'production') throw new Error('Local database commands cannot run in production');
 if (extra.length && !(operation === 'create' && extra.length === 2 && extra[0] === '--name' && /^[a-z0-9_-]+$/i.test(extra[1]))) {
   throw new Error('Only migration:create accepts arguments: --name short-description');
@@ -26,5 +26,6 @@ function run(args, cwd) {
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
-run([require.resolve('prisma/build/index.js'), ...commands[operation], '--config', 'prisma.config.mjs', ...extra], server);
-if (operation === 'test') run(['--test', 'server/tests/integration/database.test.js'], root);
+if (operation === 'seed') run(['prisma/seed.js'], server);
+else run([require.resolve('prisma/build/index.js'), ...commands[operation], '--config', 'prisma.config.mjs', ...extra], server);
+if (operation === 'test') run(['--test', 'server/tests/integration/database.test.js', 'server/tests/integration/features.test.js'], root);

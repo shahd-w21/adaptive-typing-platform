@@ -8,6 +8,8 @@ This is the single decision log. Preserve dates, rationale and status; update th
 | [0002](#0002) | Accepted scope; visual values/API shapes proposed | Appearance, English/Arabic interface and responsive non-typing pages |
 | [0003](#0003) | Accepted team decision | JavaScript, Tailwind and root client/server folders |
 | [0004](#0004) | Accepted documentation task | Developer-first README and consolidated guides |
+| [0005](#0005) | Structure retained; feature-removal scope superseded by 0006 | One active backend and workspace setup |
+| [0006](#0006) | Accepted migration task | Preserve teammate features in the new architecture |
 
 <a id="0001"></a>
 ## 0001 — Organise project and agent documentation
@@ -94,6 +96,28 @@ Only Markdown changed for this decision. Application code, package manifests, co
 The root README owns the first-clone workflow, daily command contract and reading map. Development consolidates setup/environment/database guidance. Contributing includes AI and Figma handoff. Security includes auth/permissions. This file retains the dated decision history and open questions; current-state remains a short handoff.
 
 This replaces the organisational layout in 0001 without changing product decisions 0002/0003 or SRS requirements. Existing code is explicitly out of scope. Local ports/credentials and root scripts are documented development conventions for foundations to implement/verify, not claims about the current source. No application scripts or configuration are created by this task.
+
+<a id="0005"></a>
+## 0005 — Consolidate the development foundation
+
+- Status: Accepted cleanup scope
+- Date: 2026-10-15
+- Authority: project owner approved the keep/remove plan and instructed implementation
+
+Keep one ES-module backend in `server/src/`, Prisma schema/migrations, and a root npm workspace lockfile. Remove the retired CommonJS backend, SQL bootstrap, obsolete tests, redundant package boundaries and unused backend dependencies. Removed files remain recoverable from commit `68d311f`.
+
+Preserve all existing client files and teammate-owned documentation. The client lockfile remains temporarily for that handoff. Preserve local environments and database volumes. Keep the existing account migration unchanged; future auth design extends it through reviewed migrations. This cleanup implements no replacement product features and changes no SRS requirements. Verification belongs in the development guide.
+
+<a id="0006"></a>
+## 0006 — Migrate the teammate's work instead of discarding its features
+
+- Status: Accepted implementation task
+- Date: 2026-10-15
+- Authority: project owner clarified that the removed backend is a teammate's work and requested migration to the current architecture
+
+Recover the implementation from `68d311f` and preserve its account/profile, practice/scoring, key progress/unlocks, dashboard/progress, XP/level/streak and Admin-check flows in ES-module feature modules under `server/src/`. Retain its supporting schema concepts through additive Prisma migrations; do not run the old destructive/invalid SQL bootstrap. Replace its manual scripts with repeatable tests. Credit the source and document the old-to-new API map.
+
+This supersedes 0005's feature-removal outcome while retaining one entry point, root workspace tooling and the protected frontend boundary. Current SRS scoring, revocation, CSRF and retry rules take precedence over old placeholders. Recovered target/curriculum/reward/integrity defaults remain development policy pending the existing open decisions. The migration is not a legacy database import or completion of every SRS feature. Verification and limitations are in development/API contract; no frontend, commit, push or deployment is authorised by this record alone.
 
 ## Open decisions
 | Decision | When it must be settled |

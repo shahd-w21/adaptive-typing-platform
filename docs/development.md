@@ -1,18 +1,24 @@
 # Development guide
 
-Start with the [README quick start](../README.md#quick-start). Root workspace commands now target the new foundation in `server/src/`; old backend modules remain preserved and unmounted. The teammate's frontend implementation is still pending integration. See the status and handoff below.
+Start with the [README quick start](../README.md#quick-start). Root workspace commands target `server/src/`. The teammate's backend from commit `68d311f` is migrated into that structure; its old CommonJS paths are replaced by feature modules, not a second running server. The Figma frontend is still pending integration.
 
 ## Foundation status and frontend handoff
 
 Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated here. Tailwind integration and client API wiring should be verified together with his actual implementation after it arrives.
 
-The initial database migration contains only the account foundation (`User` and Student/Admin roles). Auth sessions/tokens, curriculum, learning and rewards arrive in their feature phases. No seed command exists yet. Prisma 7 uses the PostgreSQL driver adapter and the JavaScript client generator; generated output is ignored. See [Prisma's upgrade documentation](https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7).
+The original account migration is unchanged. Additive migrations extend it with the teammate's account/profile, curriculum, session/log, reward and supporting schema concepts, plus revocable auth sessions and one-use email tokens. The old destructive SQL bootstrap is not executed. Existing legacy-database rows are not automatically imported or converted; this task migrates implementation and schema into the current Prisma databases. Prisma 7 uses the PostgreSQL adapter and JavaScript client generator; generated output is ignored.
 
-New server source and tests have local ES-module boundaries. The old server package remains CommonJS to preserve old files; new code uses ES modules. Root scripts start only `server/src/server.js`. Do not run the old SQL bootstrap against the new databases.
+The server and its tests use ES modules. HTTP routes delegate to feature services; scoring, recommendations, fallback generation and reward calculations stay pure with explicit inputs. Database work uses Prisma/transaction-scoped helpers; email stays outside transactions. See the [API migration map](api-contract.md#teammate-backend-migration) for old-to-new paths and retained features.
 
-Root `package-lock.json` is authoritative for workspace installs. Nested lockfiles remain untouched during the handoff and should not be independently regenerated. CI installs from the root. Do not run a repository-wide formatter over the teammate's incoming files.
+Root `package-lock.json` is authoritative for workspace installs. The server lockfile was removed. The client lockfile is temporarily preserved for the teammate's handoff; do not independently regenerate it. CI installs from the root. Do not run a repository-wide formatter over the teammate's incoming files.
 
-**Verification:** checks are recorded here after execution; a running health endpoint does not establish authentication or frontend feature correctness. CI is configured but a remote CI run requires the changes to be committed/pushed by the team.
+**Migration verification (15 October 2026):** lint, 13 unit tests and five PostgreSQL integration tests pass. Coverage includes registration and one-use verification, CSRF and role/owner denial, logout/reset/password-change revocation, partial preferences, last-admin protection, practice replay, concurrent submissions without lost XP, identical/conflicting retries, retention with retained retry hashes, account cascades and mastery/prerequisite unlocking. Prisma generation and client production build/server entry syntax are checked separately. Real local Mailpit SMTP accepted a synthetic message; account integration tests use an injected mail sink. Remote CI, Figma UI integration and production acceptance are not verified here.
+
+This checkout uses the existing ignored root `.env` port override 55432 and matching server database URLs because Windows refused 5432. New clones default to 5432; see troubleshooting for overrides. No environment file was replaced and no database volume was reset during cleanup.
+
+**Remaining dependency limitation:** the last audit reports four high-severity findings in Prisma tooling (`prisma`, `@prisma/config`, `deepmerge-ts`, `mysql2`). No forced major-version change or unverified override was applied. Review remediation before release.
+
+**Prototype limits:** the recovered default target of 40 WPM/range 10–250, starter groups, 500 XP per level, minimum activity, expiry and speed/clock tolerances are development migration defaults, not newly accepted product policies. Session-start captures the immutable `teammate-migration-v1` policy. Current SRS formulas, raw-accuracy gate and evidence thresholds replace the old placeholders. Full placement/review/timed/certified modes, pair statistics, difficulty-level engine, AI generation, badges, certificate/forum/admin feature endpoints and deployment acceptance remain outstanding. Their placeholder schema concepts are preserved without claiming their workflows exist. Raw logs expire after the captured 30-day default and startup/hourly cleanup removes overdue logs while retaining results/retry hashes.
 
 To integrate the teammate's older-base work safely:
 
@@ -112,7 +118,7 @@ VITE_API_URL=http://localhost:5000/api/v1
 | Accuracy/mastery/reward/certificate thresholds | Versioned business settings | Not untracked environment overrides |
 | Appearance/UI locale | Account/visitor preferences | Not environment variables or exercise-content language |
 
-Foundation startup validates NODE_ENV, PORT, CLIENT_URL and DATABASE_URL without exposing their values. JWT and SMTP values are reserved for authentication/email implementation; future phases must validate them before enabling those features. Keep local/test/production credentials separate.
+Startup validates NODE_ENV, PORT, CLIENT_URL, DATABASE_URL, a non-placeholder JWT_SECRET of at least 32 characters and SMTP configuration without exposing their values. Empty SMTP authentication is supported for Mailpit. The former SMTP_PASS name is replaced by the documented SMTP_PASSWORD. Keep local/test/production credentials separate.
 
 ## Database workflow
 
@@ -122,7 +128,7 @@ Prisma owns schema and migrations in `server/prisma/`. Root scripts resolve the 
 | --- | --- |
 | First clone or pulling committed schema changes | `npm run db:migrate` applies existing migrations to the development database only |
 | You intentionally change the schema | Coordinate with schema reviewer; `npm run db:migration:create -- --name short-description` creates a development migration |
-| Development content needs loading | Deferred to the content phase; future `db:seed` must reconcile stable IDs/upserts without erasing progress |
+| Starter content needs loading | `npm run db:seed` adds missing key groups and prototype settings version without replacing content/accounts |
 | Inspect data in a browser | `npm run db:studio` opens Prisma Studio for the development database |
 | Integration tests | `npm run test:integration` explicitly targets `TEST_DATABASE_URL`, with an identity check before resets |
 | Deployment | Controlled release applies committed migrations; production procedure reviewed before release |

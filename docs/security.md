@@ -47,7 +47,7 @@ Before release, review dependency/security scan findings with their affected ver
 
 ## Authentication and authorisation
 
-**Status: required behaviour and implementation checklist; no implementation verified.** Source: SRS SYS-1–9 and SYS-48–49. Route examples live in the [API contract](api-contract.md); cross-cutting protections live in [security](security.md).
+**Status: required behaviour and review checklist.** The teammate's migrated account routes implement a subset with acceptance evidence recorded in the [development guide](development.md); this is not a completed security assessment. Source: SRS SYS-1–9 and SYS-48–49. Implemented route details and remaining draft fields live in the [API contract](api-contract.md).
 
 ### Account lifecycle
 

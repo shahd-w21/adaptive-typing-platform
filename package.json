@@ -17,6 +17,7 @@
     "db:up": "docker compose up -d --wait db mailpit",
     "db:stop": "docker compose stop db mailpit",
     "db:generate": "npm run db:generate --workspace=server",
+    "db:seed": "node scripts/database.js seed",
     "db:migrate": "node scripts/database.js migrate",
     "db:migration:create": "node scripts/database.js create",
     "db:studio": "node scripts/database.js studio"
@@ -24,8 +25,8 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "concurrently": "^9.2.1",
+    "dotenv": "^18.0.7",
     "eslint": "^10.10.0",
-    "globals": "^17.12.0",
-    "supertest": "^7.2.2"
+    "globals": "^17.12.0"
   }
 }
