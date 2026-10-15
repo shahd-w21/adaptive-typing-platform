@@ -7,6 +7,7 @@
   "engines": { "node": ">=24.14.0 <25", "npm": ">=11 <12" },
   "scripts": {
     "setup:env": "node scripts/setup-env.js",
+    "predev": "node scripts/check-dev-ports.js",
     "dev": "concurrently --kill-others -n client,server \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "npm run dev --workspace=client -- --host 127.0.0.1 --port 5173 --strictPort",
     "dev:server": "npm run dev --workspace=server",

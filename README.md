@@ -57,6 +57,8 @@ To open a database terminal:
 docker compose exec db psql -U typeflow -d typeflow_dev
 ```
 
+At the `typeflow_dev=#` prompt, use `\conninfo` to inspect the connection, `\dt` to list tables, and `\q` to return to PowerShell. SQL statements need a semicolon, for example `SELECT current_database();`. `database` and port numbers are not standalone SQL commands. If the prompt changes to `typeflow_dev-#`, press `Ctrl+C` to cancel the unfinished statement. The Docker command already selects your database; the host port belongs in connection settings.
+
 For pgAdmin/DBeaver: **host** `localhost`, **port** `5432`, **database** `typeflow_dev`, **user** `typeflow`, **password** `typeflow_local_only`. If port 5432 is unavailable, follow the [port override instructions](docs/development.md#troubleshooting) and use the override in both database URLs and your database tool. Detailed connection, test-database and native PostgreSQL instructions are in the [development guide](docs/development.md#connect-to-postgresql).
 
 ### 4. Start development
@@ -65,7 +67,7 @@ For pgAdmin/DBeaver: **host** `localhost`, **port** `5432`, **database** `typefl
 npm run dev
 ```
 
-The root script starts the client and server together. Keep that terminal open; use another terminal for checks. `Ctrl+C` stops the applications.
+The root script checks client port 5173 and the configured server port (5000 by default), then starts the client and server together. Keep that terminal open; use another terminal for checks. `Ctrl+C` stops the applications. Run one copy at a time. If a port is occupied, the check reports it before starting either app; see [port troubleshooting](docs/development.md#development-ports).
 
 | Service | Documented local address |
 | --- | --- |

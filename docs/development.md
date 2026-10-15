@@ -95,7 +95,7 @@ PostgreSQL CLI reference: [psql documentation](https://www.postgresql.org/docs/1
 
 ## Environment variables
 
-Run `npm run setup:env` to create local files from `server/.env.example` and `client/.env.example` without replacing existing files. It generates a random local JWT secret for a newly created server environment. Restart the affected process after changing its environment.
+Run `npm run setup:env` to create local files from the tracked `server/.env.example` and `client/.env.example` without replacing existing files. It checks for an existing destination before reading its template and generates a random local JWT secret for a newly created server environment. If you have set `TYPEFLOW_DB_PORT` in your shell or ignored root `.env`, newly created server database URLs use that port. Existing server files still require manual updates when changing the Compose port. Restart the affected process after changing its environment.
 
 Documented `server/.env` example:
 
@@ -173,7 +173,20 @@ Use Prisma for ordinary access and parameterised SQL where it makes complex repo
 | Database exists but tables are missing | Apply committed migrations to the correct development database |
 | Verification email missing | Open Mailpit's inbox, check SMTP host/port, then retry the flow |
 | Login cookie missing | Match the exact client origin, credentials option and local cookie policy; retain production protections |
-| Vite starts on another port | Restore port 5173 or update `CLIENT_URL` to match the actual origin |
+| Client/server port occupied | Root `npm run dev` checks availability before starting either app; follow the process-identification steps below. Vite uses strict port 5173 to keep the documented browser origin stable. |
+| Missing environment template | Restore the tracked `client/.env.example` / `server/.env.example` from the repository, then rerun `npm run setup:env`; preserve actual local `.env` files. |
 | A documented script is missing | Foundations have not supplied that part of the target workflow; implement it in the setup task rather than inventing a successful run |
 
 Before deployment, add verified provider/release commands, secret owners, backup/restore evidence, maintenance catch-up and rollback steps here. Hosting, operational/audit/backup retention and final performance environment remain open decisions.
+
+### Development ports
+
+Run only one copy of the applications. If another terminal is already running them, keep using it or press `Ctrl+C` there before starting again. The port check never stops existing processes or silently moves the website to another origin. Availability can change after the check, so the applications still handle binding failures themselves.
+
+To identify listeners in PowerShell:
+
+```powershell
+Get-NetTCPConnection -State Listen -LocalPort 5173,5000 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess
+```
+
+Inspect a reported PID with `Get-Process -Id <PID>` (replace `<PID>` with its number). Stop it only after identifying it as your old development process, preferably through its original terminal. If server `PORT` differs from 5000, inspect that port instead. To intentionally change server `PORT`, update `client/.env`'s `VITE_API_URL` too and restart both apps. Changing a database host port requires updating both server database URLs; it does not change the client/API ports.
