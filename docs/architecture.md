@@ -2,11 +2,11 @@
 
 Version 1.3 — 15 October 2026
 
-This is a proposed structure aligned with [the SRS](srs.md) and [handoff](context/handoff.md). It is not an inventory of the existing codebase, which was not inspected. Paths below are relative to the eventual application repository root; creating these documents does not scaffold the application. See the [documentation index](README.md) for the actual documentation layout.
+This is the target structure aligned with [the SRS](srs.md) and [decisions](decisions.md). Application code is outside this documentation revision. Paths below are relative to the repository root. For first-clone instructions and daily commands, use the [README](../README.md#quick-start); open this reference when working on module boundaries.
 
 ## 1. Repository layout
 
-Use JavaScript ES modules (`import`/`export`), `.jsx` for React components and `.js` for other modules. Tailwind CSS remains the styling choice. `client/` and `server/` sit directly at the repository root; shared code remains in `packages/shared/`. See [decision 0003](decisions/0003-javascript-client-server.md). Planned npm workspaces reference `client`, `server` and `packages/shared`; exact package names, exports and scripts will be verified during implementation.
+Use JavaScript ES modules (`import`/`export`), `.jsx` for React components and `.js` for other modules. Tailwind CSS remains the styling choice. `client/` and `server/` sit directly at the repository root; shared code remains in `packages/shared/`. See [decision 0003](decisions.md#0003). Planned npm workspaces reference `client`, `server` and `packages/shared`; exact package names, exports and scripts will be verified during implementation.
 
 ```text
 typeflow/
@@ -16,19 +16,15 @@ typeflow/
 │   └── shared/
 ├── docs/
 │   ├── srs.md
-│   ├── context/                    # handoff and current-state notes
+│   ├── context/current-state.md    # short phase/task handoff
 │   ├── architecture.md
-│   ├── database.md                 # practical persistence/migration guide
-│   ├── ai-workflow.md              # task prompts and Figma handoff
+│   ├── development.md              # PostgreSQL, environment and migrations
 │   ├── api-contract.md              # draft; agreed at phase boundaries
 │   ├── testing.md                   # verification and evaluation guide
 │   ├── content-guide.md
-│   ├── setup.md
-│   ├── environment.md
-│   ├── auth.md
 │   ├── security.md
 │   ├── contributing.md
-│   └── decisions/
+│   └── decisions.md                # history, open questions and record template
 ├── AGENTS.md                       # concise repository-wide agent guidance
 ├── DESIGN.md                       # proposed visual system and Figma brief
 ├── .github/
@@ -46,7 +42,7 @@ typeflow/
 └── README.md
 ```
 
-Root scripts should cover development, database startup/migrations/seeding, lint, tests, build, simulation and content validation. Do not create empty application files just to match this tree; add each module when its first behaviour is implemented. Documentation now exists for the planned workflows; its existence does not mean the corresponding application behaviour is implemented. Exact commands remain unverified in setup.md.
+The [README](../README.md#every-day) defines the target root-script contract. Foundations must implement and verify those scripts, workspace resolution, environment examples and Docker services. The [development guide](development.md) defines local service/connection conventions. Do not create empty application files just to match this tree during documentation work.
 
 ## 2. Backend layout
 
@@ -155,7 +151,7 @@ Feature folders may use routes, controller, service, repository and local schema
 7. LLM, email and PDF calls never run inside a result-saving transaction.
 8. Pure modules do not read `process.env`, `Date.now()` or global random generators. Pass the effective time and random source/seed in where required, so simulations/tests can reproduce behaviour. Browser event capture remains responsible for reading its monotonic clock outside pure replay functions.
 
-Database implementation practices are in [database.md](database.md); presentation-to-feature handoff is in [ai-workflow.md](ai-workflow.md).
+Persistence practices are in [development](development.md#database-workflow); Figma-to-feature handoff is in [contributing](contributing.md#using-ai-agents).
 
 ## 3. Frontend layout
 
@@ -242,7 +238,7 @@ Do not let polling or dashboard rendering interfere with typing. Large-text and 
 
 ### Presentation, interface language and responsive layouts
 
-SRS SYS-53–56 and [decision 0002](decisions/0002-appearance-localisation-responsive.md) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. This extends the target architecture only; no existing application file or dependency was assessed or created.
+SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. This extends the target architecture only; no existing application file or dependency was assessed or created.
 
 PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query still owns the account DTO. Shared user schemas validate the draft `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
 

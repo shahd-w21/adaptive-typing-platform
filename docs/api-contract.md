@@ -59,7 +59,7 @@ Outside the base path: proposed `GET /health/live` and `GET /health/ready`. Plac
 
 ## Presentation-preference draft
 
-Required behaviour is recorded in [decision 0002](decisions/0002-appearance-localisation-responsive.md); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
+Required behaviour is recorded in [decision 0002](decisions.md#0002); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
 
 - Proposed `preferences.themePreference`: `light`, `dark` or `system`; default `system`. Return the stored choice, not a device-specific resolved mode.
 - Proposed `preferences.uiLocale`: `en` or `ar`; default `en`. Interface language never becomes a generation/content-language parameter. JSON numbers/UTC timestamps, IDs, codes, raw events and assignment text keep canonical representations.

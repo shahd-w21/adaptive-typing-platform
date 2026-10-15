@@ -1,12 +1,12 @@
 # Team and AI contribution workflow
 
-**Status: working workflow for the documented target project.** Implementation commands remain unverified until recorded in [setup](setup.md).
+**Status: working workflow for the documented target project.** Implementation commands remain unverified until recorded in [setup](../README.md#quick-start).
 
 ## Before a task
 
 Read [current state](context/current-state.md) and the relevant guide/SRS sections. State the requested outcome, affected requirements, dependencies and a concrete completion check. For phase work, agree shared contracts before teammates implement independently. Do not turn every small fix into a planning exercise.
 
-Use the existing five-person phase plan in [handoff](context/handoff.md); no teammate assignments are invented here. Task owners and reviewers: TBD. Shared schema/contracts need a coordinating reviewer, not exclusive editing rights.
+Five people work in parallel within each phase; owners/reviewers are assigned at the phase meeting. Shared schema/contracts need a coordinating reviewer, not exclusive editing rights.
 
 ## Branches and reviews
 
@@ -14,7 +14,7 @@ Use a short feature branch and focused PR; do not push directly to `main`. Prese
 
 For AI-assisted work, give the agent the task, scope, relevant contract and completion check. The author remains responsible for reviewing generated changes and evidence. Do not run two agents editing the same files without explicit coordination. Never paste secrets into prompts.
 
-Use [ai-workflow.md](ai-workflow.md) for a bounded task prompt and the Figma-to-feature handoff. Use [database.md](database.md) for schema changes rather than guessing commands from the proposed folder tree.
+The [AI section below](#using-ai-agents) contains a task prompt and Figma handoff. Use [development](development.md#database-workflow) for schema changes rather than guessing commands from the proposed folder tree.
 
 ## Phase boundaries and parallel work
 
@@ -23,6 +23,21 @@ At phase start, agree the routes/shared schemas, pure function inputs/outputs, n
 Use a mid-phase sync to compare actual payloads and function outputs against those contracts. Keep fixtures schema-valid and replace the demonstrated path with real services before the integration demo. End the phase by running the complete user journey and its relevant failure/retry case; individual screenshots are not integration evidence.
 
 Keep shared-file edits small and coordinated, including `server/prisma/schema.prisma`, server routes, `client/src/app/router.jsx`, providers, query keys, shared exports and environment examples. Prefer a quick reviewed PR rather than waiting for an entire ownership area to finish. Track allocation stays with the team; the reference material's fixed tracks are not adopted here.
+
+## Phase goals
+
+Suggested phase goals, retained from the earlier handoff:
+
+| Phase | End-to-end goal |
+| --- | --- |
+| Foundations | Agreed contracts, setup/scripts, schema plan, shared design foundations and typing/scoring spike |
+| Core loop | Register/login → assigned text → typing → official result → saved history |
+| Adaptation | Placement, keyboard map, weaknesses, mastery, unlocking and reviews |
+| AI and motivation | Validated generation/fallback, rewards and initial admin analytics |
+| Supporting features | Forum, certificates, settings and complete required administration |
+| Release/evaluation | Simulation, volunteer pilot, accessibility/performance checks, deployment and report |
+
+Put the strongest relevant developers on typing capture and scoring/adaptation. Preserve time for evaluation and integration; confirm the real deadline/rubric before allocating days. A phase finishes when its demo runs, not when individual branches look complete.
 
 ## Definition of done
 
@@ -46,6 +61,53 @@ Reviewer:
 Done when:
 ```
 
-Record major scope, architecture, policy or contract choices in [decisions](decisions/README.md). Update [current state](context/current-state.md) only for meaningful phase/status changes; avoid per-task chat logs.
+Record major scope, architecture, policy or contract choices in [decisions](decisions.md). Update [current state](context/current-state.md) only for meaningful phase/status changes; avoid per-task chat logs.
 
 For Codex, start the task in this repository so its root instructions can be discovered. Other tools should be given AGENTS.md explicitly if they do not read it automatically. Reference: [official OpenAI guidance for AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+
+## Using AI agents
+
+**Status: team workflow guidance; no design-to-code run or application check is verified.** Follow [AGENTS.md](../AGENTS.md), the task's scope and relevant agreed contracts. Humans own the changes they submit and must be able to explain the diff.
+
+### Give an agent a bounded task
+
+```text
+Task: <one observable outcome>
+Phase / relevant SYS IDs: <references>
+Read first: AGENTS.md and <specific guide sections>
+Contract: <agreed endpoint/schema/function, or explicitly ask for a proposal>
+Scope: <owned feature and any coordinated shared-file edits>
+Dependencies: <available service/contract or named development fixture>
+Done when: <behaviour and meaningful checks>
+Constraints: preserve JavaScript/JSX, client/server structure and existing changes
+Verification: run relevant available checks; report results and missing checks
+```
+
+Name the shared boundary before two teammates implement opposite sides. Avoid simultaneously assigning agents to the same routing, provider, export or schema files. Request small coordinated changes when shared edits are necessary; ownership should not stall a whole feature.
+
+Contract-valid development mocks and synthetic fixtures remain allowed for parallel work. Label and validate them against shared schemas. Cover failure/empty states as well as success. Do not fake authentication in production or substitute mocked screenshots for integration evidence. The phase demo must use the real API and database for the flow it claims to complete.
+
+### Figma to the planned architecture
+
+Design foundations first, then keep screen design about one phase ahead of implementation. Use [DESIGN.md](../DESIGN.md) for current tokens, component states, Light/Dark, English/Arabic and responsive coverage; do not replace it with the older reference template.
+
+1. Identify the approved frame/node, appearance, language and viewport, plus its primary and edge states. Record a stable design link and destination feature.
+2. Map Figma variable/style names to the project's semantic styling tokens. Map existing Figma components to reusable UI components before generating another copy. Code Connect may be used where available and useful; it is not a new baseline dependency.
+3. Implement one screen or bounded section at a time in `client/src/features/<feature>/`. Reuse `client/src/components/ui/` and layout components.
+4. Keep visual components driven by props. Connect pages through feature hooks, request functions in `client/src/api/`, and the shared client. Reuse existing Context providers and TanStack Query conventions.
+5. Use the agreed runtime schemas and fixtures while backend work proceeds. Sample policy values in a frame are examples, not approved reward, mastery or certificate thresholds.
+6. Review the rendered result against Figma, including loading/error states, keyboard focus, Arabic RTL shell with LTR typing content, both appearance modes and the relevant viewport. Record what was actually checked.
+
+Figma describes presentation and interactions. It cannot determine scoring, event timestamps, authentication, API contracts or learning rules. Implement these through their existing architecture and tests, even when an agent assists with the code. Do not replace the typing engine or create duplicate contexts/request layers to make generated markup work. Keep JavaScript/JSX and Tailwind CSS.
+
+### Review generated changes
+
+- Does the diff fulfil the task without unrelated rewrites or unexplained dependencies?
+- Do runtime validation, ownership and role checks cover the boundary?
+- Are pure functions independent of I/O, hidden clocks and unseeded randomness?
+- Are retries/concurrent updates safe, and secrets/private input absent from logs and UI?
+- Does the UI reuse shared components, query keys, tokens and required states?
+- Do meaningful tests or visual checks support the claims, with unrun checks disclosed?
+- Are affected contracts/guides updated without treating a proposal as an approved decision?
+
+Keep agent prompts and review evidence concise. Do not copy full chat histories, secrets or real learner logs into project context. A focused handoff states the outcome, affected area, evidence, unresolved issue and next step.

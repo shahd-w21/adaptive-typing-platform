@@ -4,11 +4,11 @@
 
 Version 0.2 · 14 October 2026 · Design owner/reviewer: TBD · Figma file: not created.
 
-Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; exact visual values remain proposed. See [decision 0002](docs/decisions/0002-appearance-localisation-responsive.md). Unresolved learning policies remain separate.
+Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; exact visual values remain proposed. See [decision 0002](docs/decisions.md#0002). Unresolved learning policies remain separate.
 
 ## 1. Read this before designing
 
-The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) for feature boundaries, [API contract](docs/api-contract.md) for draft data shapes, [content guide](docs/content-guide.md) for exercise constraints, and [auth](docs/auth.md)/[security](docs/security.md) for access and privacy. These describe the target product. **Ignore the current application code and do not derive screens from it.**
+The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) for feature boundaries, [API contract](docs/api-contract.md) for draft data shapes, [content guide](docs/content-guide.md) for exercise constraints, and [auth](docs/security.md#authentication-and-authorisation)/[security](docs/security.md) for access and privacy. These describe the target product. **Ignore the current application code and do not derive screens from it.**
 
 - TypeFlow teaches English touch typing on a physical desktop QWERTY keyboard. Typing targets viewports at least 1024 CSS pixels wide; other pages adapt to narrow screens.
 - The interface supports English and Arabic. Translate website controls and system explanations, never assigned passages, keyboard letters, authored content or the curriculum. An Arabic interface does not enable Arabic typing lessons.

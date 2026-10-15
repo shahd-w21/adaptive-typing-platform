@@ -10,9 +10,9 @@ Version: 1.3 — 15 October 2026
 
 ## 1. Preface and document status
 
-This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.3 adopts JavaScript and root-level `client/` / `server/`, retaining Tailwind CSS and the v1.2 Light/Dark, English/Arabic interface and desktop/mobile presentation scope. No implementation was inspected to produce this revision. See [decision 0002](decisions/0002-appearance-localisation-responsive.md) and [decision 0003](decisions/0003-javascript-client-server.md).
+This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.3 adopts JavaScript and root-level `client/` / `server/`, retaining Tailwind CSS and the v1.2 Light/Dark, English/Arabic interface and desktop/mobile presentation scope. No implementation was inspected to produce this revision. See [decision 0002](decisions.md#0002) and [decision 0003](decisions.md#0003).
 
-This SRS is the requirements baseline. [context/handoff.md](context/handoff.md) explains decisions and remaining questions. [architecture.md](architecture.md) proposes an implementation structure; it does not add requirements. Start at the [documentation index](README.md) for teammate and agent guides.
+This SRS is the requirements baseline. [Decisions](decisions.md) preserves rationale and open questions. [Architecture](architecture.md) describes the target implementation structure; it does not add requirements. Start at the [README](../README.md#quick-start) for onboarding and everyday commands.
 
 Numerical engine parameters are initial engineering defaults, not experimentally established learning thresholds. Items explicitly marked **TBD** require team or course confirmation. New behavioural defaults in this revision are documented design choices and may be changed through a recorded decision.
 

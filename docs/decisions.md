@@ -1,0 +1,129 @@
+# Decisions and open questions
+
+This is the single decision log. Preserve dates, rationale and status; update the SRS when a decision changes product behaviour. Historical setup statements describe their date and do not certify implementation. Only a human/team decision may be marked Accepted.
+
+| Record | Status | Subject |
+| --- | --- | --- |
+| [0001](#0001) | Historical; organisation updated by 0004 | Initial documentation layout |
+| [0002](#0002) | Accepted scope; visual values/API shapes proposed | Appearance, English/Arabic interface and responsive non-typing pages |
+| [0003](#0003) | Accepted team decision | JavaScript, Tailwind and root client/server folders |
+| [0004](#0004) | Accepted documentation task | Developer-first README and consolidated guides |
+
+<a id="0001"></a>
+## 0001 — Organise project and agent documentation
+
+- Status: Accepted for the current documentation task
+- Date: 2026-10-13
+- Decision authority: project owner's request in this chat
+- Scope: documentation organisation only; no new product/API/design approval
+
+### Decision
+
+Keep documentation within `adaptive-typing-platform`. Put concise agent instructions and the unapproved design template at the repository root. Use `docs/README.md` as the guide index, `docs/context/` for current status and long-form handoff, and `docs/decisions/` for dated decisions. Rename the detailed project-structure guide to architecture.md and preserve the SRS requirements.
+
+### Why
+
+Teammates and agents need a shared entry point and task-specific reading paths. Separating requirements, draft contracts, context and design placeholders reduces duplicated rules and prevents proposals being mistaken for implemented features.
+
+### Consequences
+
+Update local links after moving documents. Do not inspect or modify application code during this work: the owner explicitly said it does not match the documentation and should be ignored for now. Setup/API examples remain unverified and DESIGN.md remains a template. Future explicit implementation tasks can inspect and change relevant code within their authorised scope.
+
+<a id="0002"></a>
+## 0002 — Appearance, interface language and desktop/mobile presentation
+
+- Status: Accepted scope for this documentation task; visual values and API shapes remain Proposed
+- Date: 2026-10-14
+- Authority: project owner's explicit request for Light/Dark, interface-only language switching and desktop/mobile design; owner confirmed English and Arabic
+- Implementation/design reviewers: TBD
+- Affected requirements/contracts: SRS v1.2 SYS-53–56, section 2.2 and section 10.5; DESIGN.md; draft account-preference contract
+
+### Context
+
+The previous design brief specified Light only. SRS v1.1's phrase “languages other than English” did not distinguish interface language from exercise language. The owner now requires both appearance modes and English/Arabic website controls, while preserving content language, and asks for explicit desktop/mobile layouts.
+
+### Decision
+
+Require Light/Dark appearance and English/Arabic interface localisation on public, Student and Admin pages. Arabic has an RTL shell; assigned typing text, English curriculum and the physical QWERTY guide stay English/LTR. Authored/user content and certificate PDFs are not automatically translated. Require desktop/mobile layouts for non-typing pages and their edge states. Mobile typing/touch keyboards remain out of scope; phone typing entry points show desktop guidance.
+
+Document labeled appearance/language controls, persistence and failure recovery. The design defaults are System appearance (resolving Light/Dark, Light fallback) and English interface; signed-in account preferences take precedence over guest choices. These defaults are design choices made within this task, not evidence of a separate team approval. They must not affect session timing, scoring, content generation, learning progress, timezone or authorisation.
+
+### Why
+
+Layered navy Dark colours preserve the educational identity without a bright study canvas. Interface-only localisation makes the site usable in Arabic while preserving a single English curriculum and scoring contract. Responsive non-typing pages support phone access without silently adding a new typing/input model.
+
+### Consequences and follow-up
+
+- [SRS](srs.md) owns the required behaviour and defaults; [DESIGN.md](../DESIGN.md) owns proposed Light/Dark tokens, Arabic typography/RTL rules and responsive screen matrix.
+- [Architecture](architecture.md) and [API contract](api-contract.md) describe presentation state and proposed owner-only preference fields. Exact schemas and reason-code translation payloads still need phase agreement.
+- [Testing](testing.md) covers mode/locale/viewport combinations, unchanged English assignments and preference persistence. Token contrast calculations do not verify rendered UI or an implemented feature.
+- No application code, packages, database migrations or Figma artifacts are changed by this decision. Native Arabic review, complete translation coverage, Figma review and browser/accessibility verification remain pending.
+- This replaces the former Light-only visual restriction and clarifies the English-only content boundary. [0001](decisions.md#0001) remains the historical documentation-organisation decision; its template status described that earlier date.
+
+<a id="0003"></a>
+## 0003 — Use JavaScript and root-level client/server folders
+
+- Status: Accepted
+- Date: 2026-10-15
+- Decision authority: project owner reporting the team's decision in this chat
+- Affected areas: SRS, architecture, setup, agent instructions and teammate guides
+
+### Decision
+
+Use JavaScript throughout the application/shared package, `.jsx` for React components and `.js` for other modules, scripts, tests and configuration examples. Use ES modules. Retain Tailwind CSS and the rest of the agreed stack.
+
+Place the frontend in root-level `client/` and the backend in root-level `server/`. Keep shared runtime Zod schemas, constants and pure metric functions in `packages/shared/`. Planned npm workspaces reference these locations.
+
+### Why
+
+The team chose JavaScript and these folder names. Teammates and agents need a consistent target. This replaces the previous TypeScript and apps/web/apps/api proposal.
+
+### Consequences
+
+Use runtime validation, documented JSON contracts, optional JSDoc, linting, tests and builds. Static-type compilation/type-check scripts are not required. Preserve scoring, auth, privacy, localisation, responsive-layout and design requirements.
+
+Only Markdown changed for this decision. Application code, package manifests, configuration and actual folders were not migrated or validated. Setup commands and API examples retain their unverified/draft status. Reconcile relevant code with this target during a later implementation task.
+
+<a id="0004"></a>
+## 0004 — Consolidate documentation around developer onboarding
+
+- Status: Accepted for this documentation task
+- Date: 2026-10-15
+- Authority: project owner's request to reduce Markdown fragmentation and guide human developers
+
+The root README owns the first-clone workflow, daily command contract and reading map. Development consolidates setup/environment/database guidance. Contributing includes AI and Figma handoff. Security includes auth/permissions. This file retains the dated decision history and open questions; current-state remains a short handoff.
+
+This replaces the organisational layout in 0001 without changing product decisions 0002/0003 or SRS requirements. Existing code is explicitly out of scope. Local ports/credentials and root scripts are documented development conventions for foundations to implement/verify, not claims about the current source. No application scripts or configuration are created by this task.
+
+## Open decisions
+| Decision | When it must be settled |
+| --- | --- |
+| Does the course require training a model? | Before committing to the engine implementation |
+| Actual deadline, marking rubric, required diagrams/prototypes | Before task allocation |
+| Default target WPM, permitted range and final curriculum groups | Before placement/mastery implementation |
+| LLM provider/model, budget, timeout and service limits | Before integration; fallback can be built first |
+| Hosting and database/email services | Before deployment design |
+| Certified duration, net WPM/raw accuracy thresholds, cooldown/attempt limits and public display name | Before certificate implementation |
+| XP/level formulas, daily-goal units, minimum reward activity and timezone-change policy | Before gamification implementation |
+| Integrity thresholds, clock tolerance, session expiry and request-size limits | Before scoring acceptance tests are finalised |
+| Audit/operational/backup retention and deletion procedure | Before production data is collected |
+| Reference device/load environment and production capacity | Before performance acceptance |
+| Final project name/branding | Before polished UI and report submission |
+
+The earlier proposal of a 3-minute certificate at 30 net WPM and 95% raw accuracy remains a candidate, not an approved certification standard. Similarly, 250 WPM and 15 ms timing heuristics need calibration before becoming rejection rules.
+
+The engine is a statistical adaptation system with LLM-assisted text. No trained-model component is currently specified. If the rubric requires one, revise the design and evaluation plan rather than presenting an API call as model training.
+## Record template
+
+Append the next unused numbered entry; keep records short. Use Proposed, Accepted, Rejected or Superseded. Record the real decision date and authority; do not invent approvals.
+
+```text
+NNNN — Title
+Status:
+Date / owner / reviewers:
+Affected requirements/contracts:
+Context:
+Decision and boundaries:
+Why / alternative / tradeoff:
+Consequences / verification / replacement if superseded:
+```

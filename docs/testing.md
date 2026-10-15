@@ -1,6 +1,6 @@
 # Testing and acceptance
 
-**Status: verification plan; no application checks have been executed as part of documentation work.** Use [setup](setup.md) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+**Status: verification plan; no application checks have been executed as part of documentation work.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
 
 ## Test layers
 
