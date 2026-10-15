@@ -1,9 +1,6 @@
-import React from 'react';
-import { useTranslation } from '../../i18n/useTranslation.js';
 import { ShieldIcon } from '../../components/ui/Icons.jsx';
 
 export function CertificatesView({ onVerifyClick }) {
-  const { t } = useTranslation();
 
   const certificates = [
     {

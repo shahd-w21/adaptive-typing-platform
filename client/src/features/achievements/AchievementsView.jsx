@@ -1,10 +1,5 @@
-import React from 'react';
-import { useTranslation } from '../../i18n/useTranslation.js';
-import { FlameIcon, TrophyIcon, CheckIcon } from '../../components/ui/Icons.jsx';
 
 export function AchievementsView() {
-  const { isRTL } = useTranslation();
-
   const badges = [
     { id: 'b1', title: 'First Touch', desc: 'Completed your first typing session', earned: true, date: 'Oct 11, 2026', icon: '🌱' },
     { id: 'b2', title: 'Home Row Master', desc: 'Passed Home Row gate with >95% accuracy', earned: true, date: 'Oct 13, 2026', icon: '👑' },

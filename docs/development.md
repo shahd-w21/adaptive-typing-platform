@@ -30,6 +30,12 @@ To integrate the teammate's older-base work safely:
 
 No merge or commit is performed automatically by setup. Screenshots identify the protected paths, but cannot guarantee the contents of a future commit or guarantee zero conflicts with the earlier refactor.
 
+## GitHub CI
+
+[The CI workflow](../.github/workflows/ci.yml) uses Ubuntu 24.04 and the Node.js version in `.nvmrc`. It installs all workspaces from the root lockfile, generates Prisma, runs lint, unit tests and PostgreSQL integration tests, then builds the client and checks server entry syntax. It supplies an ephemeral `typeflow_test` database and CI-only configuration; integration tests inject a mail sink. Failed steps stop later checks.
+
+Frontend lint cleanup retains the existing rules. The preferences context and `usePreferences` hook live in `client/src/context/preferences.js`, while `PreferencesContext.jsx` exports the provider component for React Fast Refresh.
+
 ## Local services
 
 The development setup runs Node applications on the host and PostgreSQL/Mailpit in Docker Compose:

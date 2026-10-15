@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 // Standard English Desktop QWERTY Layout rows
 const KEYBOARD_ROWS = [

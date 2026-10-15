@@ -1,4 +1,4 @@
-import { usePreferences } from '../context/PreferencesContext.jsx';
+import { usePreferences } from '../context/preferences.js';
 import en from './dictionaries/en.json';
 import ar from './dictionaries/ar.json';
 

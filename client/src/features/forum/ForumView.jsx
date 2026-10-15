@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../i18n/useTranslation.js';
+import { useState } from 'react';
 import { CheckIcon } from '../../components/ui/Icons.jsx';
 
 export function ForumView() {
-  const { isRTL } = useTranslation();
   const [showNewThreadModal, setShowNewThreadModal] = useState(false);
   const [threads, setThreads] = useState([
     {

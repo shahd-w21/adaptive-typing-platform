@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../i18n/useTranslation.js';
+import { useState } from 'react';
 import { PlayIcon, CheckIcon, LockIcon } from '../../components/ui/Icons.jsx';
 import { KeyboardGuide } from '../typing/components/KeyboardGuide.jsx';
 
 export function LearningPath({ onStartExercise }) {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('path'); // 'path' | 'map'
   const [selectedKey, setSelectedKey] = useState('f');
 

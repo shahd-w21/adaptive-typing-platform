@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { usePreferences } from '../../../context/PreferencesContext.jsx';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { usePreferences } from '../../../context/preferences.js';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { KeystrokeRecorder } from '../engine/keystrokeRecorder.js';
 import { computeLiveMetrics, computeOfficialResults } from '../engine/liveMetrics.js';

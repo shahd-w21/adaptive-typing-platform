@@ -1,9 +1,8 @@
-import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
-import { PlayIcon, FlameIcon, TrophyIcon, ArrowRightIcon, CheckIcon } from '../../components/ui/Icons.jsx';
+import { PlayIcon, FlameIcon, ArrowRightIcon, CheckIcon } from '../../components/ui/Icons.jsx';
 
 export function Dashboard({ onStartPractice, onNavigate }) {
-  const { t, isRTL } = useTranslation();
+  const { isRTL } = useTranslation();
 
   const recentSessions = [
     { id: 's1', mode: 'Adaptive Practice', netWpm: 48, rawAccuracy: 96, date: 'Today, 2:30 PM' },

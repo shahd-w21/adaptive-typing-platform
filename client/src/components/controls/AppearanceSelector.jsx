@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { useState, useRef, useEffect } from 'react';
+import { usePreferences } from '../../context/preferences.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { SunIcon, MoonIcon, MonitorIcon, CheckIcon } from '../ui/Icons.jsx';
 
 export function AppearanceSelector({ compact = false }) {
-  const { themePreference, setThemePreference, resolvedTheme } = usePreferences();
+  const { themePreference, setThemePreference } = usePreferences();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);

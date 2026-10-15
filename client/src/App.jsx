@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { PreferencesProvider, usePreferences } from './context/PreferencesContext.jsx';
+import { useState, useEffect } from 'react';
+import { PreferencesProvider } from './context/PreferencesContext.jsx';
 import { PublicHeader } from './components/layout/PublicHeader.jsx';
 import { StudentShell } from './components/layout/StudentShell.jsx';
 import { DeviceGuidance } from './components/layout/DeviceGuidance.jsx';
@@ -238,7 +238,7 @@ function TypeFlowApp() {
 
       {currentView === 'certificates' && (
         <CertificatesView
-          onVerifyClick={(code) => {
+          onVerifyClick={() => {
             setCurrentView('verify-cert');
           }}
         />

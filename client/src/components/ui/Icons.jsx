@@ -1,4 +1,3 @@
-import React from 'react';
 
 export function SunIcon({ size = 20, className = '' }) {
   return (

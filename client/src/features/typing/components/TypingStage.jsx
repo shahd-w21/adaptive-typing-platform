@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { usePreferences } from '../../../context/PreferencesContext.jsx';
+import { useRef, useEffect } from 'react';
+import { usePreferences } from '../../../context/preferences.js';
 
 export function TypingStage({
   assignedText = '',

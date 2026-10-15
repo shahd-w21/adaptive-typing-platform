@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
-import { KeyboardIcon, CheckIcon, ArrowRightIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
+import { ArrowRightIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
 
-export function LandingPage({ onStartLearning, onLogin, onVerifyCert }) {
-  const { t, isRTL } = useTranslation();
+export function LandingPage({ onStartLearning, onLogin }) {
+  const { isRTL } = useTranslation();
 
   return (
     <div style={{ paddingBottom: '60px' }}>

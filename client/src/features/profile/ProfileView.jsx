@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { useState } from 'react';
+import { usePreferences } from '../../context/preferences.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { SunIcon, MoonIcon, MonitorIcon, AlertCircleIcon } from '../../components/ui/Icons.jsx';
 

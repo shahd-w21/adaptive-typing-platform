@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-
-const PreferencesContext = createContext(null);
+import { useState, useEffect, useMemo } from 'react';
+import { PreferencesContext } from './preferences.js';
 
 const STORAGE_KEYS = {
   THEME: 'typeflow_theme_pref',
@@ -97,12 +96,4 @@ export function PreferencesProvider({ children }) {
       {children}
     </PreferencesContext.Provider>
   );
-}
-
-export function usePreferences() {
-  const context = useContext(PreferencesContext);
-  if (!context) {
-    throw new Error('usePreferences must be used within a PreferencesProvider');
-  }
-  return context;
 }

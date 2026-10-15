@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { MonitorIcon, KeyboardIcon, ArrowLeftIcon } from '../ui/Icons.jsx';
 

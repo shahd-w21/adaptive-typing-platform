@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';

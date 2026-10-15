@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../i18n/useTranslation.js';
+import { useState } from 'react';
 import { PlayIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
 
 export function TestsView({ onStartTimed, onStartCertified }) {
-  const { t } = useTranslation();
   const [selectedDuration, setSelectedDuration] = useState(3);
   const [consentName, setConsentName] = useState(true);
 

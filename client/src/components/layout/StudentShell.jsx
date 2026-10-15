@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
@@ -7,7 +7,6 @@ import {
   FlameIcon,
   TrophyIcon,
   MenuIcon,
-  XIcon,
 } from '../ui/Icons.jsx';
 
 export function StudentShell({
@@ -17,7 +16,7 @@ export function StudentShell({
   user = { name: 'Layla', streak: 5, xp: 1420, level: 3 },
 }) {
   const { t, isRTL } = useTranslation();
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [, setMobileDrawerOpen] = useState(false);
 
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: '📊' },

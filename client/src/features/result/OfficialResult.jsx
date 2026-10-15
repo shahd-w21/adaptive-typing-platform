@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { TrophyIcon, FlameIcon, ArrowRightIcon, CheckIcon, RotateCcwIcon } from '../../components/ui/Icons.jsx';
 
