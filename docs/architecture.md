@@ -46,6 +46,12 @@ The [README](../README.md#every-day) defines the target root-script contract. Fo
 
 ## 2. Backend layout
 
+The tree below includes future implementation files. Reserved JavaScript files contain only `Coming soon` comments describing their responsibility; they have no exports, implementation or runtime wiring. Existing implementations remain in place. Some planned extractions already have working behavior in other files, so extend/refactor that behavior rather than building a second implementation. Empty `.gitkeep` markers only preserve directories in Git.
+
+Content placeholders (`keygroups.json`, `themes.json` and `wordlists/example.json`) are empty JSON arrays; `blocked-words.txt` is empty. They are not approved curriculum, a working filter or inputs to the current seed. The existing seed continues using `modules/settings/starter.js`. Replace these placeholders with reviewed content and agreed schemas when implementing the importer. JavaScript test/fixture placeholders contain no assertions and do not count as test coverage.
+
+The active session module is `src/modules/sessions/`, matching the migrated API implementation. Use it for the single lifecycle across all modes; the earlier `typing/` name refers to the same responsibility, not a second module. Existing auth tokens stay in `modules/auth/tokens.js`, and combined middleware/helpers need not be split just to match the proposed filenames below. Current test commands use Node's built-in test runner; `vitest.config.js` below is a future option, not a setup prerequisite.
+
 ```text
 server/
 ├── prisma/
@@ -96,7 +102,7 @@ server/
 │   │   │   ├── placement.js
 │   │   │   ├── buildSpec.js
 │   │   │   └── *.test.js
-│   │   ├── typing/                 # ONE session lifecycle for all modes
+│   │   ├── sessions/               # ONE session lifecycle for all modes
 │   │   │   ├── routes.js
 │   │   │   ├── controller.js
 │   │   │   ├── startSession.js
