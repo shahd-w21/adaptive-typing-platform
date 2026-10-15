@@ -27,31 +27,17 @@ export function LanguageSelector({ compact = false }) {
   const currentLang = languages.find((l) => l.code === uiLocale) || languages[0];
 
   return (
-    <div className="language-selector" ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="relative inline-block" ref={containerRef}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${t('preferences.language')}: ${currentLang.label}`}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          height: compact ? '36px' : '40px',
-          padding: '0 12px',
-          backgroundColor: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border-subtle)',
-          borderRadius: 'var(--radius-pill)',
-          color: 'var(--color-text-primary)',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          fontSize: '14px',
-          fontWeight: 700,
-          transition: 'border-color var(--motion-fast)',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-border-control)')}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border-subtle)')}
+        className={[
+          "flex items-center gap-2 py-0 px-3 bg-surface border border-border-subtle rounded-full text-ink cursor-pointer [font-family:inherit] text-[14px] font-bold [transition:border-color_var(--motion-fast)] hover:border-border-control",
+          compact ? 'h-9' : 'h-10',
+        ].filter(Boolean).join(' ')}
       >
         <GlobeIcon size={16} />
         {!compact && <span>{currentLang.label}</span>}
@@ -59,20 +45,9 @@ export function LanguageSelector({ compact = false }) {
 
       {open && (
         <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            insetInlineEnd: 0,
-            zIndex: 100,
-            width: '260px',
-            backgroundColor: 'var(--color-bg-surface)',
-            border: '1px solid var(--color-border-subtle)',
-            borderRadius: 'var(--radius-control)',
-            boxShadow: 'var(--shadow-popover)',
-            padding: '8px',
-          }}
+          className="absolute top-[calc(100%_+_6px)] end-0 z-100 w-65 bg-surface border border-border-subtle rounded-control shadow-popover p-2"
         >
-          <ul role="listbox" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <ul role="listbox" className="list-none m-0 p-0">
             {languages.map((lang) => {
               const isSelected = uiLocale === lang.code;
               return (
@@ -91,24 +66,10 @@ export function LanguageSelector({ compact = false }) {
                       setOpen(false);
                     }
                   }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: isSelected ? 700 : 400,
-                    color: isSelected ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                    backgroundColor: isSelected ? 'var(--color-learning-soft)' : 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--color-bg-subtle)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
+                  className={[
+                    "flex items-center justify-between py-2.5 px-3 rounded-lg cursor-pointer text-[15px]",
+                    isSelected ? 'font-bold text-learning-strong bg-learning-soft' : 'font-normal text-ink bg-transparent hover:bg-subtle',
+                  ].filter(Boolean).join(' ')}
                 >
                   <span>{lang.label}</span>
                   {isSelected && <CheckIcon size={16} />}
@@ -118,15 +79,7 @@ export function LanguageSelector({ compact = false }) {
           </ul>
 
           <div
-            style={{
-              marginTop: '8px',
-              paddingTop: '8px',
-              borderTop: '1px solid var(--color-border-subtle)',
-              fontSize: '12px',
-              lineHeight: '16px',
-              color: 'var(--color-text-secondary)',
-              paddingInline: '4px',
-            }}
+            className="mt-2 pt-2 border-t border-t-border-subtle text-[12px] leading-[16px] text-muted px-1"
           >
             {t('preferences.langHelper')}
           </div>

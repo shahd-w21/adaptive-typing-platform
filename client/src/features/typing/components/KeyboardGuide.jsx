@@ -73,7 +73,7 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
   const isShiftNeeded = useMemo(() => {
     if (!nextChar) return false;
     return (
-      (nextChar >= 'A' && nextChar <= 'Z') ||
+      (nextChar>= 'A' && nextChar <= 'Z') ||
       '~!@#$%^&*()_+{}|:"<>?'.includes(nextChar)
     );
   }, [nextChar]);
@@ -87,44 +87,28 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
 
   return (
     <div
-      className="keyboard-guide english-island"
+      className="max-md:hidden [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! mt-6 mx-auto mb-0 p-4 bg-subtle border border-border-subtle rounded-card max-w-195 select-none"
       aria-label="Physical QWERTY Keyboard Guide"
-      style={{
-        margin: '24px auto 0',
-        padding: '16px',
-        backgroundColor: 'var(--color-bg-subtle)',
-        border: '1px solid var(--color-border-subtle)',
-        borderRadius: 'var(--radius-card)',
-        maxWidth: '780px',
-        userSelect: 'none',
-      }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="flex justify-between items-center mb-3 text-[13px] text-muted">
+        <div className="flex items-center gap-2">
           <span>Next Expected:</span>
           <span
-            style={{
-              padding: '2px 8px',
-              borderRadius: '6px',
-              backgroundColor: 'var(--color-learning-soft)',
-              color: 'var(--color-learning-strong)',
-              fontWeight: 700,
-              fontSize: '15px',
-            }}
+            className="py-0.5 px-2 rounded-md bg-learning-soft text-learning-strong font-bold text-[15px]"
           >
             {nextChar === ' ' ? '␣ Space' : (nextChar || 'None')}
           </span>
           {isShiftNeeded && (
-            <span style={{ fontSize: '12px', color: 'var(--color-learning-accent)', fontWeight: 700 }}>
+            <span className="text-[12px] text-learning-accent font-bold">
               (Hold Shift)
             </span>
           )}
         </div>
-        <span style={{ fontSize: '12px' }}>Physical QWERTY Guide</span>
+        <span className="text-[12px]">Physical QWERTY Guide</span>
       </div>
 
       {KEYBOARD_ROWS.map((row, rowIdx) => (
-        <div key={rowIdx} className="keyboard-row">
+        <div key={rowIdx} className="flex justify-center gap-1.5 mb-1.5">
           {row.map((item) => {
             const isTarget = item.isSpace
               ? targetBaseKey === ' '
@@ -133,23 +117,22 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
             const isShiftActive = isShiftNeeded && (item.key === 'ShiftLeft' || item.key === 'ShiftRight');
             const isMastered = masteredKeys.has(item.key.toLowerCase());
 
-            let keyClass = 'keycap';
-            if (isTarget || isShiftActive) keyClass += ' active-next';
-            else if (isMastered) keyClass += ' mastered';
+            let keyClass = "flex flex-col items-center justify-center min-w-11 h-11 p-1 bg-surface border-2 border-border-control rounded-lg font-mono text-[15px] font-medium text-ink shadow-[0_2px_0_var(--tf-color-border-control)] select-none [transition:all_var(--motion-fast)]";
+            if (isTarget || isShiftActive) keyClass += " bg-learning-soft! border-learning-accent! text-learning-strong! -translate-y-0.5! shadow-[0_4px_0_var(--tf-color-learning-lip)]!";
+            else if (isMastered) keyClass += " border-success-accent! bg-success-soft! text-success-text!";
 
             return (
               <div
                 key={item.key}
-                className={keyClass}
-                style={{
-                  width: item.width || '44px',
-                  minWidth: item.width || '44px',
-                }}
+                className={keyClass} style={{ width: item.width || '44px', minWidth: item.width || '44px' }}
               >
                 {item.shift && (
-                  <span style={{ fontSize: '10px', opacity: 0.6, lineHeight: 1 }}>{item.shift}</span>
+                  <span className="text-[10px] opacity-60 leading-none">{item.shift}</span>
                 )}
-                <span style={{ fontSize: item.label ? '12px' : '15px', fontWeight: (isTarget || isShiftActive) ? 700 : 500 }}>
+                <span className={[
+                        item.label ? 'text-[12px]' : 'text-[15px]',
+                        isTarget || isShiftActive ? 'font-bold' : 'font-medium',
+                      ].filter(Boolean).join(' ')}>
                   {item.label || item.key.toUpperCase()}
                 </span>
               </div>

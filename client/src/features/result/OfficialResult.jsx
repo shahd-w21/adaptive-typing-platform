@@ -19,94 +19,75 @@ export function OfficialResult({
 
   return (
     <div
-      className="official-result-view"
-      style={{
-        maxWidth: '840px',
-        margin: '0 auto',
-        padding: '32px 16px',
-      }}
+      className="max-w-210 my-0 mx-auto py-8 px-4"
     >
       {/* Heading */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+      <div className="text-center mb-8">
         <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '6px 14px',
-            borderRadius: 'var(--radius-pill)',
-            backgroundColor: 'var(--color-success-soft)',
-            color: 'var(--color-success-text)',
-            fontSize: '14px',
-            fontWeight: 700,
-            marginBottom: '12px',
-          }}
+          className="inline-flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-success-soft text-success-text text-[14px] font-bold mb-3"
         >
           <CheckIcon size={16} />
           <span>{t('results.officialResult')}</span>
         </div>
-        <h1 className="text-heading-page">Session Completed!</h1>
-        <p className="text-body-default" style={{ color: 'var(--color-text-secondary)', marginTop: '6px' }}>
+        <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px]">Session Completed!</h1>
+        <p className="text-[16px] leading-[26px] font-normal text-muted mt-1.5">
           Official server-verified performance metrics
         </p>
       </div>
 
       {/* 4 Distinct Metrics Row */}
       <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
-        }}
+        className="grid grid-cols-[repeat(auto-fit,_minmax(170px,_1fr))] gap-4 mb-8"
       >
         {/* Net WPM */}
-        <div className="surface-card" style={{ textAlign: 'center', padding: '20px' }}>
-          <div className="text-caption-default" style={{ marginBottom: '6px', fontWeight: 700 }}>
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+          <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.netWpm')}
           </div>
-          <div className="text-metric-large" style={{ color: 'var(--color-learning-strong)' }}>
+          <div className="text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums] text-learning-strong">
             {result.netWpm}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+          <div className="text-[12px] text-muted mt-1">
             words / min
           </div>
         </div>
 
         {/* Gross WPM */}
-        <div className="surface-card" style={{ textAlign: 'center', padding: '20px' }}>
-          <div className="text-caption-default" style={{ marginBottom: '6px', fontWeight: 700 }}>
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+          <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.grossWpm')}
           </div>
-          <div className="text-metric-large">{result.grossWpm}</div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+          <div className="text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums]">{result.grossWpm}</div>
+          <div className="text-[12px] text-muted mt-1">
             raw speed
           </div>
         </div>
 
         {/* Raw Accuracy */}
-        <div className="surface-card" style={{ textAlign: 'center', padding: '20px' }}>
-          <div className="text-caption-default" style={{ marginBottom: '6px', fontWeight: 700 }}>
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+          <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.rawAccuracy')}
           </div>
           <div
-            className="text-metric-large"
-            style={{ color: result.rawAccuracy >= 95 ? 'var(--color-success-text)' : 'var(--color-warning-text)' }}
+            className={[
+              "text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums]",
+              result.rawAccuracy >= 95 ? 'text-success-text' : 'text-warning-text',
+            ].filter(Boolean).join(' ')}
           >
             {result.rawAccuracy}%
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+          <div className="text-[12px] text-muted mt-1">
             accuracy gate
           </div>
         </div>
 
         {/* Final Accuracy */}
-        <div className="surface-card" style={{ textAlign: 'center', padding: '20px' }}>
-          <div className="text-caption-default" style={{ marginBottom: '6px', fontWeight: 700 }}>
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+          <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.finalAccuracy')}
           </div>
-          <div className="text-metric-large">{result.finalAccuracy}%</div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+          <div className="text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums]">{result.finalAccuracy}%</div>
+          <div className="text-[12px] text-muted mt-1">
             final buffer
           </div>
         </div>
@@ -114,58 +95,30 @@ export function OfficialResult({
 
       {/* Explanatory Context Note for Metrics */}
       <div
-        className="surface-card"
-        style={{
-          backgroundColor: 'var(--color-bg-subtle)',
-          marginBottom: '28px',
-          padding: '16px 20px',
-          fontSize: '13px',
-          lineHeight: '20px',
-          color: 'var(--color-text-secondary)',
-        }}
+        className="border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] bg-subtle mb-7 py-4 px-5 text-[13px] leading-[20px] text-muted"
       >
         <p><strong>Raw Accuracy:</strong> {t('results.rawAccuracyHelp')}</p>
-        <p style={{ marginTop: '4px' }}><strong>Final Accuracy:</strong> {t('results.finalAccuracyHelp')}</p>
+        <p className="mt-1"><strong>Final Accuracy:</strong> {t('results.finalAccuracyHelp')}</p>
       </div>
 
       {/* Rewards & Next Steps Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
+      <div className="grid grid-cols-[1fr_1fr] gap-5 mb-8">
         {/* Rewards Earned Card */}
-        <div className="surface-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--color-reward-text)' }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex flex-col justify-center">
+          <div className="flex items-center gap-2 mb-3 text-reward-text">
             <TrophyIcon size={20} />
-            <span style={{ fontWeight: 700, fontSize: '15px' }}>{t('results.rewardsEarned')}</span>
+            <span className="font-bold text-[15px]">{t('results.rewardsEarned')}</span>
           </div>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div className="flex gap-4 items-center">
             <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                borderRadius: 'var(--radius-pill)',
-                backgroundColor: 'var(--color-reward-soft)',
-                color: 'var(--color-reward-text)',
-                fontWeight: 700,
-                fontSize: '15px',
-              }}
+              className="flex items-center gap-2 py-2 px-3.5 rounded-full bg-reward-soft text-reward-text font-bold text-[15px]"
             >
               <span>⭐</span>
               <span>{t('results.xpEarned', { count: xpEarned })}</span>
             </div>
 
             <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                borderRadius: 'var(--radius-pill)',
-                backgroundColor: 'var(--color-warning-soft)',
-                color: 'var(--color-streak-text)',
-                fontWeight: 700,
-                fontSize: '15px',
-              }}
+              className="flex items-center gap-2 py-2 px-3.5 rounded-full bg-warning-soft text-streak-text font-bold text-[15px]"
             >
               <FlameIcon size={18} />
               <span>{t('results.streakMaintained', { days: streakDays })}</span>
@@ -174,23 +127,22 @@ export function OfficialResult({
         </div>
 
         {/* Why This Practice / Next Activity Card */}
-        <div className="surface-card">
-          <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '8px', color: 'var(--color-learning-strong)' }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="font-bold text-[15px] mb-2 text-learning-strong">
             {t('results.whyPractice')}
           </div>
-          <p className="text-body-default" style={{ fontSize: '14px', lineHeight: '22px', color: 'var(--color-text-secondary)' }}>
+          <p className="font-normal text-[14px] leading-[22px] text-muted">
             {reason}
           </p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+      <div className="flex justify-center gap-4">
         <button
           type="button"
           onClick={onRetry}
-          className="btn-secondary"
-          style={{ height: '48px', padding: '0 24px' }}
+          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-12 py-0 px-6"
         >
           <RotateCcwIcon size={18} />
           <span>Practise Again</span>
@@ -199,11 +151,12 @@ export function OfficialResult({
         <button
           type="button"
           onClick={onContinue}
-          className="btn-primary"
-          style={{ height: '48px', padding: '0 32px' }}
+          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-8"
         >
           <span>{t('results.nextStep')}</span>
-          <ArrowRightIcon size={18} style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+          <ArrowRightIcon size={18} className={[
+                                      isRTL ? 'rotate-180' : 'transform-none',
+                                    ].filter(Boolean).join(' ')} />
         </button>
       </div>
     </div>

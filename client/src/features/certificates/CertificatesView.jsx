@@ -16,76 +16,58 @@ export function CertificatesView({ onVerifyClick }) {
   ];
 
   return (
-    <div style={{ maxWidth: '880px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+    <div className="max-w-220 my-0 mx-auto">
+      <div className="flex justify-between items-center mb-7">
         <div>
-          <h1 className="text-heading-page" style={{ marginBottom: '4px' }}>
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             My Certificates
           </h1>
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted">
             Unproctored TypeFlow performance certificates earned from qualifying tests.
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="flex flex-col gap-5">
         {certificates.map((cert) => (
           <div
             key={cert.id}
-            className="surface-card"
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '24px',
-              border: '1px solid var(--color-border-control)',
-            }}
+            className="bg-surface rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex justify-between items-center p-6 border border-border-control"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div className="flex items-center gap-5">
               <div
-                style={{
-                  width: '52px',
-                  height: '52px',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--color-success-soft)',
-                  color: 'var(--color-success-text)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="w-13 h-13 rounded-2xl bg-success-soft text-success-text flex items-center justify-center"
               >
                 <ShieldIcon size={28} />
               </div>
 
               <div>
-                <div style={{ fontWeight: 800, fontSize: '18px', marginBottom: '4px' }}>{cert.title}</div>
-                <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                <div className="font-extrabold text-[18px] mb-1">{cert.title}</div>
+                <div className="text-[13px] text-muted">
                   Issued {cert.issueDate} • Code:{' '}
-                  <span className="english-island" style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                  <span className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! font-bold text-ink">
                     {cert.code}
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '13px' }}>
-                  <span>Net Speed: <strong className="english-island">{cert.netWpm} WPM</strong></span>
-                  <span>Raw Accuracy: <strong className="english-island">{cert.rawAccuracy}</strong></span>
+                <div className="flex gap-4 mt-2 text-[13px]">
+                  <span>Net Speed: <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{cert.netWpm} WPM</strong></span>
+                  <span>Raw Accuracy: <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{cert.rawAccuracy}</strong></span>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={() => alert(`Downloading PDF for ${cert.code}...`)}
-                className="btn-secondary"
-                style={{ height: '40px', fontSize: '14px', padding: '0 16px' }}
+                className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-10 text-[14px] py-0 px-4"
               >
                 Download PDF
               </button>
               <button
                 type="button"
                 onClick={() => onVerifyClick(cert.code)}
-                className="btn-primary"
-                style={{ height: '40px', fontSize: '14px', padding: '0 18px' }}
+                className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-10 text-[14px] py-0 px-4.5"
               >
                 Verify Link
               </button>

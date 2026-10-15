@@ -6,58 +6,33 @@ export function DeviceGuidance({ onBack }) {
 
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '32px 20px',
-        maxWidth: '540px',
-        margin: '40px auto',
-        textAlign: 'center',
-      }}
+      className="flex flex-col items-center justify-center py-8 px-5 max-w-135 my-10 mx-auto text-center"
     >
       <div
-        style={{
-          width: '72px',
-          height: '72px',
-          borderRadius: '24px',
-          backgroundColor: 'var(--color-warning-soft)',
-          color: 'var(--color-warning-text)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '20px',
-          boxShadow: 'var(--shadow-card)',
-        }}
+        className="w-18 h-18 rounded-3xl bg-warning-soft text-warning-text flex items-center justify-center mb-5 shadow-card"
       >
         <KeyboardIcon size={36} />
       </div>
 
-      <h2 className="text-heading-section" style={{ marginBottom: '12px' }}>
+      <h2 className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold mb-3">
         {t('typing.deviceGuidanceTitle')}
       </h2>
 
-      <p className="text-body-default" style={{ color: 'var(--color-text-secondary)', marginBottom: '24px', maxWidth: '420px' }}>
+      <p className="text-[16px] leading-[26px] font-normal text-muted mb-6 max-w-105">
         {t('typing.deviceGuidanceDesc')}
       </p>
 
       <div
-        className="surface-card"
-        style={{
-          textAlign: isRTL ? 'right' : 'left',
-          width: '100%',
-          marginBottom: '24px',
-          backgroundColor: 'var(--color-bg-subtle)',
-          fontSize: '14px',
-          lineHeight: '22px',
-        }}
+        className={[
+          "border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] w-full mb-6 bg-subtle text-[14px] leading-[22px]",
+          isRTL ? 'text-right' : 'text-left',
+        ].filter(Boolean).join(' ')}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', fontWeight: 700 }}>
+        <div className="flex items-center gap-2.5 mb-2 font-bold">
           <MonitorIcon size={18} />
           <span>Minimum Requirements:</span>
         </div>
-        <ul style={{ paddingInlineStart: '20px', margin: 0, color: 'var(--color-text-secondary)' }}>
+        <ul className="ps-5 m-0 text-muted">
           <li>Desktop or Laptop computer</li>
           <li>Physical English QWERTY keyboard</li>
           <li>Viewport width of at least 1024 CSS pixels</li>
@@ -67,10 +42,11 @@ export function DeviceGuidance({ onBack }) {
       <button
         type="button"
         onClick={onBack}
-        className="btn-primary"
-        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        className="justify-center h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2"
       >
-        <ArrowLeftIcon size={18} style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+        <ArrowLeftIcon size={18} className={[
+                                   isRTL ? 'rotate-180' : 'transform-none',
+                                 ].filter(Boolean).join(' ')} />
         <span>Back to Dashboard</span>
       </button>
     </div>

@@ -22,30 +22,30 @@ export function ProfileView() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   return (
-    <div style={{ maxWidth: '780px', margin: '0 auto' }}>
-      <h1 className="text-heading-page" style={{ marginBottom: '8px' }}>
+    <div className="max-w-195 my-0 mx-auto">
+      <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-2">
         Profile & Learning Preferences
       </h1>
-      <p className="text-body-default" style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}>
+      <p className="text-[16px] leading-[26px] font-normal text-muted mb-8">
         Manage account details, presentation theme, language, and accessibility options.
       </p>
 
       {/* Account Info Card */}
-      <div className="surface-card" style={{ marginBottom: '24px' }}>
-        <h2 className="text-heading-card" style={{ marginBottom: '16px' }}>Account Information</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] mb-6">
+        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">Account Information</h2>
+        <div className="grid grid-cols-[1fr_1fr] gap-4">
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>Display Name</label>
-            <input type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+            <label className="block text-[13px] font-bold mb-1.5">Display Name</label>
+            <input type="text" className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>Email Address</label>
-            <input type="email" disabled className="form-input" value="layla@example.com" style={{ opacity: 0.7 }} />
+            <label className="block text-[13px] font-bold mb-1.5">Email Address</label>
+            <input type="email" disabled className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] opacity-70" value="layla@example.com"  />
           </div>
         </div>
 
-        <div style={{ marginTop: '16px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+        <div className="mt-4">
+          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
             <input type="checkbox" checked={consentCertName} onChange={(e) => setConsentCertName(e.target.checked)} />
             <span>Show my display name on public verification records for certificates</span>
           </label>
@@ -53,15 +53,15 @@ export function ProfileView() {
       </div>
 
       {/* Appearance & Language Card */}
-      <div className="surface-card" style={{ marginBottom: '24px' }}>
-        <h2 className="text-heading-card" style={{ marginBottom: '16px' }}>Appearance & Interface Language</h2>
+      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] mb-6">
+        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">Appearance & Interface Language</h2>
 
         {/* Theme Radios */}
-        <div style={{ marginBottom: '20px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+        <div className="mb-5">
+          <span className="text-[14px] font-bold block mb-2">
             Color Mode
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          <div className="grid grid-cols-[repeat(3,_1fr)] gap-3">
             {[
               { id: 'light', label: 'Light', icon: SunIcon },
               { id: 'dark', label: 'Dark', icon: MoonIcon },
@@ -74,20 +74,10 @@ export function ProfileView() {
                   key={theme.id}
                   type="button"
                   onClick={() => setThemePreference(theme.id)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '16px',
-                    borderRadius: 'var(--radius-control)',
-                    border: '2px solid',
-                    borderColor: isSelected ? 'var(--color-learning-accent)' : 'var(--color-border-subtle)',
-                    backgroundColor: isSelected ? 'var(--color-learning-soft)' : 'var(--color-bg-surface)',
-                    color: isSelected ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                    cursor: 'pointer',
-                    fontWeight: isSelected ? 700 : 500,
-                  }}
+                  className={[
+                    "flex flex-col items-center gap-2 p-4 rounded-control border-2 cursor-pointer",
+                    isSelected ? 'border-learning-accent bg-learning-soft text-learning-strong font-bold' : 'border-border-subtle bg-surface text-ink font-medium',
+                  ].filter(Boolean).join(' ')}
                 >
                   <Icon size={24} />
                   <span>{theme.label}</span>
@@ -99,59 +89,45 @@ export function ProfileView() {
 
         {/* Language Selection */}
         <div>
-          <span style={{ fontSize: '14px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+          <span className="text-[14px] font-bold block mb-2">
             Interface Language (لغة الواجهة)
           </span>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setUiLocale('en')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                borderRadius: 'var(--radius-control)',
-                border: '2px solid',
-                borderColor: uiLocale === 'en' ? 'var(--color-learning-accent)' : 'var(--color-border-subtle)',
-                backgroundColor: uiLocale === 'en' ? 'var(--color-learning-soft)' : 'var(--color-bg-surface)',
-                color: uiLocale === 'en' ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
+              className={[
+                "flex-1 p-3 rounded-control border-2 font-bold cursor-pointer",
+                uiLocale === 'en' ? 'border-learning-accent bg-learning-soft text-learning-strong' : 'border-border-subtle bg-surface text-ink',
+              ].filter(Boolean).join(' ')}
             >
               English
             </button>
             <button
               type="button"
               onClick={() => setUiLocale('ar')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                borderRadius: 'var(--radius-control)',
-                border: '2px solid',
-                borderColor: uiLocale === 'ar' ? 'var(--color-learning-accent)' : 'var(--color-border-subtle)',
-                backgroundColor: uiLocale === 'ar' ? 'var(--color-learning-soft)' : 'var(--color-bg-surface)',
-                color: uiLocale === 'ar' ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
+              className={[
+                "flex-1 p-3 rounded-control border-2 font-bold cursor-pointer",
+                uiLocale === 'ar' ? 'border-learning-accent bg-learning-soft text-learning-strong' : 'border-border-subtle bg-surface text-ink',
+              ].filter(Boolean).join(' ')}
             >
               العربية
             </button>
           </div>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
+          <p className="text-[12px] text-muted mt-2">
             {t('preferences.langHelper')}
           </p>
         </div>
       </div>
 
       {/* Typing & Accessibility Settings Card */}
-      <div className="surface-card" style={{ marginBottom: '24px' }}>
-        <h2 className="text-heading-card" style={{ marginBottom: '16px' }}>Typing Target & Accessibility</h2>
+      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] mb-6">
+        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">Typing Target & Accessibility</h2>
 
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <label style={{ fontSize: '14px', fontWeight: 700 }}>Personal Target Net Speed</label>
-            <span className="english-island" style={{ fontWeight: 800, color: 'var(--color-learning-strong)' }}>
+        <div className="mb-5">
+          <div className="flex justify-between mb-1.5">
+            <label className="text-[14px] font-bold">Personal Target Net Speed</label>
+            <span className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! font-extrabold text-learning-strong">
               {targetWpm} WPM
             </span>
           </div>
@@ -162,26 +138,26 @@ export function ProfileView() {
             step="5"
             value={targetWpm}
             onChange={(e) => setTargetWpm(Number(e.target.value))}
-            style={{ width: '100%' }}
+            className="w-full"
           />
-          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+          <div className="text-[12px] text-muted mt-1">
             Used to calibrate expected latency targets for upcoming lessons.
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+        <div className="flex flex-col gap-3.5">
+          <label className="flex items-center justify-between cursor-pointer">
             <div>
-              <div style={{ fontWeight: 700, fontSize: '14px' }}>Large Text Mode</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Enlarges exercise font from 28px to 36px</div>
+              <div className="font-bold text-[14px]">Large Text Mode</div>
+              <div className="text-[12px] text-muted">Enlarges exercise font from 28px to 36px</div>
             </div>
             <input type="checkbox" checked={largeText} onChange={(e) => setLargeText(e.target.checked)} />
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+          <label className="flex items-center justify-between cursor-pointer">
             <div>
-              <div style={{ fontWeight: 700, fontSize: '14px' }}>Reduced Pressure Mode</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Hides live speed and timer emphasis during typing</div>
+              <div className="font-bold text-[14px]">Reduced Pressure Mode</div>
+              <div className="text-[12px] text-muted">Hides live speed and timer emphasis during typing</div>
             </div>
             <input type="checkbox" checked={reducedPressure} onChange={(e) => setReducedPressure(e.target.checked)} />
           </label>
@@ -189,19 +165,18 @@ export function ProfileView() {
       </div>
 
       {/* Danger Zone: Account Deletion */}
-      <div className="surface-card" style={{ borderColor: 'var(--color-error-text)' }}>
-        <h2 className="text-heading-card" style={{ color: 'var(--color-error-text)', marginBottom: '8px' }}>
+      <div className="bg-surface border  rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] border-error-text">
+        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold text-error-text mb-2">
           Danger Zone
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+        <p className="text-[13px] text-muted mb-4">
           Permanently delete your account. This irreversibly anonymises your personal history, certificates, and forum posts according to SRS SYS-9.
         </p>
 
         <button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="btn-primary"
-          style={{ backgroundColor: 'var(--color-error-text)', height: '42px', fontSize: '14px' }}
+          className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text h-10.5 text-[14px]"
         >
           Delete Account
         </button>
@@ -210,29 +185,20 @@ export function ProfileView() {
       {/* Deletion Modal */}
       {showDeleteModal && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'var(--color-overlay)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '16px',
-          }}
+          className="fixed inset-0 bg-overlay flex items-center justify-center z-100 p-4"
         >
-          <div className="surface-card" style={{ maxWidth: '440px', textAlign: 'center' }}>
-            <div style={{ color: 'var(--color-error-text)', marginBottom: '12px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-110 text-center">
+            <div className="text-error-text mb-3">
               <AlertCircleIcon size={36} />
             </div>
-            <h3 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '8px' }}>
+            <h3 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-2">
               Confirm Irreversible Deletion
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+            <p className="text-[14px] text-muted mb-6">
               All private keystroke sessions and account credentials will be erased. Verification records will no longer show your name.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-              <button type="button" onClick={() => setShowDeleteModal(false)} className="btn-secondary">
+            <div className="flex justify-center gap-3">
+              <button type="button" onClick={() => setShowDeleteModal(false)} className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed">
                 Cancel
               </button>
               <button
@@ -241,8 +207,7 @@ export function ProfileView() {
                   alert('Account deletion request acknowledged.');
                   setShowDeleteModal(false);
                 }}
-                className="btn-primary"
-                style={{ backgroundColor: 'var(--color-error-text)' }}
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
               >
                 Yes, Delete My Account
               </button>

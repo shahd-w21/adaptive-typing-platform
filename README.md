@@ -109,6 +109,8 @@ docs/               Developer/reference guides
 
 The full target structure and module boundaries are in [architecture](docs/architecture.md). Assign work by feature and agree contracts before parallel implementation; read [contributing](docs/contributing.md) before your first change.
 
+Frontend styling uses Tailwind CSS through the Vite plugin. Put component styles and responsive/state variants in JSX utility classes. `client/src/index.css` is the single CSS entry point for Tailwind, shared light/dark theme tokens, document defaults and the typing caret animation. See [styling conventions](docs/development.md#frontend-styling).
+
 ## Read only what you need
 
 | Need | Document |

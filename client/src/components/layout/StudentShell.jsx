@@ -32,114 +32,54 @@ export function StudentShell({
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg-page)' }}>
+    <div className="flex min-h-screen bg-page">
       {/* Desktop Sidebar (224px wide) */}
       <aside
-        style={{
-          width: 'var(--sidebar-width)',
-          backgroundColor: 'var(--color-bg-surface)',
-          borderInlineEnd: '1px solid var(--color-border-subtle)',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          zIndex: 40,
-        }}
-        className="student-sidebar"
+        className="max-lg:hidden w-[var(--sidebar-width)] bg-surface border-e border-e-border-subtle flex flex-col sticky top-0 h-screen z-40"
       >
         {/* Brand */}
         <div
-          style={{
-            height: 'var(--header-height)',
-            display: 'flex',
-            alignItems: 'center',
-            paddingInline: '20px',
-            borderBottom: '1px solid var(--color-border-subtle)',
-            gap: '10px',
-            cursor: 'pointer',
-          }}
+          className="h-[var(--header-height)] flex items-center px-5 border-b border-b-border-subtle gap-2.5 cursor-pointer"
           onClick={() => onNavigate('dashboard')}
         >
           <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: 'var(--color-learning-accent)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--color-learning-foreground)',
-              boxShadow: 'var(--lip-primary)',
-            }}
+            className="w-9 h-9 rounded-[10px] bg-learning-accent flex items-center justify-center text-learning-foreground shadow-primary"
           >
             <KeyboardIcon size={20} />
           </div>
           <span
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '20px',
-              fontWeight: 800,
-              color: 'var(--color-text-primary)',
-              letterSpacing: '-0.5px',
-            }}
+            className="font-display rtl:font-arabic text-[20px] font-extrabold text-ink tracking-[-0.5px]"
           >
             TypeFlow
           </span>
         </div>
 
         {/* Nav Links */}
-        <nav style={{ padding: '16px 12px', flex: 1, overflowY: 'auto' }}>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <nav className="py-4 px-3 flex-1 overflow-y-auto">
+          <ul className="list-none m-0 p-0">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
-                <li key={item.id} style={{ marginBottom: '4px' }}>
+                <li key={item.id} className="mb-1">
                   <button
                     type="button"
                     onClick={() => {
                       onNavigate(item.id);
                       setMobileDrawerOpen(false);
                     }}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      borderRadius: 'var(--radius-control)',
-                      border: 'none',
-                      backgroundColor: isActive ? 'var(--color-learning-soft)' : 'transparent',
-                      color: isActive ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                      fontWeight: isActive ? 700 : 500,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      textAlign: isRTL ? 'right' : 'left',
-                      fontFamily: 'inherit',
-                      transition: 'background-color var(--motion-fast)',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-bg-subtle)';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
+                    className={[
+                      "w-full flex items-center justify-between py-2.5 px-3.5 rounded-control border-0 text-[14px] cursor-pointer [font-family:inherit] [transition:background-color_var(--motion-fast)]",
+                      isActive ? 'bg-learning-soft text-learning-strong font-bold' : 'bg-transparent text-ink font-medium hover:bg-subtle',
+                      isRTL ? 'text-right' : 'text-left',
+                    ].filter(Boolean).join(' ')}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[16px]">{item.icon}</span>
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (
                       <span
-                        style={{
-                          padding: '2px 8px',
-                          borderRadius: 'var(--radius-pill)',
-                          backgroundColor: 'var(--color-learning-accent)',
-                          color: 'var(--color-learning-foreground)',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                        }}
+                        className="py-0.5 px-2 rounded-full bg-learning-accent text-learning-foreground text-[11px] font-bold"
                       >
                         {item.badge}
                       </span>
@@ -153,108 +93,53 @@ export function StudentShell({
 
         {/* User Mini Card */}
         <div
-          style={{
-            padding: '16px',
-            borderTop: '1px solid var(--color-border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
+          className="p-4 border-t border-t-border-subtle flex items-center justify-between"
         >
           <div
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+            className="flex items-center gap-2.5 cursor-pointer"
             onClick={() => onNavigate('profile')}
           >
             <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-learning-soft)',
-                color: 'var(--color-learning-strong)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '14px',
-              }}
+              className="w-9 h-9 rounded-full bg-learning-soft text-learning-strong flex items-center justify-center font-bold text-[14px]"
             >
               {user.name.charAt(0)}
             </div>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>{user.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Level {user.level}</div>
+              <div className="text-[14px] font-bold">{user.name}</div>
+              <div className="text-[12px] text-muted">Level {user.level}</div>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
         <header
-          style={{
-            height: 'var(--header-height)',
-            backgroundColor: 'var(--color-bg-surface)',
-            borderBottom: '1px solid var(--color-border-subtle)',
-            paddingInline: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: 0,
-            zIndex: 30,
-          }}
+          className="h-[var(--header-height)] bg-surface border-b border-b-border-subtle px-6 flex items-center justify-between sticky top-0 z-30"
         >
           {/* Mobile Menu Button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              className="mobile-drawer-btn"
+              className="max-lg:block bg-transparent border-0 cursor-pointer hidden text-ink"
               onClick={() => setMobileDrawerOpen(true)}
               aria-label="Open navigation menu"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'none',
-                color: 'var(--color-text-primary)',
-              }}
             >
               <MenuIcon size={24} />
             </button>
 
             {/* Streak & Level Counter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="flex items-center gap-3">
               <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-pill)',
-                  backgroundColor: 'var(--color-warning-soft)',
-                  color: 'var(--color-streak-text)',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                }}
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-warning-soft text-streak-text text-[13px] font-bold"
               >
                 <FlameIcon size={16} />
                 <span>{user.streak} Days</span>
               </div>
 
               <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-pill)',
-                  backgroundColor: 'var(--color-reward-soft)',
-                  color: 'var(--color-reward-text)',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                }}
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-reward-soft text-reward-text text-[13px] font-bold"
               >
                 <TrophyIcon size={16} />
                 <span>{user.xp} XP</span>
@@ -263,14 +148,14 @@ export function StudentShell({
           </div>
 
           {/* Right Preferences */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex items-center gap-3">
             <LanguageSelector compact />
             <AppearanceSelector compact />
           </div>
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, padding: '24px', maxWidth: '1440px', width: '100%', margin: '0 auto' }}>
+        <main className="flex-1 p-6 max-w-360 w-full my-0 mx-auto">
           {children}
         </main>
       </div>

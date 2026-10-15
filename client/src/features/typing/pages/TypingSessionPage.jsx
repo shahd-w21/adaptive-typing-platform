@@ -47,7 +47,7 @@ export function TypingSessionPage({
 
   // Active elapsed timer
   useEffect(() => {
-    if (buffer.length > 0 && !isPaused && !isCompleted) {
+    if (buffer.length> 0 && !isPaused && !isCompleted) {
       timerIntervalRef.current = setInterval(() => {
         if (recorderRef.current) {
           setElapsedMs(recorderRef.current.getElapsedMs());
@@ -66,7 +66,7 @@ export function TypingSessionPage({
     if (isCompleted || isPaused) return;
 
     const currentPos = buffer.length;
-    if (currentPos >= assignedText.length) return;
+    if (currentPos>= assignedText.length) return;
 
     const expectedChar = assignedText[currentPos];
     const isCorrect = char === expectedChar;
@@ -82,7 +82,7 @@ export function TypingSessionPage({
     }
 
     // Check completion condition
-    if (newBuffer.length >= assignedText.length) {
+    if (newBuffer.length>= assignedText.length) {
       handleComplete(newBuffer, totalInserts + 1, correctInserts + (isCorrect ? 1 : 0));
     }
   };
@@ -167,73 +167,43 @@ export function TypingSessionPage({
   const progressPercent = Math.min(100, Math.round((buffer.length / assignedText.length) * 100));
 
   return (
-    <div className="study-shell" style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg-page)' }}>
+    <div className="min-h-screen bg-page">
       {/* Study Shell Top Bar */}
       <div
-        style={{
-          height: '64px',
-          borderBottom: '1px solid var(--color-border-subtle)',
-          backgroundColor: 'var(--color-bg-surface)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingInline: '24px',
-        }}
+        className="h-16 border-b border-b-border-subtle bg-surface flex items-center justify-between px-6"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => {
-              if (buffer.length > 0) setShowExitConfirm(true);
+              if (buffer.length> 0) setShowExitConfirm(true);
               else onExit();
             }}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '14px',
-              fontWeight: 700,
-              color: 'var(--color-text-secondary)',
-            }}
+            className="bg-transparent border-0 cursor-pointer flex items-center gap-1.5 text-[14px] font-bold text-muted"
           >
-            <ArrowLeftIcon size={18} style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+            <ArrowLeftIcon size={18} className={[
+                                       isRTL ? 'rotate-180' : 'transform-none',
+                                     ].filter(Boolean).join(' ')} />
             <span>{t('common.exit')}</span>
           </button>
 
           <span
-            style={{
-              padding: '4px 10px',
-              borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'var(--color-learning-soft)',
-              color: 'var(--color-learning-strong)',
-              fontSize: '12px',
-              fontWeight: 700,
-            }}
+            className="py-1 px-2.5 rounded-full bg-learning-soft text-learning-strong text-[12px] font-bold"
           >
             {mode}
           </span>
         </div>
 
         {/* View Options & Preferences */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="flex items-center gap-3.5">
           {/* Large Text Toggle */}
           <button
             type="button"
             onClick={() => setLargeText(!largeText)}
-            style={{
-              background: 'none',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-pill)',
-              padding: '4px 10px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: largeText ? 800 : 500,
-              backgroundColor: largeText ? 'var(--color-bg-subtle)' : 'transparent',
-              color: 'var(--color-text-primary)',
-            }}
+            className={[
+              "bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink",
+              largeText ? 'font-extrabold bg-subtle' : 'font-medium bg-transparent',
+            ].filter(Boolean).join(' ')}
           >
             Large Text: {largeText ? 'ON' : 'OFF'}
           </button>
@@ -242,17 +212,10 @@ export function TypingSessionPage({
           <button
             type="button"
             onClick={() => setReducedPressure(!reducedPressure)}
-            style={{
-              background: 'none',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-pill)',
-              padding: '4px 10px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: reducedPressure ? 800 : 500,
-              backgroundColor: reducedPressure ? 'var(--color-bg-subtle)' : 'transparent',
-              color: 'var(--color-text-primary)',
-            }}
+            className={[
+              "bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink",
+              reducedPressure ? 'font-extrabold bg-subtle' : 'font-medium bg-transparent',
+            ].filter(Boolean).join(' ')}
           >
             Reduced Pressure: {reducedPressure ? 'ON' : 'OFF'}
           </button>
@@ -263,47 +226,42 @@ export function TypingSessionPage({
       </div>
 
       {/* Main 960px Study Stage */}
-      <div className="study-container" style={{ position: 'relative' }}>
+      <div className="max-w-[var(--study-max)] mx-auto p-6 relative">
         {/* Activity Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div className="flex justify-between items-center mb-5">
           <div>
-            <h1 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '4px' }}>
+            <h1 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-1">
               Home Row & Upper Reach Drill
             </h1>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+            <p className="text-[14px] text-muted">
               Type naturally. Correct mistakes with Backspace or keep typing forward.
             </p>
           </div>
 
           {/* Live Provisional Metrics Bar */}
           {!reducedPressure ? (
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 700 }}>
+            <div className="flex gap-4 items-center">
+              <div className="text-right">
+                <div className="text-[11px] text-muted font-bold">
                   {t('typing.liveProvisional')}
                 </div>
-                <div style={{ display: 'flex', gap: '12px', fontSize: '18px', fontWeight: 800 }} className="english-island">
+                <div className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! flex gap-3 text-[18px] font-extrabold">
                   <span>{live.formattedGrossWpm} WPM</span>
-                  <span style={{ color: 'var(--color-success-text)' }}>{live.formattedRawAccuracy}</span>
+                  <span className="text-success-text">{live.formattedRawAccuracy}</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+            <div className="text-[12px] text-muted italic">
               (Timer runs calmly in background)
             </div>
           )}
         </div>
 
         {/* Progress Bar */}
-        <div style={{ height: '6px', backgroundColor: 'var(--color-border-subtle)', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
+        <div className="h-1.5 bg-border-subtle rounded-[3px] mb-5 overflow-hidden">
           <div
-            style={{
-              width: `${progressPercent}%`,
-              height: '100%',
-              backgroundColor: 'var(--color-learning-accent)',
-              transition: 'width 100ms ease-out',
-            }}
+            className="h-full bg-learning-accent [transition:width_100ms_ease-out]" style={{ width: `${progressPercent}%` }}
           />
         </div>
 
@@ -318,13 +276,12 @@ export function TypingSessionPage({
         />
 
         {/* Controls Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={togglePause}
-              className="btn-secondary"
-              style={{ height: '40px', padding: '0 16px', fontSize: '14px' }}
+              className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-10 py-0 px-4 text-[14px]"
             >
               {isPaused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
               <span>{isPaused ? t('typing.resume') : t('typing.pause')}</span>
@@ -333,15 +290,14 @@ export function TypingSessionPage({
             <button
               type="button"
               onClick={() => setShowRestartConfirm(true)}
-              className="btn-secondary"
-              style={{ height: '40px', padding: '0 16px', fontSize: '14px' }}
+              className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-10 py-0 px-4 text-[14px]"
             >
               <RotateCcwIcon size={16} />
               <span>{t('common.restart')}</span>
             </button>
           </div>
 
-          <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+          <div className="text-[13px] text-muted">
             {buffer.length === 0 ? t('typing.startPrompt') : `${buffer.length} / ${assignedText.length} characters`}
           </div>
         </div>
@@ -352,34 +308,22 @@ export function TypingSessionPage({
         {/* Pause Overlay */}
         {isPaused && (
           <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundColor: 'var(--color-overlay)',
-              backdropFilter: 'blur(3px)',
-              borderRadius: 'var(--radius-card)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 50,
-            }}
+            className="absolute inset-0 bg-overlay [backdrop-filter:blur(3px)] rounded-card flex flex-col items-center justify-center z-50"
           >
-            <div className="surface-card" style={{ textAlign: 'center', maxWidth: '360px' }}>
-              <div style={{ marginBottom: '16px', color: 'var(--color-learning-strong)' }}>
+            <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center max-w-90">
+              <div className="mb-4 text-learning-strong">
                 <PauseIcon size={36} />
               </div>
-              <h2 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '8px' }}>
+              <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-2">
                 Practice Paused
               </h2>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
+              <p className="text-muted text-[14px] mb-5">
                 {t('typing.pausedState')}
               </p>
               <button
                 type="button"
                 onClick={togglePause}
-                className="btn-primary"
-                style={{ width: '100%' }}
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full"
               >
                 <PlayIcon size={18} />
                 <span>{t('typing.resume')}</span>
@@ -391,20 +335,9 @@ export function TypingSessionPage({
         {/* Submitting Loading Overlay */}
         {isSubmitting && (
           <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundColor: 'var(--color-overlay)',
-              borderRadius: 'var(--radius-card)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 60,
-              color: 'var(--color-text-inverse)',
-            }}
+            className="absolute inset-0 bg-overlay rounded-card flex flex-col items-center justify-center z-60 text-on-inverse"
           >
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>{t('typing.submitting')}</div>
+            <div className="text-[18px] font-bold">{t('typing.submitting')}</div>
           </div>
         )}
       </div>
@@ -412,39 +345,30 @@ export function TypingSessionPage({
       {/* Exit Confirmation Dialog */}
       {showExitConfirm && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'var(--color-overlay)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-          }}
+          className="fixed inset-0 bg-overlay flex items-center justify-center z-100"
         >
-          <div className="surface-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
-            <div style={{ color: 'var(--color-warning-accent)', marginBottom: '12px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-105 text-center">
+            <div className="text-warning-accent mb-3">
               <AlertCircleIcon size={36} />
             </div>
-            <h3 className="text-heading-section" style={{ fontSize: '18px', marginBottom: '8px' }}>
+            <h3 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
               Exit Practice?
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+            <p className="text-[14px] text-muted mb-6">
               {t('typing.abandonWarning')}
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            <div className="flex justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="btn-secondary"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="button"
                 onClick={onExit}
-                className="btn-primary"
-                style={{ backgroundColor: 'var(--color-error-text)' }}
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
               >
                 {t('common.exit')}
               </button>
@@ -456,35 +380,27 @@ export function TypingSessionPage({
       {/* Restart Confirmation Dialog */}
       {showRestartConfirm && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'var(--color-overlay)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-          }}
+          className="fixed inset-0 bg-overlay flex items-center justify-center z-100"
         >
-          <div className="surface-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
-            <h3 className="text-heading-section" style={{ fontSize: '18px', marginBottom: '8px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-105 text-center">
+            <h3 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
               Restart Session?
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+            <p className="text-[14px] text-muted mb-6">
               {t('typing.restartWarning')}
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            <div className="flex justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setShowRestartConfirm(false)}
-                className="btn-secondary"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleRestart}
-                className="btn-primary"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {t('common.restart')}
               </button>

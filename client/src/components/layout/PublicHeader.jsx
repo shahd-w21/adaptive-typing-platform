@@ -7,80 +7,45 @@ export function PublicHeader({ activeTab, onNavigate }) {
   const { t } = useTranslation();
 
   return (
-    <header className="shell-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+    <header className="h-[var(--header-height)] flex items-center justify-between border-b border-b-border-subtle bg-surface px-8 sticky top-0 z-50">
+      <div className="flex items-center gap-8">
         {/* Brand Wordmark */}
         <button
           type="button"
           onClick={() => onNavigate('landing')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            textDecoration: 'none',
-          }}
+          className="flex items-center gap-2.5 bg-transparent border-0 cursor-pointer p-0 no-underline"
         >
           <div
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              backgroundColor: 'var(--color-learning-accent)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--color-learning-foreground)',
-              boxShadow: 'var(--lip-primary)',
-            }}
+            className="w-9.5 h-9.5 rounded-[10px] bg-learning-accent flex items-center justify-center text-learning-foreground shadow-primary"
           >
             <KeyboardIcon size={22} />
           </div>
           <span
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '22px',
-              fontWeight: 800,
-              color: 'var(--color-text-primary)',
-              letterSpacing: '-0.5px',
-            }}
+            className="font-display rtl:font-arabic text-[22px] font-extrabold text-ink tracking-[-0.5px]"
           >
             TypeFlow
           </span>
         </button>
 
         {/* Navigation Links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <nav className="flex items-center gap-5">
           <button
             type="button"
             onClick={() => onNavigate('landing')}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: activeTab === 'landing' ? 700 : 500,
-              color: activeTab === 'landing' ? 'var(--color-action-link)' : 'var(--color-text-secondary)',
-              padding: '6px 8px',
-            }}
+            className={[
+              "bg-transparent border-0 cursor-pointer text-[15px] py-1.5 px-2",
+              activeTab === 'landing' ? 'font-bold text-action-link' : 'font-medium text-muted',
+            ].filter(Boolean).join(' ')}
           >
             Home
           </button>
           <button
             type="button"
             onClick={() => onNavigate('verify-cert')}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: activeTab === 'verify-cert' ? 700 : 500,
-              color: activeTab === 'verify-cert' ? 'var(--color-action-link)' : 'var(--color-text-secondary)',
-              padding: '6px 8px',
-            }}
+            className={[
+              "bg-transparent border-0 cursor-pointer text-[15px] py-1.5 px-2",
+              activeTab === 'verify-cert' ? 'font-bold text-action-link' : 'font-medium text-muted',
+            ].filter(Boolean).join(' ')}
           >
             Verify Certificate
           </button>
@@ -88,23 +53,14 @@ export function PublicHeader({ activeTab, onNavigate }) {
       </div>
 
       {/* Right Action Tools */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="flex items-center gap-3">
         <LanguageSelector compact />
         <AppearanceSelector compact />
 
         <button
           type="button"
           onClick={() => onNavigate('login')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '15px',
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            padding: '8px 14px',
-            borderRadius: 'var(--radius-pill)',
-          }}
+          className="bg-transparent border-0 cursor-pointer text-[15px] font-bold text-ink py-2 px-3.5 rounded-full"
         >
           {t('nav.login')}
         </button>
@@ -112,8 +68,7 @@ export function PublicHeader({ activeTab, onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('register')}
-          className="btn-primary"
-          style={{ height: '40px', padding: '0 18px', fontSize: '15px' }}
+          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-10 py-0 px-4.5 text-[15px]"
         >
           {t('nav.register')}
         </button>

@@ -11,73 +11,44 @@ export function Dashboard({ onStartPractice, onNavigate }) {
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: '24px' }} className="dashboard-grid">
+    <div className="max-xl:grid-cols-1 grid grid-cols-[minmax(0,_1fr)_280px] gap-6">
       {/* Main Primary Content Column */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex flex-col gap-6">
         {/* Welcome Banner */}
         <div>
-          <h1 className="text-heading-page" style={{ marginBottom: '6px' }}>
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1.5">
             Welcome back, Layla!
           </h1>
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted">
             Let's keep building your touch typing accuracy and speed.
           </p>
         </div>
 
         {/* Large Hero Recommendation Card */}
         <div
-          className="surface-card"
-          style={{
-            border: '2px solid var(--color-learning-accent)',
-            backgroundColor: 'var(--color-bg-surface)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
+          className="rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] border-2 border-learning-accent bg-surface relative overflow-hidden"
         >
           <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'var(--color-learning-soft)',
-              color: 'var(--color-learning-strong)',
-              fontSize: '12px',
-              fontWeight: 700,
-              marginBottom: '14px',
-            }}
+            className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-learning-soft text-learning-strong text-[12px] font-bold mb-3.5"
           >
             <span>🎯 RECOMMENDED NEXT ACTIVITY</span>
           </div>
 
-          <h2 className="text-heading-section" style={{ marginBottom: '8px' }}>
+          <h2 className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold mb-2">
             Home Row Mastery & Upper Reach
           </h2>
 
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)', marginBottom: '20px', maxWidth: '640px' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted mb-5 max-w-160">
             <strong>Why this practice?</strong> You have less evidence for these keys. Practise them to strengthen finger agility before advancing to the next group.
           </p>
 
           {/* Focus Keys Chips */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>Focus keys:</span>
+          <div className="flex items-center gap-2.5 mb-6">
+            <span className="text-[14px] font-bold text-muted">Focus keys:</span>
             {['p', ';', '/', 'e'].map((k) => (
               <span
                 key={k}
-                className="english-island"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '6px',
-                  border: '2px solid var(--color-border-control)',
-                  backgroundColor: 'var(--color-bg-subtle)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                }}
+                className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! inline-flex items-center justify-center w-8 h-8 rounded-md border-2 border-border-control bg-subtle font-bold text-[14px]"
               >
                 {k}
               </span>
@@ -88,15 +59,7 @@ export function Dashboard({ onStartPractice, onNavigate }) {
           <button
             type="button"
             onClick={onStartPractice}
-            className="btn-primary"
-            style={{
-              height: '52px',
-              padding: '0 32px',
-              fontSize: '17px',
-              boxShadow: 'var(--lip-node)',
-              backgroundColor: 'var(--color-learning-accent)',
-              color: 'var(--color-learning-foreground)',
-            }}
+            className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold border-0 rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-13 py-0 px-8 text-[17px] shadow-node bg-learning-accent text-learning-foreground"
           >
             <PlayIcon size={20} />
             <span>Start Practice (2 mins)</span>
@@ -104,120 +67,84 @@ export function Dashboard({ onStartPractice, onNavigate }) {
         </div>
 
         {/* Compact Path Preview */}
-        <div className="surface-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 className="text-heading-card">Your Learning Path</h3>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold">Your Learning Path</h3>
             <button
               type="button"
               onClick={() => onNavigate('path')}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--color-action-link)',
-                fontWeight: 700,
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
+              className="bg-transparent border-0 cursor-pointer text-action-link font-bold text-[14px] flex items-center gap-1"
             >
               <span>View Full Map</span>
-              <ArrowRightIcon size={16} style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+              <ArrowRightIcon size={16} className={[
+                                          isRTL ? 'rotate-180' : 'transform-none',
+                                        ].filter(Boolean).join(' ')} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+          <div className="flex items-center gap-4 overflow-x-auto py-3 px-0">
             {/* Step 1: Mastered */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div className="flex flex-col items-center gap-2">
               <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--color-success-soft)',
-                  border: '2px solid var(--color-success-accent)',
-                  color: 'var(--color-success-text)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="w-14 h-14 rounded-full bg-success-soft border-2 border-success-accent text-success-text flex items-center justify-center"
               >
                 <CheckIcon size={24} />
               </div>
-              <span style={{ fontSize: '12px', fontWeight: 700 }}>Home Row</span>
+              <span className="text-[12px] font-bold">Home Row</span>
             </div>
 
-            <div style={{ width: '40px', height: '2px', backgroundColor: 'var(--color-success-accent)' }} />
+            <div className="w-10 h-0.5 bg-success-accent" />
 
             {/* Step 2: Current Node */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div className="flex flex-col items-center gap-2">
               <div
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--color-learning-accent)',
-                  color: 'var(--color-learning-foreground)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'var(--lip-node)',
-                  cursor: 'pointer',
-                }}
+                className="w-16 h-16 rounded-full bg-learning-accent text-learning-foreground flex items-center justify-center shadow-node cursor-pointer"
                 onClick={onStartPractice}
               >
                 <PlayIcon size={24} />
               </div>
-              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-learning-strong)' }}>Top Row</span>
+              <span className="text-[13px] font-extrabold text-learning-strong">Top Row</span>
             </div>
 
-            <div style={{ width: '40px', height: '2px', backgroundColor: 'var(--color-border-subtle)' }} />
+            <div className="w-10 h-0.5 bg-border-subtle" />
 
             {/* Step 3: Locked */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', opacity: 0.6 }}>
+            <div className="flex flex-col items-center gap-2 opacity-60">
               <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--color-disabled-bg)',
-                  border: '1px solid var(--color-border-subtle)',
-                  color: 'var(--color-disabled-text)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="w-14 h-14 rounded-full bg-disabled-bg border border-border-subtle text-disabled-text flex items-center justify-center"
               >
                 🔒
               </div>
-              <span style={{ fontSize: '12px' }}>Bottom Row</span>
+              <span className="text-[12px]">Bottom Row</span>
             </div>
           </div>
         </div>
 
         {/* Recent Sessions Table */}
-        <div className="surface-card">
-          <h3 className="text-heading-card" style={{ marginBottom: '16px' }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <h3 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">
             Recent Sessions
           </h3>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRTL ? 'right' : 'left' }}>
+          <table className={[
+                   "w-full border-collapse",
+                   isRTL ? 'text-right' : 'text-left',
+                 ].filter(Boolean).join(' ')}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-                <th style={{ padding: '8px 12px' }}>Activity</th>
-                <th style={{ padding: '8px 12px' }}>Net Speed</th>
-                <th style={{ padding: '8px 12px' }}>Raw Accuracy</th>
-                <th style={{ padding: '8px 12px' }}>Date</th>
+              <tr className="border-b border-b-border-subtle text-muted text-[13px]">
+                <th className="py-2 px-3">Activity</th>
+                <th className="py-2 px-3">Net Speed</th>
+                <th className="py-2 px-3">Raw Accuracy</th>
+                <th className="py-2 px-3">Date</th>
               </tr>
             </thead>
             <tbody>
               {recentSessions.map((session) => (
-                <tr key={session.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', fontSize: '14px' }}>
-                  <td style={{ padding: '12px' }}>{session.mode}</td>
-                  <td style={{ padding: '12px', fontWeight: 700 }} className="english-island">{session.netWpm} WPM</td>
-                  <td style={{ padding: '12px' }} className="english-island">{session.rawAccuracy}%</td>
-                  <td style={{ padding: '12px', color: 'var(--color-text-secondary)' }}>{session.date}</td>
+                <tr key={session.id} className="border-b border-b-border-subtle text-[14px]">
+                  <td className="p-3">{session.mode}</td>
+                  <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3 font-bold">{session.netWpm} WPM</td>
+                  <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{session.rawAccuracy}%</td>
+                  <td className="p-3 text-muted">{session.date}</td>
                 </tr>
               ))}
             </tbody>
@@ -226,61 +153,51 @@ export function Dashboard({ onStartPractice, onNavigate }) {
       </div>
 
       {/* Desktop Right Rail (280px wide) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="flex flex-col gap-5">
         {/* Daily Goal Card */}
-        <div className="surface-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontWeight: 700, fontSize: '15px' }}>Daily Goal</span>
-            <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>15 / 20 mins</span>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-bold text-[15px]">Daily Goal</span>
+            <span className="text-[13px] text-muted">15 / 20 mins</span>
           </div>
-          <div style={{ height: '8px', backgroundColor: 'var(--color-border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: '75%', height: '100%', backgroundColor: 'var(--color-success-accent)', borderRadius: '4px' }} />
+          <div className="h-2 bg-border-subtle rounded overflow-hidden">
+            <div className="w-[75%] h-full bg-success-accent rounded" />
           </div>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
+          <p className="text-[12px] text-muted mt-2">
             5 more minutes to reach today's target!
           </p>
         </div>
 
         {/* Due Review Card */}
-        <div className="surface-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 700, fontSize: '15px' }}>Spaced Review</span>
-            <span style={{ padding: '2px 8px', borderRadius: 'var(--radius-pill)', backgroundColor: 'var(--color-learning-soft)', color: 'var(--color-learning-strong)', fontSize: '11px', fontWeight: 700 }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-bold text-[15px]">Spaced Review</span>
+            <span className="py-0.5 px-2 rounded-full bg-learning-soft text-learning-strong text-[11px] font-bold">
               3 Keys Due
             </span>
           </div>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '14px' }}>
+          <p className="text-[13px] text-muted mb-3.5">
             Keys <strong>E, R, T</strong> are scheduled for memory consolidation.
           </p>
           <button
             type="button"
             onClick={() => onNavigate('review')}
-            className="btn-secondary"
-            style={{ width: '100%', height: '40px', fontSize: '14px' }}
+            className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed w-full h-10 text-[14px]"
           >
             Start Review
           </button>
         </div>
 
         {/* Current Streak Card */}
-        <div className="surface-card" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex items-center gap-3.5">
           <div
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--color-warning-soft)',
-              color: 'var(--color-streak-text)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="w-11 h-11 rounded-xl bg-warning-soft text-streak-text flex items-center justify-center"
           >
             <FlameIcon size={24} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '18px' }}>5 Day Streak!</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Practised today</div>
+            <div className="font-extrabold text-[18px]">5 Day Streak!</div>
+            <div className="text-[12px] text-muted">Practised today</div>
           </div>
         </div>
       </div>

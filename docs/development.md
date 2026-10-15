@@ -4,7 +4,7 @@ Start with the [README quick start](../README.md#quick-start). Root workspace co
 
 ## Foundation status and frontend handoff
 
-Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated here. Tailwind integration and client API wiring should be verified together with his actual implementation after it arrives.
+Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated by that setup. This foundation-only boundary predates the separately authorised [Tailwind styling migration](#frontend-styling); client API wiring remains unverified.
 
 The original account migration is unchanged. Additive migrations extend it with the teammate's account/profile, curriculum, session/log, reward and supporting schema concepts, plus revocable auth sessions and one-use email tokens. The old destructive SQL bootstrap is not executed. Existing legacy-database rows are not automatically imported or converted; this task migrates implementation and schema into the current Prisma databases. Prisma 7 uses the PostgreSQL adapter and JavaScript client generator; generated output is ignored.
 
@@ -29,6 +29,16 @@ To integrate the teammate's older-base work safely:
 5. Run root `npm install` if his dependency manifests changed; resolve manifests first and regenerate the root lockfile rather than hand-merging lockfile contents. Then run lint, tests and build, and inspect the design in the browser. A clean Git merge alone does not prove runtime integration.
 
 No merge or commit is performed automatically by setup. Screenshots identify the protected paths, but cannot guarantee the contents of a future commit or guarantee zero conflicts with the earlier refactor.
+
+## Frontend styling
+
+The client uses Tailwind CSS v4 with `@tailwindcss/vite`. Root workspace installs supply both packages; keep the root lockfile authoritative and preserve the historical client lockfile for the frontend handoff.
+
+`client/src/main.jsx` imports only `index.css`. That file imports Tailwind and defines semantic theme utilities such as `bg-surface`, `text-muted`, `border-border-control`, `rounded-card` and `shadow-card`. The theme values follow the existing `data-theme` preference. Components use utilities for layout, typography, responsive rules and conditional states; hover styling uses CSS variants instead of mouse handlers. Arabic interface fonts use `rtl:` variants, while exercise passages and keyboard guides retain explicit LTR direction and monospace text.
+
+Keep CSS limited to shared theme values, document defaults, focus/reduced-motion rules and keyframes. Avoid new screen-specific stylesheets or fixed inline styles. Inline widths remain only for values supplied by data, such as session progress and keyboard key widths. The retired `App.css`, `styles/index.css` and `styles/tokens.css` are consolidated into the single entry point.
+
+Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
 
 ## GitHub CI
 

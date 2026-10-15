@@ -18,34 +18,28 @@ export function ProgressView() {
     : historyData.filter((h) => h.mode.toLowerCase().includes(filterMode));
 
   return (
-    <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className="max-w-256 my-0 mx-auto">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-heading-page" style={{ marginBottom: '4px' }}>
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Progress & Session Analytics
           </h1>
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted">
             Track speed development and raw accuracy stability over time.
           </p>
         </div>
 
         {/* Filter Dropdown */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex gap-2">
           {['all', 'adaptive', 'review', 'test'].map((f) => (
             <button
               key={f}
               type="button"
               onClick={() => setFilterMode(f)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-border-subtle)',
-                backgroundColor: filterMode === f ? 'var(--color-action-primary)' : 'var(--color-bg-surface)',
-                color: filterMode === f ? 'var(--color-action-foreground)' : 'var(--color-text-primary)',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
+              className={[
+                "py-1.5 px-3.5 rounded-full border border-border-subtle font-bold text-[13px] cursor-pointer",
+                filterMode === f ? 'bg-action-primary text-action-foreground' : 'bg-surface text-ink',
+              ].filter(Boolean).join(' ')}
             >
               {f.toUpperCase()}
             </button>
@@ -54,54 +48,57 @@ export function ProgressView() {
       </div>
 
       {/* Speed & Accuracy Trend Overview Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-        <div className="surface-card">
-          <div className="text-caption-default">Average Net Speed</div>
-          <div className="text-display-lg english-island" style={{ color: 'var(--color-learning-strong)', margin: '8px 0' }}>
-            47.4 <span style={{ fontSize: '20px', color: 'var(--color-text-secondary)' }}>WPM</span>
+      <div className="grid grid-cols-[1fr_1fr] gap-5 mb-7">
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="text-[14px] leading-[22px] font-normal text-muted">Average Net Speed</div>
+          <div className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-learning-strong my-2 mx-0">
+            47.4 <span className="text-[20px] text-muted">WPM</span>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--color-success-text)', fontWeight: 700 }}>
+          <div className="text-[13px] text-success-text font-bold">
             ↑ +5.4 WPM in the last 7 days
           </div>
         </div>
 
-        <div className="surface-card">
-          <div className="text-caption-default">Average Raw Accuracy</div>
-          <div className="text-display-lg english-island" style={{ color: 'var(--color-success-text)', margin: '8px 0' }}>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+          <div className="text-[14px] leading-[22px] font-normal text-muted">Average Raw Accuracy</div>
+          <div className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-success-text my-2 mx-0">
             95.7%
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+          <div className="text-[13px] text-muted">
             Consistently above the 95% gate
           </div>
         </div>
       </div>
 
       {/* Historical Sessions Table */}
-      <div className="surface-card">
-        <h2 className="text-heading-card" style={{ marginBottom: '16px' }}>
+      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">
           Session Records
         </h2>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRTL ? 'right' : 'left' }}>
+        <table className={[
+                 "w-full border-collapse",
+                 isRTL ? 'text-right' : 'text-left',
+               ].filter(Boolean).join(' ')}>
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-              <th style={{ padding: '10px 12px' }}>Date</th>
-              <th style={{ padding: '10px 12px' }}>Mode</th>
-              <th style={{ padding: '10px 12px' }}>Net WPM</th>
-              <th style={{ padding: '10px 12px' }}>Gross WPM</th>
-              <th style={{ padding: '10px 12px' }}>Raw Accuracy</th>
-              <th style={{ padding: '10px 12px' }}>Final Accuracy</th>
+            <tr className="border-b-2 border-b-border-subtle text-muted text-[13px]">
+              <th className="py-2.5 px-3">Date</th>
+              <th className="py-2.5 px-3">Mode</th>
+              <th className="py-2.5 px-3">Net WPM</th>
+              <th className="py-2.5 px-3">Gross WPM</th>
+              <th className="py-2.5 px-3">Raw Accuracy</th>
+              <th className="py-2.5 px-3">Final Accuracy</th>
             </tr>
           </thead>
           <tbody>
             {filteredHistory.map((s) => (
-              <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', fontSize: '14px' }}>
-                <td style={{ padding: '12px' }}>{s.date}</td>
-                <td style={{ padding: '12px' }}>{s.mode}</td>
-                <td style={{ padding: '12px', fontWeight: 700 }} className="english-island">{s.netWpm}</td>
-                <td style={{ padding: '12px' }} className="english-island">{s.grossWpm}</td>
-                <td style={{ padding: '12px' }} className="english-island">{s.rawAccuracy}%</td>
-                <td style={{ padding: '12px' }} className="english-island">{s.finalAccuracy}%</td>
+              <tr key={s.id} className="border-b border-b-border-subtle text-[14px]">
+                <td className="p-3">{s.date}</td>
+                <td className="p-3">{s.mode}</td>
+                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3 font-bold">{s.netWpm}</td>
+                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.grossWpm}</td>
+                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.rawAccuracy}%</td>
+                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.finalAccuracy}%</td>
               </tr>
             ))}
           </tbody>

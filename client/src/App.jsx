@@ -14,7 +14,6 @@ import { CertificatesView } from './features/certificates/CertificatesView.jsx';
 import { ForumView } from './features/forum/ForumView.jsx';
 import { AdminView } from './features/admin/AdminView.jsx';
 import { ProfileView } from './features/profile/ProfileView.jsx';
-import './App.css';
 
 function TypeFlowApp() {
   // Navigation & User session state
@@ -82,7 +81,7 @@ function TypeFlowApp() {
   // 2. PUBLIC LANDING & GUEST VIEWS
   if (currentView === 'landing' || (!currentUser && currentView !== 'verify-cert')) {
     return (
-      <div style={{ minHgeiht: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="min-h-screen flex flex-col">
         <PublicHeader
           activeTab={currentView}
           onNavigate={(view) => {
@@ -92,7 +91,7 @@ function TypeFlowApp() {
           }}
         />
 
-        <main style={{ flex: 1 }}>
+        <main className="flex-1">
           <LandingPage
             onStartLearning={() => {
               if (currentUser) {
@@ -124,7 +123,7 @@ function TypeFlowApp() {
   // 3. PUBLIC CERTIFICATE VERIFICATION VIEW
   if (currentView === 'verify-cert') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="min-h-screen flex flex-col">
         <PublicHeader
           activeTab="verify-cert"
           onNavigate={(view) => {
@@ -133,7 +132,7 @@ function TypeFlowApp() {
             else setCurrentView(view);
           }}
         />
-        <main style={{ flex: 1 }}>
+        <main className="flex-1">
           <PublicCertificateVerification onBack={() => setCurrentView('landing')} />
         </main>
       </div>
@@ -166,23 +165,22 @@ function TypeFlowApp() {
       )}
 
       {currentView === 'practice' && (
-        <div style={{ maxWidth: '780px', margin: '0 auto' }}>
-          <h1 className="text-heading-page" style={{ marginBottom: '8px' }}>Adaptive Practice Setup</h1>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+        <div className="max-w-195 my-0 mx-auto">
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-2">Adaptive Practice Setup</h1>
+          <p className="text-muted mb-6">
             The engine customises your exercise based on recent key errors and letter-pair latencies.
           </p>
-          <div className="surface-card" style={{ padding: '28px' }}>
-            <h2 className="text-heading-section" style={{ fontSize: '18px', marginBottom: '8px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] p-7">
+            <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
               Weakness Focus: Keys E, I, P
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '20px' }}>
+            <p className="text-[14px] text-muted mb-5">
               Targeting top-row finger transitions. Spaces and baseline home-row characters are included.
             </p>
             <button
               type="button"
               onClick={() => handleLaunchTyping({ mode: 'Adaptive Practice' })}
-              className="btn-primary"
-              style={{ height: '48px', padding: '0 28px' }}
+              className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-7"
             >
               Start Adaptive Session
             </button>
@@ -191,23 +189,22 @@ function TypeFlowApp() {
       )}
 
       {currentView === 'review' && (
-        <div style={{ maxWidth: '780px', margin: '0 auto' }}>
-          <h1 className="text-heading-page" style={{ marginBottom: '8px' }}>Spaced Memory Review</h1>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+        <div className="max-w-195 my-0 mx-auto">
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-2">Spaced Memory Review</h1>
+          <p className="text-muted mb-6">
             Periodic reviews ensure long-term retention of previously mastered keys.
           </p>
-          <div className="surface-card" style={{ padding: '28px' }}>
-            <h2 className="text-heading-section" style={{ fontSize: '18px', marginBottom: '8px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] p-7">
+            <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
               Overdue Review: 3 Keys (E, R, T)
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '20px' }}>
+            <p className="text-[14px] text-muted mb-5">
               Pass threshold: $\ge 97\%$ raw accuracy and latency within 1.2× your target speed.
             </p>
             <button
               type="button"
               onClick={() => handleLaunchTyping({ mode: 'Spaced Review', assignedText: 'tree tree free free refer deter reader ferret' })}
-              className="btn-primary"
-              style={{ height: '48px', padding: '0 28px' }}
+              className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-7"
             >
               Begin Spaced Review
             </button>

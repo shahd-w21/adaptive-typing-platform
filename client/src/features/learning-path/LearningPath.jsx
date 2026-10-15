@@ -12,9 +12,9 @@ export function LearningPath({ onStartExercise }) {
       title: 'Group 1: Home Row Essentials',
       description: 'The foundation of touch typing: A, S, D, F, J, K, L, ;',
       nodes: [
-        { id: 'n1', title: 'Home Row Drill 1 (F & J)', status: 'mastered', keys: 'fj' },
-        { id: 'n2', title: 'Home Row Drill 2 (D & K)', status: 'mastered', keys: 'dk' },
-        { id: 'n3', title: 'Home Row Complete Words', status: 'mastered', keys: 'asdfjkl;' },
+        { id: 'n1', title: 'Home Row Drill 1 (F & J)', status: "mastered", keys: 'fj' },
+        { id: 'n2', title: 'Home Row Drill 2 (D & K)', status: "mastered", keys: 'dk' },
+        { id: 'n3', title: 'Home Row Complete Words', status: "mastered", keys: 'asdfjkl;' },
       ],
     },
     {
@@ -22,7 +22,7 @@ export function LearningPath({ onStartExercise }) {
       title: 'Group 2: Top Row Index & Middle',
       description: 'Reaching upward with index and middle fingers: R, U, E, I',
       nodes: [
-        { id: 'n4', title: 'Index Reach: R & U', status: 'mastered', keys: 'ru' },
+        { id: 'n4', title: 'Index Reach: R & U', status: "mastered", keys: 'ru' },
         { id: 'n5', title: 'Middle Reach: E & I', status: 'recommended', keys: 'ei' },
         { id: 'n6', title: 'Word Sequences (Home + Top)', status: 'available', keys: 'asdfjkl;ruei' },
       ],
@@ -56,58 +56,38 @@ export function LearningPath({ onStartExercise }) {
   };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+    <div className="max-w-240 my-0 mx-auto">
       {/* View Switcher Tabs */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+      <div className="flex justify-between items-center mb-7">
         <div>
-          <h1 className="text-heading-page" style={{ marginBottom: '4px' }}>
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Curriculum & Mastery Map
           </h1>
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted">
             Sequential touch-typing progression driven by your measured evidence.
           </p>
         </div>
 
         <div
-          style={{
-            display: 'flex',
-            backgroundColor: 'var(--color-bg-subtle)',
-            padding: '4px',
-            borderRadius: 'var(--radius-pill)',
-            border: '1px solid var(--color-border-subtle)',
-          }}
+          className="flex bg-subtle p-1 rounded-full border border-border-subtle"
         >
           <button
             type="button"
             onClick={() => setActiveTab('path')}
-            style={{
-              padding: '8px 18px',
-              borderRadius: 'var(--radius-pill)',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '14px',
-              backgroundColor: activeTab === 'path' ? 'var(--color-bg-surface)' : 'transparent',
-              color: activeTab === 'path' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-              boxShadow: activeTab === 'path' ? 'var(--shadow-card)' : 'none',
-            }}
+            className={[
+              "py-2 px-4.5 rounded-full border-0 cursor-pointer font-bold text-[14px]",
+              activeTab === 'path' ? 'bg-surface text-ink shadow-card' : 'bg-transparent text-muted shadow-none',
+            ].filter(Boolean).join(' ')}
           >
             Guided Path
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('map')}
-            style={{
-              padding: '8px 18px',
-              borderRadius: 'var(--radius-pill)',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '14px',
-              backgroundColor: activeTab === 'map' ? 'var(--color-bg-surface)' : 'transparent',
-              color: activeTab === 'map' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-              boxShadow: activeTab === 'map' ? 'var(--shadow-card)' : 'none',
-            }}
+            className={[
+              "py-2 px-4.5 rounded-full border-0 cursor-pointer font-bold text-[14px]",
+              activeTab === 'map' ? 'bg-surface text-ink shadow-card' : 'bg-transparent text-muted shadow-none',
+            ].filter(Boolean).join(' ')}
           >
             Keyboard Map
           </button>
@@ -116,92 +96,70 @@ export function LearningPath({ onStartExercise }) {
 
       {activeTab === 'path' ? (
         /* Duolingo-style Vertical Learning Path */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <div className="flex flex-col gap-8">
           {groups.map((group) => (
-            <div key={group.id} className="surface-card" style={{ padding: '28px' }}>
-              <div style={{ marginBottom: '24px' }}>
-                <h2 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '4px' }}>
+            <div key={group.id} className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] p-7">
+              <div className="mb-6">
+                <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-1">
                   {group.title}
                 </h2>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                <p className="text-muted text-[14px]">
                   {group.description}
                 </p>
               </div>
 
               {/* Node Sequence */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+              <div className="flex flex-col items-center gap-5">
                 {group.nodes.map((node, nIdx) => {
                   const isRec = node.status === 'recommended';
-                  const isMastered = node.status === 'mastered';
+                  const isMastered = node.status === "mastered";
                   const isLocked = node.status === 'locked';
 
                   return (
                     <div
                       key={node.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '20px',
-                        width: '100%',
-                        maxWidth: '420px',
-                      }}
+                      className="flex items-center gap-5 w-full max-w-105"
                     >
                       {/* Node Circle */}
                       <button
                         type="button"
                         disabled={isLocked}
                         onClick={() => onStartExercise(node)}
-                        style={{
-                          width: isRec ? '68px' : '56px',
-                          height: isRec ? '68px' : '56px',
-                          borderRadius: '50%',
-                          border: isRec ? 'none' : '2px solid var(--color-border-control)',
-                          backgroundColor: isRec
-                            ? 'var(--color-learning-accent)'
-                            : isMastered
-                            ? 'var(--color-success-soft)'
-                            : isLocked
-                            ? 'var(--color-disabled-bg)'
-                            : 'var(--color-bg-surface)',
-                          color: isRec
-                            ? 'var(--color-learning-foreground)'
-                            : isMastered
-                            ? 'var(--color-success-text)'
-                            : isLocked
-                            ? 'var(--color-disabled-text)'
-                            : 'var(--color-text-primary)',
-                          boxShadow: isRec ? 'var(--lip-node)' : isLocked ? 'none' : '0 2px 0 var(--color-border-control)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: isLocked ? 'not-allowed' : 'pointer',
-                          flexShrink: 0,
-                          transition: 'transform var(--motion-fast)',
-                        }}
+                        className={[
+                          "rounded-full flex items-center justify-center shrink-0 [transition:translate_var(--motion-fast)]",
+                          isRec ? 'w-17 h-17 border-0' : 'w-14 h-14 border-2 border-border-control',
+                          isRec ? "bg-learning-accent" : isMastered ? "bg-success-soft" : isLocked ? "bg-disabled-bg" : "bg-surface",
+                          isRec ? "text-learning-foreground" : isMastered ? "text-success-text" : isLocked ? "text-disabled-text" : "text-ink",
+                          isRec ? "shadow-node" : isLocked ? "shadow-none" : "shadow-[0_2px_0_var(--tf-color-border-control)]",
+                          isLocked ? 'cursor-not-allowed' : 'cursor-pointer',
+                        ].filter(Boolean).join(' ')}
                       >
                         {isMastered && <CheckIcon size={24} />}
                         {isRec && <PlayIcon size={26} />}
                         {isLocked && <LockIcon size={20} />}
-                        {!isMastered && !isRec && !isLocked && <span style={{ fontWeight: 700 }}>{nIdx + 1}</span>}
+                        {!isMastered && !isRec && !isLocked && <span className="font-bold">{nIdx + 1}</span>}
                       </button>
 
                       {/* Node Label / Info */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '15px', color: isRec ? 'var(--color-learning-strong)' : 'var(--color-text-primary)' }}>
+                      <div className="flex-1">
+                        <div className={[
+                               "font-bold text-[15px]",
+                               isRec ? 'text-learning-strong' : 'text-ink',
+                             ].filter(Boolean).join(' ')}>
                           {node.title}
                         </div>
                         {isRec && (
-                          <span style={{ fontSize: '12px', color: 'var(--color-learning-accent)', fontWeight: 700 }}>
+                          <span className="text-[12px] text-learning-accent font-bold">
                             Recommended Next
                           </span>
                         )}
                         {isLocked && (
-                          <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                          <span className="text-[12px] text-muted">
                             {node.prerequisite}
                           </span>
                         )}
                         {isMastered && (
-                          <span style={{ fontSize: '12px', color: 'var(--color-success-text)' }}>
+                          <span className="text-[12px] text-success-text">
                             Mastered (Gate Passed)
                           </span>
                         )}
@@ -215,34 +173,28 @@ export function LearningPath({ onStartExercise }) {
         </div>
       ) : (
         /* Keyboard Map & Key Analytics Tab */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="surface-card">
-            <h2 className="text-heading-section" style={{ fontSize: '18px', marginBottom: '8px' }}>
+        <div className="flex flex-col gap-6">
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+            <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
               QWERTY Performance Overview
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            <p className="text-[14px] text-muted mb-4">
               Select any key on the physical keyboard guide to inspect recorded evidence and latency.
             </p>
 
             <KeyboardGuide nextChar={selectedKey} masteredKeys={new Set(['f', 'j', 'd', 'k', 'a', 's', 'l', ';', 'r', 'u'])} />
 
             {/* Quick Key Selection Palette */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+            <div className="flex justify-center gap-2 mt-5">
               {['f', 'j', 'e', 'i', 'p'].map((k) => (
                 <button
                   key={k}
                   type="button"
                   onClick={() => setSelectedKey(k)}
-                  className="english-island"
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: 'var(--radius-pill)',
-                    border: '1px solid var(--color-border-subtle)',
-                    backgroundColor: selectedKey === k ? 'var(--color-learning-soft)' : 'var(--color-bg-surface)',
-                    color: selectedKey === k ? 'var(--color-learning-strong)' : 'var(--color-text-primary)',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
+                  className={[
+                    "[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! py-1.5 px-3.5 rounded-full border border-border-subtle font-bold cursor-pointer",
+                    selectedKey === k ? 'bg-learning-soft text-learning-strong' : 'bg-surface text-ink',
+                  ].filter(Boolean).join(' ')}
                 >
                   Key: {k.toUpperCase()}
                 </button>
@@ -251,33 +203,33 @@ export function LearningPath({ onStartExercise }) {
           </div>
 
           {/* Selected Key Evidence Inspector Card */}
-          <div className="surface-card" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] grid grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] gap-4">
             <div>
-              <div className="text-caption-default">Selected Key</div>
-              <div className="text-heading-page english-island" style={{ color: 'var(--color-learning-strong)' }}>
+              <div className="text-[14px] leading-[22px] font-normal text-muted">Selected Key</div>
+              <div className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-learning-strong">
                 {currentKeyStats.key}
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+              <div className="text-[13px] font-bold text-muted mt-1">
                 {currentKeyStats.status}
               </div>
             </div>
 
             <div>
-              <div className="text-caption-default">Raw Accuracy</div>
-              <div className="text-heading-section english-island">{currentKeyStats.accuracy}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>Across all attempts</div>
+              <div className="text-[14px] leading-[22px] font-normal text-muted">Raw Accuracy</div>
+              <div className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{currentKeyStats.accuracy}</div>
+              <div className="text-[12px] text-muted mt-1">Across all attempts</div>
             </div>
 
             <div>
-              <div className="text-caption-default">Samples Recorded</div>
-              <div className="text-heading-section english-island">{currentKeyStats.samples}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>Req. $\ge 30$ for gate</div>
+              <div className="text-[14px] leading-[22px] font-normal text-muted">Samples Recorded</div>
+              <div className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{currentKeyStats.samples}</div>
+              <div className="text-[12px] text-muted mt-1">Req. $\ge 30$ for gate</div>
             </div>
 
             <div>
-              <div className="text-caption-default">Average Latency</div>
-              <div className="text-heading-section english-island">{currentKeyStats.latency}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>Target: &lt; 220 ms</div>
+              <div className="text-[14px] leading-[22px] font-normal text-muted">Average Latency</div>
+              <div className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{currentKeyStats.latency}</div>
+              <div className="text-[12px] text-muted mt-1">Target: &lt; 220 ms</div>
             </div>
           </div>
         </div>

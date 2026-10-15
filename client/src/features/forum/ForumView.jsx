@@ -56,13 +56,13 @@ export function ForumView() {
   };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+    <div className="max-w-240 my-0 mx-auto">
+      <div className="flex justify-between items-center mb-7">
         <div>
-          <h1 className="text-heading-page" style={{ marginBottom: '4px' }}>
+          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Learner Community Forum
           </h1>
-          <p className="text-body-default" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-[16px] leading-[26px] font-normal text-muted">
             Ask questions, share touch typing techniques, and help colleagues progress.
           </p>
         </div>
@@ -70,54 +70,30 @@ export function ForumView() {
         <button
           type="button"
           onClick={() => setShowNewThreadModal(true)}
-          className="btn-primary"
-          style={{ height: '44px', padding: '0 20px', fontSize: '14px' }}
+          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-11 py-0 px-5 text-[14px]"
         >
           + New Discussion
         </button>
       </div>
 
       {/* Threads List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="flex flex-col gap-3.5">
         {threads.map((thread) => (
           <div
             key={thread.id}
-            className="surface-card surface-card-interactive"
-            style={{
-              padding: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-            }}
+            className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] hover:border-border-control hover:-translate-y-0.5 hover:shadow-popover p-5 flex justify-between items-center cursor-pointer"
           >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <div className="flex items-center gap-2 mb-1.5">
                 <span
-                  style={{
-                    padding: '2px 8px',
-                    borderRadius: 'var(--radius-pill)',
-                    backgroundColor: 'var(--color-bg-subtle)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                  }}
+                  className="py-0.5 px-2 rounded-full bg-subtle text-[12px] font-bold"
                 >
                   {thread.category}
                 </span>
 
                 {thread.hasAcceptedAnswer && (
                   <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--radius-pill)',
-                      backgroundColor: 'var(--color-success-soft)',
-                      color: 'var(--color-success-text)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                    }}
+                    className="inline-flex items-center gap-1 py-0.5 px-2 rounded-full bg-success-soft text-success-text text-[11px] font-bold"
                   >
                     <CheckIcon size={12} />
                     <span>Answer Accepted</span>
@@ -125,18 +101,18 @@ export function ForumView() {
                 )}
               </div>
 
-              <h2 className="text-heading-card" style={{ fontSize: '16px', marginBottom: '4px' }}>
+              <h2 className="font-display rtl:font-arabic leading-[30px] font-bold text-[16px] mb-1">
                 {thread.title}
               </h2>
 
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+              <div className="text-[12px] text-muted">
                 Started by <strong>{thread.author}</strong> • {thread.date}
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', minWidth: '60px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 800 }}>{thread.replies}</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>replies</div>
+            <div className="text-center min-w-15">
+              <div className="text-[18px] font-extrabold">{thread.replies}</div>
+              <div className="text-[11px] text-muted">replies</div>
             </div>
           </div>
         ))}
@@ -145,32 +121,22 @@ export function ForumView() {
       {/* New Thread Modal */}
       {showNewThreadModal && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'var(--color-overlay)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '16px',
-          }}
+          className="fixed inset-0 bg-overlay flex items-center justify-center z-100 p-4"
         >
-          <div className="surface-card" style={{ width: '100%', maxWidth: '520px' }}>
-            <h2 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '16px' }}>
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] w-full max-w-130">
+            <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-4">
               Start a New Discussion
             </h2>
 
-            <form onSubmit={handleCreateThread} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleCreateThread} className="flex flex-col gap-4">
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label className="block text-[13px] font-bold mb-1.5">
                   Topic Category
                 </label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="form-input"
-                  style={{ height: '44px' }}
+                  className="w-full py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] h-11"
                 >
                   <option value="Technique">Typing Technique</option>
                   <option value="Adaptive Engine">Adaptive Engine & Scoring</option>
@@ -180,33 +146,31 @@ export function ForumView() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label className="block text-[13px] font-bold mb-1.5">
                   Question or Title
                 </label>
                 <input
                   type="text"
                   required
-                  className="form-input"
+                  className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
                   placeholder="What would you like to discuss?"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+              <div className="flex justify-end gap-2.5 mt-3">
                 <button
                   type="button"
                   onClick={() => setShowNewThreadModal(false)}
-                  className="btn-secondary"
-                  style={{ height: '42px', padding: '0 18px', fontSize: '14px' }}
+                  className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-10.5 py-0 px-4.5 text-[14px]"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="btn-primary"
-                  style={{ height: '42px', padding: '0 24px', fontSize: '14px' }}
+                  className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-10.5 py-0 px-6 text-[14px]"
                 >
                   Publish Discussion
                 </button>

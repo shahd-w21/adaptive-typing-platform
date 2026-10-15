@@ -10,80 +10,69 @@ export function AchievementsView() {
   ];
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-      <h1 className="text-heading-page" style={{ marginBottom: '8px' }}>
+    <div className="max-w-240 my-0 mx-auto">
+      <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-2">
         Achievements & Milestones
       </h1>
-      <p className="text-body-default" style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}>
+      <p className="text-[16px] leading-[26px] font-normal text-muted mb-8">
         Reward your consistency, accuracy gates passed, and speed milestones.
       </p>
 
       {/* Level & XP Progress Card */}
-      <div className="surface-card" style={{ marginBottom: '32px', padding: '28px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+      <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] mb-8 p-7">
+        <div className="flex justify-between items-center mb-3">
           <div>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-reward-text)' }}>CURRENT RANK</span>
-            <div className="text-heading-page" style={{ fontSize: '28px' }}>Level 3 Typist</div>
+            <span className="text-[13px] font-bold text-reward-text">CURRENT RANK</span>
+            <div className="font-display rtl:font-arabic leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] text-[28px]">Level 3 Typist</div>
           </div>
-          <div className="text-metric-large" style={{ color: 'var(--color-learning-strong)' }}>
+          <div className="text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums] text-learning-strong">
             1,420 / 2,000 XP
           </div>
         </div>
 
-        <div style={{ height: '12px', backgroundColor: 'var(--color-bg-subtle)', borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ width: '71%', height: '100%', backgroundColor: 'var(--color-reward-accent)', borderRadius: '6px' }} />
+        <div className="h-3 bg-subtle rounded-md overflow-hidden">
+          <div className="w-[71%] h-full bg-reward-accent rounded-md" />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+        <div className="flex justify-between mt-2 text-[12px] text-muted">
           <span>Level 3</span>
           <span>580 XP until Level 4</span>
         </div>
       </div>
 
       {/* Badges Grid */}
-      <h2 className="text-heading-section" style={{ fontSize: '20px', marginBottom: '16px' }}>
+      <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-4">
         Earned & Available Badges
       </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+      <div className="grid grid-cols-[repeat(auto-fit,_minmax(280px,_1fr))] gap-5">
         {badges.map((b) => (
           <div
             key={b.id}
-            className="surface-card"
-            style={{
-              opacity: b.earned ? 1 : 0.65,
-              border: b.earned ? '2px solid var(--color-success-accent)' : '1px solid var(--color-border-subtle)',
-              display: 'flex',
-              gap: '16px',
-              alignItems: 'center',
-            }}
+            className={[
+              "bg-surface rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex gap-4 items-center",
+              b.earned ? 'opacity-100 border-2 border-success-accent' : 'opacity-65 border border-border-subtle',
+            ].filter(Boolean).join(' ')}
           >
             <div
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '16px',
-                backgroundColor: b.earned ? 'var(--color-success-soft)' : 'var(--color-bg-subtle)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px',
-                flexShrink: 0,
-              }}
+              className={[
+                "w-14 h-14 rounded-2xl flex items-center justify-center text-[28px] shrink-0",
+                b.earned ? 'bg-success-soft' : 'bg-subtle',
+              ].filter(Boolean).join(' ')}
             >
               {b.icon}
             </div>
 
             <div>
-              <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '2px' }}>{b.title}</div>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '6px', lineHeight: '18px' }}>
+              <div className="font-extrabold text-[16px] mb-0.5">{b.title}</div>
+              <p className="text-[13px] text-muted mb-1.5 leading-[18px]">
                 {b.desc}
               </p>
               {b.earned ? (
-                <span style={{ fontSize: '12px', color: 'var(--color-success-text)', fontWeight: 700 }}>
+                <span className="text-[12px] text-success-text font-bold">
                   ✓ Earned on {b.date}
                 </span>
               ) : (
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+                <span className="text-[12px] text-muted italic">
                   Criteria: {b.criteria}
                 </span>
               )}

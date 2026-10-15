@@ -10,6 +10,7 @@ This is the single decision log. Preserve dates, rationale and status; update th
 | [0004](#0004) | Accepted documentation task | Developer-first README and consolidated guides |
 | [0005](#0005) | Structure retained; feature-removal scope superseded by 0006 | One active backend and workspace setup |
 | [0006](#0006) | Accepted migration task | Preserve teammate features in the new architecture |
+| [0007](#0007) | Accepted styling task | Migrate existing frontend styles to Tailwind utilities |
 
 <a id="0001"></a>
 ## 0001 — Organise project and agent documentation
@@ -118,6 +119,17 @@ Preserve all existing client files and teammate-owned documentation. The client 
 Recover the implementation from `68d311f` and preserve its account/profile, practice/scoring, key progress/unlocks, dashboard/progress, XP/level/streak and Admin-check flows in ES-module feature modules under `server/src/`. Retain its supporting schema concepts through additive Prisma migrations; do not run the old destructive/invalid SQL bootstrap. Replace its manual scripts with repeatable tests. Credit the source and document the old-to-new API map.
 
 This supersedes 0005's feature-removal outcome while retaining one entry point, root workspace tooling and the protected frontend boundary. Current SRS scoring, revocation, CSRF and retry rules take precedence over old placeholders. Recovered target/curriculum/reward/integrity defaults remain development policy pending the existing open decisions. The migration is not a legacy database import or completion of every SRS feature. Verification and limitations are in development/API contract; no frontend, commit, push or deployment is authorised by this record alone.
+
+<a id="0007"></a>
+## 0007 — Migrate the existing frontend styling to Tailwind
+
+- Status: Accepted styling task
+- Date: 2026-10-15
+- Authority: project owner requested Tailwind in place of unnecessary CSS files
+
+Wire Tailwind into Vite and migrate the existing screens to utility classes. Consolidate theme tokens, document defaults and caret keyframes in one CSS entry point; remove the redundant app/global/token stylesheets. Preserve appearance preferences, English/Arabic UI, English LTR typing and existing application behaviour. Retain inline values only when they come from data.
+
+This authorises edits to the frontend for the styling migration, beyond the earlier foundation-only boundary. It changes no learning policy or API contract. Verification and remaining browser checks are recorded in the development guide.
 
 ## Open decisions
 | Decision | When it must be settled |

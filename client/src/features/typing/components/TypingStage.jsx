@@ -50,22 +50,8 @@ export function TypingStage({
 
   return (
     <div
-      className="typing-surface surface-card english-island"
+      className="[transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! relative min-h-55 p-9 cursor-text bg-surface rounded-card shadow-card border-2 border-border-control outline-none flex flex-col justify-center"
       onClick={() => inputRef.current?.focus()}
-      style={{
-        position: 'relative',
-        minHeight: '220px',
-        padding: '36px',
-        cursor: 'text',
-        backgroundColor: 'var(--color-bg-surface)',
-        borderRadius: 'var(--radius-card)',
-        boxShadow: 'var(--shadow-card)',
-        border: '2px solid var(--color-border-control)',
-        outline: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
     >
       {/* Hidden capture input */}
       <input
@@ -79,34 +65,30 @@ export function TypingStage({
         onKeyDown={handleKeyDown}
         onPaste={(e) => e.preventDefault()}
         onDrop={(e) => e.preventDefault()}
-        style={{
-          position: 'absolute',
-          opacity: 0,
-          pointerEvents: 'none',
-          width: '1px',
-          height: '1px',
-        }}
+        className="absolute opacity-0 pointer-events-none w-[1px] h-[1px]"
       />
 
       {/* Rendered Passage with Non-Colour WCAG Accessibility Cues */}
       <div
-        className={largeText ? 'text-typing-large' : 'text-typing-default'}
-        style={{ userSelect: 'none' }}
+        className={[
+          "select-none",
+          largeText ? 'font-mono! text-[36px] leading-[60px] font-normal tracking-[0] [font-variant-ligatures:none] whitespace-pre-wrap break-all max-md:text-[26px] max-md:leading-[44px]' : 'font-mono! text-[28px] leading-[48px] font-normal tracking-[0] [font-variant-ligatures:none] whitespace-pre-wrap break-all max-md:text-[22px] max-md:leading-[38px]',
+        ].filter(Boolean).join(' ')}
       >
         {assignedText.split('').map((char, index) => {
-          let charClass = 'char-upcoming';
+          let charClass = "text-ink opacity-85";
           let displayChar = char;
 
           if (index < bufferLen) {
             const entered = buffer[index];
             if (entered === char) {
-              charClass = 'char-correct';
+              charClass = "text-success-text underline [text-decoration-thickness:1.5px] [text-underline-offset:4px] bg-success-soft rounded-xs";
             } else {
-              charClass = entered === ' ' ? 'char-wrong-space' : 'char-incorrect';
+              charClass = entered === ' ' ? "text-error-text bg-error-soft relative py-0 px-1 rounded-[3px] border border-dashed border-error-text" : "text-error-text bg-error-soft underline [text-decoration-style:double] [text-decoration-thickness:2.5px] [text-underline-offset:4px] rounded-xs";
               displayChar = entered === ' ' ? '␣' : entered;
             }
           } else if (index === bufferLen) {
-            charClass = 'char-current';
+            charClass = "text-ink relative bg-[rgba(6,_102,_223,_0.12)] rounded-xs before:[content:''] before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-focus-ring before:rounded-xs before:[animation:caret-blink_1s_ease-in-out_infinite]";
           }
 
           return (
