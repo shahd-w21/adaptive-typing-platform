@@ -21,6 +21,7 @@ The SRS owns required behaviour. Draft API fields/design values and documented c
 
 ## Engineering boundaries
 
+- The owner authorized additive frontend scaffold files beyond the earlier client-only environment exception. New app/API/context/feature/hooks/test placeholders contain comments only; preserve all existing teammate implementations and keep them unwired until implementation is requested. The frontend architecture tree mirrors actual paths; `client/src/index.css` remains the only styling entry point.
 - Course scope is approved in SRS section 9.6 / decision 0008. Frontend, backend and shared course files currently contain comments only. Preserve existing screens and logic; do not treat placeholders as implemented or import them. Use the architecture trees for canonical course paths. One shared skill profile/session engine serves separate course enrollments and progress. The course scaffold authorization does not authorize runtime implementation.
 - Use JavaScript/JSX and Tailwind CSS; root `client/`, `server/`, shared runtime schemas/formulas in `packages/shared/`.
 - Preserve Student/Admin roles and English desktop QWERTY typing. Support required appearance, English/Arabic UI and mobile non-typing pages; keep English exercise content/keyboard LTR.

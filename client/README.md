@@ -1,18 +1,9 @@
-# React + Vite
+# TypeFlow frontend
 
-> Historical starter-template notes; not the TypeFlow target specification or verified setup. For required Light/Dark appearance, English/Arabic interface and desktop/mobile non-typing pages, read [DESIGN.md](../DESIGN.md), the [SRS](../docs/srs.md) and [setup status](../docs/setup.md). English desktop/QWERTY typing remains the scope. The application has not been assessed during documentation work; template statements below are not project implementation evidence.
+React, JavaScript/JSX and Tailwind CSS. Install and run from the repository root using the [quick start](../README.md#quick-start), not a separate client install. For everyday development, start Docker Desktop, then run `npm run db:up` and `npm run dev` from the root. The website uses http://localhost:5173.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Follow the [frontend structure](../docs/architecture.md#3-frontend-layout), [API contract](../docs/api-contract.md), [design brief](../DESIGN.md) and [team workflow](../docs/contributing.md). Existing screens, translations, preferences and typing components are preserved. New scaffold files contain only `Coming soon` comments: they have no exports, API connections or routes. Implement and review them before importing them.
 
-Currently, two official plugins are available:
+Use `src/index.css` for the Tailwind entry point and shared theme/document styles. Reuse existing screens, including the keyboard map in `features/learning-path/LearningPath.jsx`; avoid duplicate views and browser copies of server scoring/adaptive rules. Exact course contracts remain to agree before integration.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+From the root, `npm run lint --workspace=client` checks the frontend and `npm run build --workspace=client` builds it. Browser tests are not configured; `tests/e2e/` reserves their future location. A successful build does not verify backend integration or placeholder features.

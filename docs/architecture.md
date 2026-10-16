@@ -195,111 +195,186 @@ Persistence practices are in [development](development.md#database-workflow); Fi
 
 ## 3. Frontend layout
 
+The tree below reflects the actual frontend scaffold. Existing teammate screens, styles, preferences, translations, icons and typing engine remain unchanged. Newly reserved JavaScript/JSX files contain only `Coming soon` comments and have no exports or route/provider wiring. `App.jsx` remains the running application until a separately authorized integration; do not import placeholders as usable components. `tests/e2e/` is reserved by `.gitkeep`, not executable browser tests.
+
+Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies. Add formatting helpers, schema-valid development fixtures or browser-only schemas when concrete implementation needs them, not as empty parallel layers.
+
 ```text
 client/
 ├── public/
-│   └── favicon.svg
+│   ├── favicon.svg
+│   └── icons.svg
 ├── src/
-│   ├── main.jsx
-│   ├── App.jsx
-│   ├── app/
-│   │   ├── router.jsx
-│   │   ├── providers.jsx
-│   │   ├── queryClient.js
-│   │   └── ErrorBoundary.jsx
 │   ├── api/
-│   │   ├── client.js               # credentials, base URL, safe 401 handling
+│   │   ├── admin.js
+│   │   ├── adminCourses.js
 │   │   ├── auth.js
-│   │   ├── users.js
-│   │   ├── courses.js              # catalog, enrollments and owned paths
-│   │   ├── adminCourses.js         # protected authoring/publication requests
-│   │   ├── sessions.js
+│   │   ├── certificates.js
+│   │   ├── client.js
+│   │   ├── courses.js
+│   │   ├── forum.js
+│   │   ├── gamification.js
 │   │   ├── path.js
 │   │   ├── progress.js
-│   │   ├── gamification.js
-│   │   ├── certificates.js
-│   │   ├── forum.js
-│   │   └── admin.js
+│   │   ├── sessions.js
+│   │   └── users.js
+│   ├── app/
+│   │   ├── ErrorBoundary.jsx
+│   │   ├── providers.jsx
+│   │   ├── queryClient.js
+│   │   └── router.jsx
+│   ├── assets/
+│   │   └── hero.png
+│   ├── components/
+│   │   ├── controls/
+│   │   │   ├── AppearanceSelector.jsx
+│   │   │   └── LanguageSelector.jsx
+│   │   ├── layout/
+│   │   │   ├── AdminShell.jsx
+│   │   │   ├── DeviceGuidance.jsx
+│   │   │   ├── PublicHeader.jsx
+│   │   │   └── StudentShell.jsx
+│   │   ├── ui/
+│   │   │   └── Icons.jsx
+│   │   ├── ConfirmDialog.jsx
+│   │   ├── EmptyState.jsx
+│   │   ├── ErrorMessage.jsx
+│   │   ├── Loading.jsx
+│   │   ├── RequireAuth.jsx
+│   │   └── RequireRole.jsx
 │   ├── context/
 │   │   ├── AuthContext.jsx
-│   │   ├── RewardsContext.jsx
-│   │   └── PreferencesContext.jsx
-│   ├── hooks/
-│   ├── i18n/                       # planned en/ar UI dictionaries and direction helpers
-│   ├── components/
-│   │   ├── ui/
-│   │   ├── layout/                 # student/admin shells and navigation
-│   │   ├── RequireAuth.jsx
-│   │   ├── RequireRole.jsx
-│   │   ├── Loading.jsx
-│   │   ├── ErrorMessage.jsx
-│   │   ├── EmptyState.jsx
-│   │   └── ConfirmDialog.jsx
+│   │   ├── preferences.js
+│   │   ├── PreferencesContext.jsx
+│   │   └── RewardsContext.jsx
 │   ├── features/
+│   │   ├── achievements/
+│   │   │   └── AchievementsView.jsx
+│   │   ├── admin/
+│   │   │   ├── components/
+│   │   │   │   ├── AnalyticsPanel.jsx
+│   │   │   │   ├── CertificateManagement.jsx
+│   │   │   │   ├── ContentManagement.jsx
+│   │   │   │   ├── ForumModeration.jsx
+│   │   │   │   ├── SettingsManagement.jsx
+│   │   │   │   └── UserManagement.jsx
+│   │   │   ├── courses/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── CourseMetadataForm.jsx
+│   │   │   │   │   ├── LessonEditor.jsx
+│   │   │   │   │   ├── PublishCourseDialog.jsx
+│   │   │   │   │   └── UnitEditor.jsx
+│   │   │   │   ├── hooks/
+│   │   │   │   │   └── useAdminCourses.js
+│   │   │   │   └── pages/
+│   │   │   │       ├── AdminCoursesPage.jsx
+│   │   │   │       ├── CourseEditorPage.jsx
+│   │   │   │       └── CoursePreviewPage.jsx
+│   │   │   ├── hooks/
+│   │   │   │   └── useAdmin.js
+│   │   │   └── AdminView.jsx
 │   │   ├── auth/
-│   │   ├── placement/
-│   │   ├── dashboard/
-│   │   ├── courses/                # comment-only placeholders; no rendered pages
 │   │   │   ├── pages/
-│   │   │   │   ├── CourseLibraryPage.jsx
-│   │   │   │   ├── CourseDetailPage.jsx
-│   │   │   │   ├── MyCoursesPage.jsx
-│   │   │   │   └── CoursePathPage.jsx
+│   │   │   │   ├── ForgotPasswordPage.jsx
+│   │   │   │   ├── ResetPasswordPage.jsx
+│   │   │   │   └── VerifyEmailPage.jsx
+│   │   │   └── AuthPages.jsx
+│   │   ├── certificates/
+│   │   │   ├── hooks/
+│   │   │   │   └── useCertificates.js
+│   │   │   └── CertificatesView.jsx
+│   │   ├── courses/
 │   │   │   ├── components/
 │   │   │   │   ├── CourseCard.jsx
+│   │   │   │   ├── CourseEntryCheck.jsx
 │   │   │   │   ├── CourseFilters.jsx
 │   │   │   │   ├── CoursePath.jsx
-│   │   │   │   ├── LessonNode.jsx
-│   │   │   │   └── CourseEntryCheck.jsx
-│   │   │   └── hooks/
-│   │   │       ├── useCourses.js
-│   │   │       └── useCoursePath.js
-│   │   ├── keyboard-map/
-│   │   ├── learning-path/LearningPath.jsx # existing teammate UI; reuse during course integration
-│   │   ├── typing/
-│   │   │   ├── pages/TypingSessionPage.jsx
-│   │   │   ├── components/         # display, input, keyboard, controls, stats
-│   │   │   ├── engine/
-│   │   │   │   ├── keystrokeRecorder.js
-│   │   │   │   ├── typingReducer.js
-│   │   │   │   ├── liveMetrics.js  # calls shared formulas
-│   │   │   │   └── *.test.js
-│   │   │   └── hooks/              # start, record, submit, recover result
-│   │   ├── result/
-│   │   ├── tests/                  # UI for timed/certified session modes
-│   │   ├── review/
-│   │   ├── progress/
-│   │   ├── gamification/
-│   │   ├── certificates/
+│   │   │   │   └── LessonNode.jsx
+│   │   │   ├── hooks/
+│   │   │   │   ├── useCoursePath.js
+│   │   │   │   └── useCourses.js
+│   │   │   └── pages/
+│   │   │       ├── CourseDetailPage.jsx
+│   │   │       ├── CourseLibraryPage.jsx
+│   │   │       ├── CoursePathPage.jsx
+│   │   │       └── MyCoursesPage.jsx
+│   │   ├── dashboard/
+│   │   │   ├── hooks/
+│   │   │   │   └── useDashboard.js
+│   │   │   └── Dashboard.jsx
 │   │   ├── forum/
+│   │   │   ├── hooks/
+│   │   │   │   └── useForum.js
+│   │   │   └── ForumView.jsx
+│   │   ├── gamification/
+│   │   │   ├── components/
+│   │   │   │   └── RewardNotifications.jsx
+│   │   │   └── hooks/
+│   │   │       └── useGamification.js
+│   │   ├── learning-path/
+│   │   │   └── LearningPath.jsx
+│   │   ├── placement/
+│   │   │   ├── hooks/
+│   │   │   │   └── usePlacement.js
+│   │   │   └── PlacementPage.jsx
 │   │   ├── profile/
-│   │   └── admin/
-│   │       └── courses/            # preserve existing AdminView.jsx
-│   │           ├── pages/
-│   │           │   ├── AdminCoursesPage.jsx
-│   │           │   ├── CourseEditorPage.jsx
-│   │           │   └── CoursePreviewPage.jsx
-│   │           ├── components/
-│   │           │   ├── CourseMetadataForm.jsx
-│   │           │   ├── UnitEditor.jsx
-│   │           │   ├── LessonEditor.jsx
-│   │           │   └── PublishCourseDialog.jsx
-│   │           └── hooks/useAdminCourses.js
+│   │   │   ├── hooks/
+│   │   │   │   └── useProfile.js
+│   │   │   └── ProfileView.jsx
+│   │   ├── progress/
+│   │   │   ├── hooks/
+│   │   │   │   └── useProgress.js
+│   │   │   └── ProgressView.jsx
+│   │   ├── result/
+│   │   │   └── OfficialResult.jsx
+│   │   ├── review/
+│   │   │   ├── hooks/
+│   │   │   │   └── useReviews.js
+│   │   │   └── ReviewPage.jsx
+│   │   ├── tests/
+│   │   │   ├── hooks/
+│   │   │   │   └── useTests.js
+│   │   │   └── TestsView.jsx
+│   │   └── typing/
+│   │       ├── components/
+│   │       │   ├── KeyboardGuide.jsx
+│   │       │   └── TypingStage.jsx
+│   │       ├── engine/
+│   │       │   ├── keystrokeRecorder.js
+│   │       │   ├── liveMetrics.js
+│   │       │   └── typingReducer.js
+│   │       ├── hooks/
+│   │       │   ├── useSubmitSession.js
+│   │       │   ├── useTypingRecorder.js
+│   │       │   └── useTypingSession.js
+│   │       └── pages/
+│   │           └── TypingSessionPage.jsx
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   └── useRewards.js
+│   ├── i18n/
+│   │   ├── dictionaries/
+│   │   │   ├── ar.json
+│   │   │   └── en.json
+│   │   └── useTranslation.js
 │   ├── lib/
-│   │   ├── utils.js
 │   │   └── queryKeys.js
-│   ├── mocks/                      # schema-checked development fixtures
-│   ├── styles/index.css
-│   └── schemas/                    # browser-only runtime schemas, if needed
-├── tests/e2e/
-├── index.html
-├── vite.config.js
-├── components.json
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── tests/
+│   └── e2e/
 ├── .env.example
-└── package.json
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.js
 ```
 
-Page → feature hook → API function → shared HTTP client. Components render state; API files only send requests and handle transport shapes. TanStack Query owns remote data; Context handles the few cross-page UI concerns. API authentication/ownership checks remain mandatory even when frontend route guards exist.
+Target flow: page → feature hook → API function → shared HTTP client. Components render state; API files only send requests and handle transport shapes. TanStack Query is the target owner of remote data; Context handles the few cross-page UI concerns. The new query client, providers, hooks and transport are placeholders, not installed/configured integrations. API authentication/ownership checks remain mandatory even when frontend route guards exist. Keep the existing root workspace install/commands; this scaffold changes no dependencies or build configuration.
 
 The recorder emits ordered monotonic events. The reducer replays allowed end-of-buffer operations and mode transitions. Live metrics use shared formulas and are labelled provisional until submission succeeds. The frontend must retain the same submission payload during a network retry, and must not replay reward toasts as new awards when recovering an already-saved result.
 
