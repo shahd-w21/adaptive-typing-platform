@@ -12,6 +12,8 @@ Run commands from the repository root unless stated otherwise. The npm commands 
 
 Install Git, Node.js 24.14.0 (pinned in `.nvmrc`), npm 11, and Docker Desktop with its Linux engine running. PostgreSQL runs in Docker; you do not need a separate database installation. A native PostgreSQL alternative is in the development guide.
 
+**New to Docker?** Follow the [Windows Docker setup and daily workflow](docs/development.md#docker-setup-for-teammates-windows) first, then continue below.
+
 ```powershell
 git clone https://github.com/shahd-w21/adaptive-typing-platform.git
 cd adaptive-typing-platform

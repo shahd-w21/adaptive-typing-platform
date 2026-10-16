@@ -39,6 +39,21 @@ Suggested phase goals, retained from the earlier handoff:
 
 Put the strongest relevant developers on typing capture and scoring/adaptation. Preserve time for evaluation and integration; confirm the real deadline/rubric before allocating days. A phase finishes when its demo runs, not when individual branches look complete.
 
+## Course-expansion phases
+
+The course model is approved in [decision 0008](decisions.md#0008), and frontend/backend/shared comment-only placeholders are created at the architecture's paths. These phases guide later work; they do not authorize runtime implementation now. Preserve existing accounts, practice and supporting features during integration.
+
+| Phase | Reviewable outcome / gate |
+| --- | --- |
+| Course agreement | Refine approved SYS-57–64 into concrete course objectives/checkpoints, schema/JSON contracts, numerical policies and Figma page briefs |
+| Course foundation | Reviewed additive data model and publication/enrollment rules; one manually authored foundational course with a validated path |
+| First course loop | Catalog → enroll → entry recommendation → lesson assignment → official result → saved/resumable course progress, using existing session/scoring behavior |
+| Adaptive course learning | Shared key/pair evidence, placement/targeted checks, mastery, difficulty, reviews and explanations; weak and experienced profiles behave differently |
+| Generation and authoring | Validated cache/LLM/fallback with course constraints; admin draft/preview/validate/publish/archive and version compatibility demonstrated |
+| Integration/evaluation | Second course proves evidence transfer with separate progress; retry/concurrency, rewards, privacy, certificates distinction, accessibility and simulation checks |
+
+Within each approved phase, the team can work in parallel on course/admin APIs, pure adaptive/generation logic, student/admin UI and acceptance/content tasks against agreed shared contracts. Coordinate Prisma/shared schemas, session submission and routing changes explicitly. Figma comes after the course flow is agreed and before page implementation; recheck the existing design rather than discarding teammate work. Keep live LLM integration behind validated fallback, and agree objectives before bulk-authoring courses.
+
 ## Definition of done
 
 - Requested behaviour is implemented or the requested document is complete.

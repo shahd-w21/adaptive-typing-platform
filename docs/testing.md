@@ -63,6 +63,20 @@ SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns p
 
 Compare desktop/mobile × Light/Dark × English/Arabic fixtures; System is a resolver test, not a third rendered palette. Record exact desktop/mobile browser versions and assistive technologies when implementation is tested; no browser is claimed verified by a Figma prototype. Theme/locale must not change the saved timezone or qualifying streak date. Keep machine-readable API values canonical while formatting display labels.
 
+## Course expansion acceptance — required, not run
+
+For SYS-57–64 and [decision 0008](decisions.md#0008), verify:
+
+- Catalog hides drafts; enrollment/path access enforces ownership, version and prerequisites; repeated enrollment requests have agreed retry behavior.
+- First learning entry offers placement/skip; later visits resume without repeating it; a new course reuses compatible evidence and offers targeted checks only when needed. Sparse/absent evidence cannot grant mastery, advanced prerequisites or course completion.
+- Identical learner profiles can receive different practice in the same lesson as evidence changes; extra practice/reviews preserve course objectives and permitted characters. The LLM cannot decide progression, and a service outage still permits feasible fallback exercises.
+- Learning in one course can inform shared skill estimates without falsely completing unrelated lessons, losing progress or duplicating XP. Exercise completion, lesson completion, placement exemptions and mastery are distinct states with auditable evidence.
+- Concurrent submissions atomically save shared evidence, course progress and rewards; identical retries return the same saved effects. Changing course during an active attempt does not change that attempt.
+- Publishing rejects invalid prerequisites, cycles and impossible content; editing/publishing a new version preserves old enrollments/assignments. Archival prevents new enrollment without erasing existing access/history; account deletion removes personal course progress.
+- Completion follows approved objectives/checkpoints and cannot be obtained through placement alone; course completion does not silently issue a performance certificate. Existing language/theme/device and certified-test rules remain unchanged.
+
+Map concrete behavioral tests to SYS-57–64 once exact contracts are agreed. `server/tests/fixtures/courses.js` is comment-only; it supplies no fixtures or assertions. No course implementation, test execution or acceptance is asserted by this checklist.
+
 ## Adaptive evaluation
 
 Compare adaptive and fixed-curriculum policies with identical initial profiles, equal practice budgets and a common held-out assessment. Separate tuning from reporting profiles; run multiple random seeds and report variability. Include novices, slow-accurate, fast-inaccurate and uneven-key typists. Do not build an improvement model that rewards adaptation by definition.

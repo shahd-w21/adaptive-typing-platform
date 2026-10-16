@@ -131,12 +131,27 @@ Wire Tailwind into Vite and migrate the existing screens to utility classes. Con
 
 This authorises edits to the frontend for the styling migration, beyond the earlier foundation-only boundary. It changes no learning policy or API contract. Verification and remaining browser checks are recorded in the development guide.
 
+<a id="0008"></a>
+## 0008 — Adaptive course library and admin-authored paths
+
+- Status: Accepted course model; scaffold only, runtime implementation not authorized
+- Date: 2026-10-16
+- Authority: owner approved the proposed course model and requested frontend/backend/shared folders and comment-only files; no runtime implementation authorized
+- Affected baseline: SRS SYS-16–29, SYS-33, SYS-42–45, SYS-50 and section 9.6 / SYS-57–64; architecture, API contract, content guide and testing
+
+Adopt a published course library with versioned Course → Unit → Lesson paths, separate enrollments/progress and one shared skill profile/adaptive/session engine. Offer optional placement at first learning entry; reuse relevant evidence on later enrollments and offer targeted checks for gaps. Preserve the difference between placement exemptions, mastery and course completion. Admins author constraints and objectives; the engine chooses practice and the LLM supplies validated text with fallback. Existing rewards, reviews, assessments, certificates, forum and presentation requirements remain in scope.
+
+Rationale: courses make curriculum discoverable without restarting skill measurement or building a separate adaptive engine for each path. Immutable published versions protect current learners and assigned text. The tradeoff is additional enrollment, curriculum-version and objective-completion complexity. Do not treat course completion as the existing performance certificate or duplicate XP across courses.
+
+The owner approved the initial optional-placement/targeted-check policy, shared evidence with separate progress, objective/checkpoint completion and immutable publication/archival model. Approval authorizes structural placeholders and documentation only; it does not authorize implementing or wiring routes, UI, models or migrations. Exact JSON/Prisma schemas, numerical freshness/reattempt policies, concrete lesson objectives and checkpoint thresholds, the initial course outlines and any future enrollment-migration mapping remain to agree before their implementation. Preserve existing teammate files.
+
 ## Open decisions
 | Decision | When it must be settled |
 | --- | --- |
 | Does the course require training a model? | Before committing to the engine implementation |
 | Actual deadline, marking rubric, required diagrams/prototypes | Before task allocation |
 | Default target WPM, permitted range and final curriculum groups | Before placement/mastery implementation |
+| Course details: exact contracts/schema, freshness/reattempt limits, concrete objectives/checkpoints, initial course outlines and any enrollment-migration mapping | Before implementing the corresponding course features; overall model accepted in 0008 |
 | LLM provider/model, budget, timeout and service limits | Before integration; fallback can be built first |
 | Hosting and database/email services | Before deployment design |
 | Certified duration, net WPM/raw accuracy thresholds, cooldown/attempt limits and public display name | Before certificate implementation |
