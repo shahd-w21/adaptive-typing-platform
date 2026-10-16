@@ -51,6 +51,16 @@ All generated and fallback text passes the same applicable checks. Theme and nat
 
 Blocked-content matching boundaries, normalisation and false-positive handling remain to be agreed. Test words containing innocent substrings; a substring blacklist is not automatically the intended moderation policy.
 
+## Course authoring — approved model, content schema pending
+
+See [SRS section 9.6](srs.md#course-proposal) for approved policy. This is an authoring checklist; the exact content schema/importer is not agreed or implemented. `server/prisma/content/courses/` reserves a place for reviewed course outlines and is not read by the current seed.
+
+For each course, propose a title/summary, objectives, learner level, entry requirements, supported English QWERTY scope and ordered units. Each lesson references shared key groups/skills, prerequisites, permitted activity modes, difficulty/length bounds, optional theme/word lists and objective/completion rules. Reuse shared skill definitions rather than cloning keys per course. Admins define what to learn; generated exercise text can vary per learner. A themed title never permits locked characters.
+
+Preview both novice and experienced learner paths, plus skipped placement, weak/unknown evidence, due reviews and unavailable LLM service. Validate cycles, unreachable lessons, version-owned references, safe content, attainable objectives and a feasible fallback for every activity before publication. Numeric mastery/scoring thresholds remain versioned policies from the SRS, not unchecked lesson text. Review completion/checkpoint rules and initial course outlines with the team before authoring a large catalog.
+
+Published curriculum changes create a successor draft; retain old versions for existing progress and assignments. Mark empty scaffold JSON as placeholders until the importer and reviewed schema exist. Course metadata and authored exercise content are not automatically translated by the LLM. Interface labels/status explanations follow existing English/Arabic UI rules.
+
 ## Interface language versus typing content
 
 English/Arabic interface selection (SRS SYS-54) translates controls, helper copy and system explanations only. Assigned passages, authored lesson text, word lists, focus keys/pairs and QWERTY labels stay English; user/forum content stays as authored. Do not feed `uiLocale` into generation prompts, word-list selection, validation or cache compatibility. An Arabic shell presents the English exercise/input/keyboard in an explicit LTR region without rewriting stored characters or adding direction marks to the assignment. Authored content and certificate PDFs are not automatically translated. Translatable interface labels belong in reviewed UI dictionaries, not mutable exercise prose or LLM output.

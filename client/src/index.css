@@ -1,111 +1,257 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   TypeFlow Design System Tokens
+   Source: DESIGN.md v0.2
+   Warm edclub-inspired Light theme + Layered Navy Dark theme
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  /* Canvas & Surfaces */
+  --tf-color-bg-page: #F5F3F0;
+  --tf-color-bg-surface: #FFFFFF;
+  --tf-color-bg-subtle: #F7F7F9;
+  --tf-color-bg-inverse: #242E3E;
+
+  /* Typography */
+  --tf-color-text-primary: #122947;
+  --tf-color-text-secondary: #556576;
+  --tf-color-text-inverse: #FFFFFF;
+
+  /* Borders */
+  --tf-color-border-subtle: #E5E7EB;
+  --tf-color-border-control: #7C8796;
+
+  /* Action Buttons */
+  --tf-color-action-primary: #2B3749;
+  --tf-color-action-hover: #354B63;
+  --tf-color-action-pressed: #435F7D;
+  --tf-color-action-foreground: #FFFFFF;
+  --tf-color-action-link: #0666DF;
+  --tf-color-focus-ring: #0666DF;
+
+  /* Learning Activity Accent */
+  --tf-color-learning-accent: #8449EB;
+  --tf-color-learning-foreground: #FFFFFF;
+  --tf-color-learning-strong: #6D36C4;
+  --tf-color-learning-soft: #F1E9FC;
+  --tf-color-learning-lip: #6D36C4;
+
+  /* Progress & Success */
+  --tf-color-success-accent: #25CBA9;
+  --tf-color-success-text: #186B56;
+  --tf-color-success-soft: #E8F8F1;
+
+  /* Attention & Warning */
+  --tf-color-warning-accent: #CD964D;
+  --tf-color-warning-text: #8A4B08;
+  --tf-color-warning-soft: #FFF1DE;
+
+  /* Error & Destructive */
+  --tf-color-error-text: #B42318;
+  --tf-color-error-soft: #FFF0EE;
+
+  /* Rewards & Gamification */
+  --tf-color-reward-accent: #E0E04C;
+  --tf-color-reward-text: #684500;
+  --tf-color-reward-soft: #FFF7CC;
+  --tf-color-streak-text: #9A4D00;
+
+  /* Disabled States */
+  --tf-color-disabled-bg: #E5E7EB;
+  --tf-color-disabled-text: #556576;
+
+  /* Overlays & Shadows */
+  --tf-color-overlay: rgba(23, 28, 38, 0.48);
+  --tf-shadow-card: 0 2px 8px rgba(18, 41, 71, 0.06);
+  --tf-shadow-popover: 0 8px 24px rgba(18, 41, 71, 0.12);
+  --lip-primary: 0 3px 0 #171C26;
+  --lip-node: 0 4px 0 var(--tf-color-learning-lip);
+}
+
+[data-theme="dark"] {
+  /* Canvas & Surfaces */
+  --tf-color-bg-page: #171C26;
+  --tf-color-bg-surface: #242E3E;
+  --tf-color-bg-subtle: #2D3A4E;
+  --tf-color-bg-inverse: #101723;
+
+  /* Typography */
+  --tf-color-text-primary: #F2F4F8;
+  --tf-color-text-secondary: #B8C4D6;
+  --tf-color-text-inverse: #F2F4F8;
+
+  /* Borders */
+  --tf-color-border-subtle: #3B4B63;
+  --tf-color-border-control: #7F90A8;
+
+  /* Action Buttons */
+  --tf-color-action-primary: #C4A7FF;
+  --tf-color-action-hover: #D6C2FF;
+  --tf-color-action-pressed: #B495EB;
+  --tf-color-action-foreground: #171C26;
+  --tf-color-action-link: #8DC2FF;
+  --tf-color-focus-ring: #8DC2FF;
+
+  /* Learning Activity Accent */
+  --tf-color-learning-accent: #C4A7FF;
+  --tf-color-learning-foreground: #171C26;
+  --tf-color-learning-strong: #D6C2FF;
+  --tf-color-learning-soft: #392B53;
+  --tf-color-learning-lip: #8060AB;
+
+  /* Progress & Success */
+  --tf-color-success-accent: #52D8B5;
+  --tf-color-success-text: #8BE3C6;
+  --tf-color-success-soft: #173D35;
+
+  /* Attention & Warning */
+  --tf-color-warning-accent: #EDBD76;
+  --tf-color-warning-text: #FFD08A;
+  --tf-color-warning-soft: #44341E;
+
+  /* Error & Destructive */
+  --tf-color-error-text: #FFB4AD;
+  --tf-color-error-soft: #4A292F;
+
+  /* Rewards & Gamification */
+  --tf-color-reward-accent: #E5DE72;
+  --tf-color-reward-text: #F2E595;
+  --tf-color-reward-soft: #3D3820;
+  --tf-color-streak-text: #FFBE80;
+
+  /* Disabled States */
+  --tf-color-disabled-bg: #303B4C;
+  --tf-color-disabled-text: #ADB9C9;
+
+  /* Overlays & Shadows */
+  --tf-color-overlay: rgba(11, 16, 24, 0.72);
+  --tf-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --tf-shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --lip-primary: 0 3px 0 #0B1018;
+  --lip-node: 0 4px 0 var(--tf-color-learning-lip);
+}
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Typography Families */
+  --tf-font-display: 'Open Sans', Arial, sans-serif;
+  --tf-font-body: 'Lato', Arial, sans-serif;
+  --tf-font-mono: 'IBM Plex Mono', Consolas, Courier New, monospace;
+  --tf-font-arabic: 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Layout Widths & Heights */
+  --header-height: 72px;
+  --sidebar-width: 224px;
+  --content-max: 1200px;
+  --study-max: 960px;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Motion */
+  --motion-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
+  --motion-standard: 180ms cubic-bezier(0.2, 0, 0, 1);
+}
 
-  @media (max-width: 1024px) {
+@theme inline {
+  --color-page: var(--tf-color-bg-page);
+  --color-surface: var(--tf-color-bg-surface);
+  --color-subtle: var(--tf-color-bg-subtle);
+  --color-inverse: var(--tf-color-bg-inverse);
+  --color-ink: var(--tf-color-text-primary);
+  --color-muted: var(--tf-color-text-secondary);
+  --color-on-inverse: var(--tf-color-text-inverse);
+  --color-border-subtle: var(--tf-color-border-subtle);
+  --color-border-control: var(--tf-color-border-control);
+  --color-action-primary: var(--tf-color-action-primary);
+  --color-action-hover: var(--tf-color-action-hover);
+  --color-action-pressed: var(--tf-color-action-pressed);
+  --color-action-foreground: var(--tf-color-action-foreground);
+  --color-action-link: var(--tf-color-action-link);
+  --color-focus-ring: var(--tf-color-focus-ring);
+  --color-learning-accent: var(--tf-color-learning-accent);
+  --color-learning-foreground: var(--tf-color-learning-foreground);
+  --color-learning-strong: var(--tf-color-learning-strong);
+  --color-learning-soft: var(--tf-color-learning-soft);
+  --color-learning-lip: var(--tf-color-learning-lip);
+  --color-success-accent: var(--tf-color-success-accent);
+  --color-success-text: var(--tf-color-success-text);
+  --color-success-soft: var(--tf-color-success-soft);
+  --color-warning-accent: var(--tf-color-warning-accent);
+  --color-warning-text: var(--tf-color-warning-text);
+  --color-warning-soft: var(--tf-color-warning-soft);
+  --color-error-text: var(--tf-color-error-text);
+  --color-error-soft: var(--tf-color-error-soft);
+  --color-reward-accent: var(--tf-color-reward-accent);
+  --color-reward-text: var(--tf-color-reward-text);
+  --color-reward-soft: var(--tf-color-reward-soft);
+  --color-streak-text: var(--tf-color-streak-text);
+  --color-disabled-bg: var(--tf-color-disabled-bg);
+  --color-disabled-text: var(--tf-color-disabled-text);
+  --color-overlay: var(--tf-color-overlay);
+  --shadow-card: var(--tf-shadow-card);
+  --shadow-popover: var(--tf-shadow-popover);
+  --shadow-primary: var(--lip-primary);
+  --shadow-node: var(--lip-node);
+  --radius-control: 12px;
+  --radius-card: 20px;
+  --radius-dialog: 24px;
+  --font-body: var(--tf-font-body);
+  --font-display: var(--tf-font-display);
+  --font-mono: var(--tf-font-mono);
+  --font-arabic: var(--tf-font-arabic);
+}
+
+@layer base {
+
+  html {
+    font-family: var(--tf-font-body);
     font-size: 16px;
+    line-height: 1.625; /* 26px line-height on 16px font */
+    color: var(--tf-color-text-primary);
+    background-color: var(--tf-color-bg-page);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color var(--motion-standard), color var(--motion-standard);
+    min-height: 100%;
+  }
+
+  [dir="rtl"] {
+    font-family: var(--tf-font-arabic), var(--tf-font-body);
+    line-height: 1.65;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--tf-color-bg-page);
+    color: var(--tf-color-text-primary);
+    overflow-x: hidden;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--tf-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--tf-font-display);
+    color: var(--tf-color-text-primary);
+    line-height: 1.25;
+  }
+
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
+    font-family: var(--tf-font-arabic);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

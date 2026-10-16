@@ -2,9 +2,73 @@
 
 Start with the [README quick start](../README.md#quick-start). Root workspace commands target `server/src/`. The teammate's backend from commit `68d311f` is migrated into that structure; its old CommonJS paths are replaced by feature modules, not a second running server. The Figma frontend is still pending integration.
 
+## Docker setup for teammates (Windows)
+
+Use this section if Docker is not installed yet. Each teammate running the backend/database or integration tests needs the local services. Docker runs PostgreSQL and Mailpit; React and Express run on your computer through npm. Each teammate has their own database and inbox: local accounts/results are not shared through Git. Committed migrations provide the same database structure, and seeds provide starter content.
+
+### 1. Install and check the tools — once
+
+Install Git, VS Code, Node.js 24.14.0 (matching `.nvmrc`) with npm 11, and [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/). Use the WSL 2 backend and follow the installer's prompts; restart Windows if requested. If WSL is missing or outdated, follow Docker's [WSL setup instructions](https://docs.docker.com/desktop/features/wsl/). PostgreSQL, Mailpit and Docker Compose do not need separate installations when using Docker Desktop.
+
+Reopen the VS Code terminal after installation and check:
+
+```powershell
+node --version
+npm --version
+docker --version
+docker compose version
+```
+
+Open Docker Desktop and wait until its engine is running. This project needs Linux containers. Check engine access with:
+
+```powershell
+docker info
+```
+
+An installed Docker command does not mean the engine is running. If this reports a connection or `dockerDesktopLinuxEngine` named-pipe error, open/wait for Docker Desktop; restart it if necessary before continuing.
+
+### 2. Set up the repository — once per clone
+
+Follow the [README quick start](../README.md#quick-start) for cloning and environment values. All commands run from the repository root containing the main `package.json`, not from `client/` or `server/`. Do not use another teammate's absolute folder path.
+
+Run the following commands **one at a time**; stop and resolve any error before continuing:
+
+```powershell
+npm ci
+npm run setup:env
+npm run db:generate
+npm run db:up
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+`npm ci` installs all workspaces from the root lockfile. Environment setup creates missing local files and a signing secret; existing files remain unchanged. Prisma generation creates the backend database client. Docker downloads the pinned service images on the first `db:up`, which may take longer, then waits for readiness. Migrations create/update the development tables; seeding adds starter curriculum without creating accounts. `dev` starts the website and API; keep its terminal open. Do not commit actual `.env` files.
+
+Check the website at http://localhost:5173 and API readiness at http://localhost:5000/health/ready, which should return `{"status":"ready"}`. Open http://localhost:8025 for verification/reset emails captured by Mailpit; these are not delivered to real recipients. To inspect registered accounts and other records, run `npm run db:studio` in another root terminal and open the address it prints.
+
+The database host port defaults to 5432; teammates do not automatically need this checkout's 55432 override. If 5432 is unavailable, follow [troubleshooting](#troubleshooting): set `TYPEFLOW_DB_PORT=55432` in the root `.env` and update both database URLs in an existing `server/.env`. Container-internal PostgreSQL stays on 5432. Preserve existing environment values and database volumes.
+
+### 3. Every development session
+
+Open Docker Desktop, wait for its engine, then run:
+
+```powershell
+npm run db:up
+npm run dev
+```
+
+If the services are already running, `npm run dev` alone is sufficient. Run only one copy of the apps; see [development ports](#development-ports) for occupied-port errors. After pulling teammates' changes, use the [README daily commands](../README.md#every-day) and [database workflow](#database-workflow): install changed dependencies, regenerate Prisma after schema/client changes, apply newly committed migrations and seed changed starter content as needed. Do not repeat every initial-setup command daily.
+
+For checks, use another root terminal: `npm run lint`, `npm test`, `npm run test:integration` and `npm run build`. Database integration tests need the running PostgreSQL service and use the separate `typeflow_test` database, not your development records. If that database is missing, see [database workflow](#database-workflow).
+
+When finished, press `Ctrl+C` in the development terminal. Optionally run `npm run db:stop` to stop PostgreSQL/Mailpit while keeping PostgreSQL data. Normal stops/restarts preserve the database; deleting Docker volumes is not routine cleanup.
+
+For frontend-only work that does not call real backend APIs, use `npm run dev:client`; Docker is needed once you test local database-backed features such as login. Existing screens may still call the backend, so frontend-only startup does not imply every feature will work.
+
 ## Foundation status and frontend handoff
 
-Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated here. Tailwind integration and client API wiring should be verified together with his actual implementation after it arrives.
+Setup changes are confined to root tooling/CI, new server foundation and Prisma files, shared validation, environment examples, and selected existing documentation. All existing client files, `DESIGN.md`, `docs/context/current-state.md`, `docs/README.md` and `docs/frontend-design-plan.md` are reserved for the teammate. The only new tracked client file from setup is `.env.example`; local `.env` creation never replaces existing values. No Figma screen, Context, hook, translation, style or typing implementation is recreated by that setup. This foundation-only boundary predates the separately authorised [Tailwind styling migration](#frontend-styling); client API wiring remains unverified.
 
 The original account migration is unchanged. Additive migrations extend it with the teammate's account/profile, curriculum, session/log, reward and supporting schema concepts, plus revocable auth sessions and one-use email tokens. The old destructive SQL bootstrap is not executed. Existing legacy-database rows are not automatically imported or converted; this task migrates implementation and schema into the current Prisma databases. Prisma 7 uses the PostgreSQL adapter and JavaScript client generator; generated output is ignored.
 
@@ -29,6 +93,22 @@ To integrate the teammate's older-base work safely:
 5. Run root `npm install` if his dependency manifests changed; resolve manifests first and regenerate the root lockfile rather than hand-merging lockfile contents. Then run lint, tests and build, and inspect the design in the browser. A clean Git merge alone does not prove runtime integration.
 
 No merge or commit is performed automatically by setup. Screenshots identify the protected paths, but cannot guarantee the contents of a future commit or guarantee zero conflicts with the earlier refactor.
+
+## Frontend styling
+
+The client uses Tailwind CSS v4 with `@tailwindcss/vite`. Root workspace installs supply both packages; keep the root lockfile authoritative and preserve the historical client lockfile for the frontend handoff.
+
+`client/src/main.jsx` imports only `index.css`. That file imports Tailwind and defines semantic theme utilities such as `bg-surface`, `text-muted`, `border-border-control`, `rounded-card` and `shadow-card`. The theme values follow the existing `data-theme` preference. Components use utilities for layout, typography, responsive rules and conditional states; hover styling uses CSS variants instead of mouse handlers. Arabic interface fonts use `rtl:` variants, while exercise passages and keyboard guides retain explicit LTR direction and monospace text.
+
+Keep CSS limited to shared theme values, document defaults, focus/reduced-motion rules and keyframes. Avoid new screen-specific stylesheets or fixed inline styles. Inline widths remain only for values supplied by data, such as session progress and keyboard key widths. The retired `App.css`, `styles/index.css` and `styles/tokens.css` are consolidated into the single entry point.
+
+Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
+
+## GitHub CI
+
+[The CI workflow](../.github/workflows/ci.yml) uses Ubuntu 24.04 and the Node.js version in `.nvmrc`. It installs all workspaces from the root lockfile, generates Prisma, runs lint, unit tests and PostgreSQL integration tests, then builds the client and checks server entry syntax. It supplies an ephemeral `typeflow_test` database and CI-only configuration; integration tests inject a mail sink. Failed steps stop later checks.
+
+Frontend lint cleanup retains the existing rules. The preferences context and `usePreferences` hook live in `client/src/context/preferences.js`, while `PreferencesContext.jsx` exports the provider component for React Fast Refresh.
 
 ## Local services
 
@@ -79,7 +159,7 @@ PostgreSQL CLI reference: [psql documentation](https://www.postgresql.org/docs/1
 
 ## Environment variables
 
-Run `npm run setup:env` to create local files from `server/.env.example` and `client/.env.example` without replacing existing files. It generates a random local JWT secret for a newly created server environment. Restart the affected process after changing its environment.
+Run `npm run setup:env` to create local files from the tracked `server/.env.example` and `client/.env.example` without replacing existing files. It checks for an existing destination before reading its template and generates a random local JWT secret for a newly created server environment. If you have set `TYPEFLOW_DB_PORT` in your shell or ignored root `.env`, newly created server database URLs use that port. Existing server files still require manual updates when changing the Compose port. Restart the affected process after changing its environment.
 
 Documented `server/.env` example:
 
@@ -150,6 +230,7 @@ Use Prisma for ordinary access and parameterised SQL where it makes complex repo
 | Problem | Check |
 | --- | --- |
 | Docker cannot connect | Start Docker Desktop/the Docker engine, then retry `npm run db:up` |
+| Raw-log cleanup failed | The startup/hourly job could not delete expired keystroke logs. Check Docker, run `npm run db:up` and `npm run db:migrate`, then restart the apps. If it persists, report it; this generic message alone does not identify the database error. |
 | Port 5432 is occupied | Check whether local PostgreSQL already owns it; use that instance or change the documented port and connection URL together |
 | Windows forbids binding port 5432 | Put `TYPEFLOW_DB_PORT=55432` in an ignored root `.env`; change both database URLs in `server/.env` to port 55432, then rerun `npm run db:up`. pgAdmin uses the same host port; container-internal commands still use 5432. Preserve any existing root `.env` values. |
 | Database connection refused | Check readiness, host/port and whether Node runs on host or in a container |
@@ -157,7 +238,20 @@ Use Prisma for ordinary access and parameterised SQL where it makes complex repo
 | Database exists but tables are missing | Apply committed migrations to the correct development database |
 | Verification email missing | Open Mailpit's inbox, check SMTP host/port, then retry the flow |
 | Login cookie missing | Match the exact client origin, credentials option and local cookie policy; retain production protections |
-| Vite starts on another port | Restore port 5173 or update `CLIENT_URL` to match the actual origin |
+| Client/server port occupied | Root `npm run dev` checks availability before starting either app; follow the process-identification steps below. Vite uses strict port 5173 to keep the documented browser origin stable. |
+| Missing environment template | Restore the tracked `client/.env.example` / `server/.env.example` from the repository, then rerun `npm run setup:env`; preserve actual local `.env` files. |
 | A documented script is missing | Foundations have not supplied that part of the target workflow; implement it in the setup task rather than inventing a successful run |
 
 Before deployment, add verified provider/release commands, secret owners, backup/restore evidence, maintenance catch-up and rollback steps here. Hosting, operational/audit/backup retention and final performance environment remain open decisions.
+
+### Development ports
+
+Run only one copy of the applications. If another terminal is already running them, keep using it or press `Ctrl+C` there before starting again. The port check never stops existing processes or silently moves the website to another origin. Availability can change after the check, so the applications still handle binding failures themselves.
+
+To identify listeners in PowerShell:
+
+```powershell
+Get-NetTCPConnection -State Listen -LocalPort 5173,5000 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess
+```
+
+Inspect a reported PID with `Get-Process -Id <PID>` (replace `<PID>` with its number). Stop it only after identifying it as your old development process, preferably through its original terminal. If server `PORT` differs from 5000, inspect that port instead. To intentionally change server `PORT`, update `client/.env`'s `VITE_API_URL` too and restart both apps. Changing a database host port requires updating both server database URLs; it does not change the client/API ports.

@@ -199,6 +199,22 @@ Illustrative result shape, independent of the short assignment and event fragmen
 
 An identical accepted retry returns the same saved result without side effects; differing resubmission returns a conflict. Agree concrete key-breakdown, reward-event IDs, next-activity payload and certificate DTOs before integration. Clients must deduplicate already-presented reward events.
 
+## Course expansion — draft boundary only
+
+The course behavior in [SRS section 9.6](srs.md#course-proposal) / [decision 0008](decisions.md#0008) is approved. Exact endpoint methods, JSON fields and error/retry schemas below remain draft and require phase agreement. Comment-only placeholders exist at the architecture's course paths; none of these routes or fields is implemented or mounted. The current migrated API remains as documented above.
+
+| Proposed boundary | Intent |
+| --- | --- |
+| `GET /courses`, `GET /courses/:courseId` | Published catalog, metadata and path preview; drafts excluded |
+| `POST /courses/:courseId/enrollments` | Idempotently enroll in an eligible published version; exact duplicate/version behavior TBD |
+| `GET /users/me/enrollments` | Owned course progress and resume targets |
+| `GET /enrollments/:enrollmentId/path` | Owned lesson states, explanations, recommendations and entry-check need |
+| Existing `POST /sessions` | Optional enrollment/lesson context for a course activity; placement/review use the same lifecycle |
+| Existing submit/result routes | Return saved course-progress effects alongside official result/rewards; identical retries remain safe |
+| `/admin/courses/*` | Protected draft authoring, validation/preview, publish and archive; exact methods/actions TBD |
+
+Candidate session-start fragment, **not a complete agreed payload**: `{ "mode": "lesson", "enrollmentId": "example-enrollment", "lessonId": "example-lesson" }`. The server resolves ownership, course version, eligibility, activity rules and settings. Clients cannot submit mastery/completion claims or override constraints. Preserve existing standalone session requests; agree nullability and backward compatibility before changes. Public catalog DTOs must not expose private learner data or draft content. Pagination, enrollment uniqueness, draft edit conflicts, publication retries, archival responses, eligibility errors, progress/exemption DTOs and targeted-placement request shapes remain to agree. Admin writes retain role/CSRF/audit protections.
+
 ## Phase agreement record
 
 Track status per endpoint, not only for the whole document: **Draft → Agreed → Implemented → Verified**. Agreed identifies a dated team-reviewed contract; Implemented links code; Verified links passing acceptance evidence. A mock response or a successful happy path alone does not make a route Verified. Unreviewed draft examples remain proposals.

@@ -6,13 +6,15 @@ Prepared by: [Team member names]
 Course: [Course name and code]  
 Supervisor: [Instructor name]  
 Misr International University  
-Version: 1.3 — 15 October 2026
+Version: 1.4 — 16 October 2026
 
 ## 1. Preface and document status
 
 This document defines what TypeFlow must do and how its behaviour will be tested. “Shall” marks a mandatory requirement; “should” marks a recommendation. Version 1.3 adopts JavaScript and root-level `client/` / `server/`, retaining Tailwind CSS and the v1.2 Light/Dark, English/Arabic interface and desktop/mobile presentation scope. No implementation was inspected to produce this revision. See [decision 0002](decisions.md#0002) and [decision 0003](decisions.md#0003).
 
 This SRS is the requirements baseline. [Decisions](decisions.md) preserves rationale and open questions. [Architecture](architecture.md) describes the target implementation structure; it does not add requirements. Start at the [README](../README.md#quick-start) for onboarding and everyday commands.
+
+**Course expansion approved (16 October 2026):** version 1.4 adds an adaptive course library and admin course authoring, with shared typing skills and separate course progress. Section 9.6 and SYS-57–64 extend the earlier single-curriculum baseline; all other agreed features remain in scope. See [decision 0008](decisions.md#0008). Only documentation and structural placeholders are authorized so far; no course functionality is claimed implemented.
 
 Numerical engine parameters are initial engineering defaults, not experimentally established learning thresholds. Items explicitly marked **TBD** require team or course confirmation. New behavioural defaults in this revision are documented design choices and may be changed through a recorded decision.
 
@@ -224,6 +226,19 @@ Original SYS-1 through SYS-45 identifiers are retained so existing references re
 | SYS-55 | Provide desktop and mobile-phone layouts for every non-typing page and required state, including authorised administration, in both themes and interface languages. Mobile typing entry points show device guidance without creating a scored touch session. Resizing/focus changes preserve the existing mode's pause/timing rules. |
 | SYS-56 | Persist account appearance/interface preferences for the owner and safe local choices for visitors. Define sign-in precedence, defaults and recovery in section 10.5. Validate allowlisted preference values, merge partial updates without overwriting unrelated fields, and show save failure/retry without a false saved state. |
 
+### 7.12 Courses and course-specific learning paths
+
+| ID | Requirement |
+| --- | --- |
+| SYS-57 | Provide a searchable published course library with objectives/prerequisites/path previews, owned enrollments and resumable per-course progress; hide drafts from students. |
+| SYS-58 | Represent course versions as ordered units and lessons with validated prerequisites, skill objectives, permitted activity/content bounds and completion rules. |
+| SYS-59 | Use the shared adaptive engine and session lifecycle to personalize exercises/reviews within course constraints; keep placement exemptions, exercise results, lesson completion and mastery distinct. |
+| SYS-60 | Offer optional placement on first learning entry; reuse compatible evidence on later enrollments and offer targeted checks for gaps. Do not repeat placement on each visit or award mastery, XP, certificates or course completion from placement alone. |
+| SYS-61 | Preserve one compatible per-user skill/review profile and separate version-owned enrollment progress. Transfer evidence without falsely completing unrelated objectives, expanding an assignment's alphabet or duplicating session rewards. |
+| SYS-62 | Allow authorized admins to draft, edit, preview, validate, publish successor versions and archive courses with audit records. Published versions are immutable; preserve existing enrollments/history and require explicit policy for migration. |
+| SYS-63 | Apply course constraints to the existing validated cache/LLM/fallback pipeline; LLM output cannot decide progression. Capture course version/lesson context and effective constraints with course sessions. |
+| SYS-64 | Atomically persist applicable course progress with official results, shared evidence and rewards; preserve identical-retry and concurrency guarantees. Course completion requires approved objectives/checkpoints and remains distinct from performance certification. |
+
 ## 8. Typing, scoring and mode contract
 
 ### 8.1 Input and replay
@@ -310,6 +325,27 @@ Server replay, limits and plausibility checks deter straightforward score tamper
 The earlier proposed 250 WPM maximum and intervals under 15 ms are calibration candidates, not universal human limits. Final rejection rules, timing tolerances and flagging thresholds are **TBD** and must avoid treating one short interval as proof of cheating.
 
 The proposed certified-test starting policy is 3 minutes, at least 30 net WPM and 95% raw accuracy. Duration, thresholds, cooldown/attempt limits and displayed certificate name are **TBD** for team approval before certificate implementation.
+
+<a id="course-proposal"></a>
+### 9.6 Course library and adaptive paths — approved model
+
+The owner approved multiple courses, each with its own learning path, and admin creation/editing. The model below retains the existing LLM, placement, scoring, mastery, reviews, rewards, tests and other baseline features. SYS-57–64 extend the baseline; existing IDs remain stable. Detailed contracts, course content and numerical policies marked TBD still require agreement before implementation.
+
+**Library and path.** A student browses published English QWERTY typing courses, views objectives, prerequisites and a path preview, then enrolls and resumes progress. Propose a simple searchable library with level/topic filters, course cards and a My Courses view. A course contains ordered units, each containing lesson nodes with prerequisites, skill objectives and activity rules. Units group lessons; they do not introduce a second independent unlock system. Start with an ordered path and explicit prerequisite references, rather than an arbitrary branching course builder. Prerequisites form an acyclic graph within the course; entry requirements may refer to shared skills. Course-to-course dependencies are deferred.
+
+**Adaptation within the path.** The admin authors objectives, key-group references, permitted activity types, difficulty bounds, content/theme constraints and completion rules. The shared engine selects feasible focus keys/pairs, difficulty, text and remedial/review exercises within those boundaries. A weak student may need several generated exercises for one lesson; a qualified student can receive a suggested starting point or exemption. An exercise result is not automatically a completed lesson. The path explains the recommended next action and distinguishes locked, available, in-progress, completed and placement-exempt lessons. The LLM never decides unlocks, mastery or pass/fail.
+
+**Shared skill, separate course progress.** Maintain one per-user key/pair evidence profile for the supported layout/language; do not reset it on enrollment or duplicate it per course. Enrollment records the course version and its own lesson progress, placement/exemption decisions and completion. Only compatible learning evidence transfers: practice against the same skill definitions may contribute to multiple objectives, but unrelated course lessons are not auto-completed. Evaluate any transferred eligibility against the selected course's captured targets and prerequisites. A published course's declared key set must be explicitly introduced or supported by eligible prior evidence; unrelated global unlocks must not silently widen an assignment's alphabet. Broad placement is an explicit assessment exception to ordinary locked-key practice restrictions. Due reviews stay user-level and can be recommended within a compatible course or through the existing Review activity.
+
+**Placement recommendation.** Offer one optional broad placement at the student's first learning entry, not on every website visit/login. Skipping starts at the selected course's beginner entry without fabricated evidence. On joining another course, reuse compatible evidence and show a suggested starting point; offer a targeted entry check only for missing/insufficient evidence. Students can decline and start at an available beginner entry; advanced courses with unmet safety/skill prerequisites remain locked and direct them to suitable beginner work. Reassessment is optional and rate-limited under a policy still to agree. Placement exemptions are distinct from mastery and completed learning, award no XP/certificate, preserve prerequisite order and use section 9.2 evidence rules. Reassessment does not erase earned progress or replace established learning evidence with sparse test samples. Stale/contradictory evidence can trigger a recommended check; its freshness policy is TBD.
+
+**LLM and fallback.** Build the generation spec from the course-version lesson constraints plus the student's eligible skill state and captured settings. Reuse the existing validated cache/LLM/fallback pipeline, bounded retries and feasibility rules. Cache compatibility includes effective constraints and content/validation versions; never reuse text solely because two lessons have the same title. LLM output supplies practice text, not curriculum structure, prerequisite policy or official results. Curated introductory text and constrained drills remain valid when a narrow alphabet cannot support themed prose. Unavailable LLM service must not block an otherwise feasible course.
+
+**Admin lifecycle.** Admins create drafts, edit metadata/units/lessons/prerequisites/content references, preview sample learner paths, validate and publish versions, and archive courses. Publication checks references, cycles, achievable completion, allowed characters, focus coverage and a usable fallback for every learning node; an LLM outage alone is not a publication failure. Drafts are hidden from students. Editing a published course creates a draft successor; active enrollments remain on their captured version unless an explicit reviewed migration is chosen. Archiving prevents new enrollments and preserves existing learners' access/history by default. Never hard-delete a referenced version or silently rewrite in-flight assignments/results. Changes use existing Admin permissions, CSRF protection and audit records. LLM-assisted authoring is optional future work; admin review remains mandatory.
+
+**Completion and existing features.** Recommend completion only when required objectives/checkpoints are satisfied through completed work or explicitly permitted exemptions, with at least the course's required final learning/checkpoint evidence. Placement alone cannot complete a course. Exact completion/checkpoint policy is an approval gate. A course-completion label is distinct from the existing unproctored performance certificate; enrollment or completion does not issue a certificate automatically. XP/streaks/badges still apply once to qualifying sessions, not again for every course that references the same evidence. Timed/certified tests remain assessment modes, not a shortcut for curriculum mastery. English/Arabic UI, English/LTR exercises, appearance and mobile non-typing behavior remain unchanged.
+
+**Scope and implementation gates.** Suggested first rollout: one complete foundational course, then a fluency or themed course to demonstrate transferable skills and independent progress. Additional courses do not imply new layouts, typing languages, video/game authoring, payments, instructor accounts or a general LMS. The overall placement, transfer/exemption, objective-based completion and version/archival policies are approved. Agree concrete course objectives/checkpoints, numerical freshness/reattempt policies, exact API/data contracts and any future enrollment-migration mapping before implementing them. Current authorization covers folders, comment-only placeholders and docs; no runtime code, migrations or Figma edits.
 
 ## 10. Non-functional requirements
 

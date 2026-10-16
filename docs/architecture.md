@@ -46,6 +46,12 @@ The [README](../README.md#every-day) defines the target root-script contract. Fo
 
 ## 2. Backend layout
 
+The tree below includes future implementation files. Reserved JavaScript files contain only `Coming soon` comments describing their responsibility; they have no exports, implementation or runtime wiring. Existing implementations remain in place. Some planned extractions already have working behavior in other files, so extend/refactor that behavior rather than building a second implementation. Empty `.gitkeep` markers only preserve directories in Git.
+
+Content placeholders (`keygroups.json`, `themes.json` and `wordlists/example.json`) are empty JSON arrays; `blocked-words.txt` is empty. They are not approved curriculum, a working filter or inputs to the current seed. The existing seed continues using `modules/settings/starter.js`. Replace these placeholders with reviewed content and agreed schemas when implementing the importer. JavaScript test/fixture placeholders contain no assertions and do not count as test coverage.
+
+The active session module is `src/modules/sessions/`, matching the migrated API implementation. Use it for the single lifecycle across all modes; the earlier `typing/` name refers to the same responsibility, not a second module. Tokens stay in `modules/auth/tokens.js`; auth/role/CSRF checks share `middleware/auth.js`, `HttpError` lives in `middleware/validate.js`, and HTTP error/not-found handling lives in `app.js`. Do not add duplicate placeholders for these responsibilities. Session lifecycle operations stay in the existing `service.js` until a concrete refactor requires splitting. Tests use Node's built-in runner, not Vitest; dedicated database setup/guards already live in root scripts and integration tests.
+
 ```text
 server/
 ├── prisma/
@@ -53,8 +59,10 @@ server/
 │   ├── migrations/
 │   ├── seed.js
 │   └── content/
+│       ├── courses/                # reserved course outlines; not seeded/imported yet
 │       ├── keygroups.json
 │       ├── wordlists/
+│       │   └── example.json        # empty placeholder, not active curriculum
 │       ├── themes.json
 │       └── blocked-words.txt
 ├── src/
@@ -62,29 +70,40 @@ server/
 │   ├── app.js                      # Express application assembly
 │   ├── routes.js                   # mounts /api/v1 modules
 │   ├── config/env.js               # validated environment values
-│   ├── db/prisma.js
+│   ├── db/
+│   │   ├── prisma.js
+│   │   └── transaction.js
 │   ├── middleware/
-│   │   ├── auth.js                 # JWT, revocation and active account check
-│   │   ├── requireRole.js
-│   │   ├── csrf.js
-│   │   ├── validate.js
-│   │   ├── rateLimit.js
-│   │   ├── errorHandler.js
-│   │   └── notFound.js
+│   │   ├── auth.js                 # JWT, revocation, active account, role and CSRF
+│   │   ├── validate.js             # request parsing and HttpError
+│   │   └── rateLimit.js
 │   ├── utils/
-│   │   ├── AppError.js
 │   │   ├── logger.js
-│   │   ├── tokens.js               # signed auth and hashed one-time tokens
 │   │   └── time.js
 │   ├── modules/
 │   │   ├── auth/                   # register, verify, login, reset, revocation
+│   │   │   ├── routes.js
+│   │   │   ├── service.js
+│   │   │   └── tokens.js
 │   │   ├── users/                  # profile, settings, coordinated deletion
+│   │   │   ├── routes.js
+│   │   │   ├── service.js
+│   │   │   └── dto.js
+│   │   ├── courses/                # approved course scope; comment-only placeholders
+│   │   │   ├── routes.js           # catalog, enrollments and owned paths
+│   │   │   ├── adminRoutes.js      # draft authoring, preview, publish, archive
+│   │   │   ├── service.js
+│   │   │   ├── repository.js       # transaction-scoped course persistence
+│   │   │   ├── publication.js
+│   │   │   ├── validator.js
+│   │   │   ├── path.js             # PURE prerequisite/next-action evaluation
+│   │   │   ├── placement.js        # PURE evidence reuse / entry-check policy
+│   │   │   └── progress.js         # PURE objectives, completion, exemptions
 │   │   ├── scoring/                # PURE
 │   │   │   ├── replay.js
 │   │   │   ├── logValidator.js
 │   │   │   ├── evidence.js         # eligible key/pair samples
-│   │   │   ├── scoreSession.js     # uses shared metric functions
-│   │   │   └── *.test.js
+│   │   │   └── scoreSession.js     # uses shared metric functions
 │   │   ├── adaptive/               # PURE; settings passed as arguments
 │   │   │   ├── defaults.js
 │   │   │   ├── statsUpdate.js
@@ -94,48 +113,69 @@ server/
 │   │   │   ├── mastery.js
 │   │   │   ├── spacedReview.js
 │   │   │   ├── placement.js
-│   │   │   ├── buildSpec.js
-│   │   │   └── *.test.js
-│   │   ├── typing/                 # ONE session lifecycle for all modes
+│   │   │   └── buildSpec.js
+│   │   ├── sessions/               # ONE session lifecycle for all modes
 │   │   │   ├── routes.js
-│   │   │   ├── controller.js
-│   │   │   ├── startSession.js
-│   │   │   ├── submitSession.js
-│   │   │   ├── abandonSession.js
-│   │   │   └── repository.js
+│   │   │   └── service.js          # existing start/submit/abandon/history/result
 │   │   ├── stats/                  # reads and transaction-scoped writes
+│   │   │   └── service.js
 │   │   ├── path/                   # keyboard map and recommended activity
+│   │   │   ├── service.js
+│   │   │   └── recommend.js
 │   │   ├── generation/
 │   │   │   ├── service.js
 │   │   │   ├── feasibility.js
 │   │   │   ├── validator.js
 │   │   │   ├── fallbackGenerator.js
-│   │   │   ├── cache.js
-│   │   │   └── *.test.js
+│   │   │   └── cache.js
 │   │   ├── gamification/           # pure reward rules + persistence helpers
+│   │   │   ├── rules.js
+│   │   │   └── service.js          # placeholder: reward persistence / badges
 │   │   ├── certificates/           # eligibility, records, revoke, verify, PDF
+│   │   │   ├── routes.js
+│   │   │   ├── service.js
+│   │   │   └── eligibility.js      # placeholder: PURE captured-policy checks
 │   │   ├── forum/                  # threads, replies, accepted answer, reports
+│   │   │   ├── routes.js
+│   │   │   └── service.js
 │   │   ├── settings/               # validated immutable settings versions
+│   │   │   ├── starter.js
+│   │   │   └── service.js
 │   │   ├── analytics/              # defined aggregates and parameterised SQL
+│   │   │   └── service.js
 │   │   └── admin/                  # protected management workflows/audit
+│   │       ├── routes.js
+│   │       └── service.js
 │   ├── integrations/
 │   │   ├── llm/                    # client, prompts, response schemas
+│   │   │   ├── client.js
+│   │   │   ├── prompts.js
+│   │   │   └── schemas.js
 │   │   ├── mailer/                 # SMTP client and templates
+│   │   │   ├── index.js
+│   │   │   └── templates.js
 │   │   └── pdf/                    # certificate document rendering
+│   │       └── certificate.js
 │   ├── jobs/
 │   │   ├── runner.js               # scheduled execution and restart catch-up
 │   │   ├── pregenerateTexts.js
 │   │   └── purgeKeystrokeLogs.js
 │   └── scripts/
 │       ├── simulate/              # typists, policies, common assessment
+│       │   ├── typists.js
+│       │   ├── policies.js
+│       │   └── assessment.js
 │       ├── generate-texts.js
 │       └── validate-content.js
 ├── tests/
 │   ├── fixtures/
-│   ├── setup.js                    # verifies dedicated typeflow_test database
+│   │   ├── courses.js              # placeholder; no test coverage claimed
+│   │   └── sessions.js             # placeholder; no test coverage claimed
+│   ├── unit/                      # Node test runner; existing tests retained
 │   └── integration/
-├── package.json
-└── vitest.config.js
+├── .env.example
+├── prisma.config.mjs
+└── package.json
 ```
 
 Feature folders may use routes, controller, service, repository and local schemas as needed. A controller translates HTTP; a service coordinates behaviour. Database access belongs in explicit repository/query functions where that makes the boundary useful. Do not add empty layers for a trivial operation.
@@ -171,6 +211,8 @@ client/
 │   │   ├── client.js               # credentials, base URL, safe 401 handling
 │   │   ├── auth.js
 │   │   ├── users.js
+│   │   ├── courses.js              # catalog, enrollments and owned paths
+│   │   ├── adminCourses.js         # protected authoring/publication requests
 │   │   ├── sessions.js
 │   │   ├── path.js
 │   │   ├── progress.js
@@ -197,7 +239,23 @@ client/
 │   │   ├── auth/
 │   │   ├── placement/
 │   │   ├── dashboard/
+│   │   ├── courses/                # comment-only placeholders; no rendered pages
+│   │   │   ├── pages/
+│   │   │   │   ├── CourseLibraryPage.jsx
+│   │   │   │   ├── CourseDetailPage.jsx
+│   │   │   │   ├── MyCoursesPage.jsx
+│   │   │   │   └── CoursePathPage.jsx
+│   │   │   ├── components/
+│   │   │   │   ├── CourseCard.jsx
+│   │   │   │   ├── CourseFilters.jsx
+│   │   │   │   ├── CoursePath.jsx
+│   │   │   │   ├── LessonNode.jsx
+│   │   │   │   └── CourseEntryCheck.jsx
+│   │   │   └── hooks/
+│   │   │       ├── useCourses.js
+│   │   │       └── useCoursePath.js
 │   │   ├── keyboard-map/
+│   │   ├── learning-path/LearningPath.jsx # existing teammate UI; reuse during course integration
 │   │   ├── typing/
 │   │   │   ├── pages/TypingSessionPage.jsx
 │   │   │   ├── components/         # display, input, keyboard, controls, stats
@@ -216,6 +274,17 @@ client/
 │   │   ├── forum/
 │   │   ├── profile/
 │   │   └── admin/
+│   │       └── courses/            # preserve existing AdminView.jsx
+│   │           ├── pages/
+│   │           │   ├── AdminCoursesPage.jsx
+│   │           │   ├── CourseEditorPage.jsx
+│   │           │   └── CoursePreviewPage.jsx
+│   │           ├── components/
+│   │           │   ├── CourseMetadataForm.jsx
+│   │           │   ├── UnitEditor.jsx
+│   │           │   ├── LessonEditor.jsx
+│   │           │   └── PublishCourseDialog.jsx
+│   │           └── hooks/useAdminCourses.js
 │   ├── lib/
 │   │   ├── utils.js
 │   │   └── queryKeys.js
@@ -257,6 +326,8 @@ packages/shared/
 │   ├── enums.js                    # runtime constants/Zod enums: Role, SessionMode, status, source
 │   ├── auth.js
 │   ├── user.js
+│   ├── courses.js                  # course catalog/authoring runtime contracts
+│   ├── enrollments.js              # enrollment/path/progress/session context
 │   ├── keystroke.js                # discriminated event schemas
 │   ├── spec.js
 │   ├── session.js                  # assignment, submission, official result
@@ -285,6 +356,7 @@ The exact Prisma schema is a phase-zero deliverable. Expected concepts:
 | --- | --- |
 | Accounts | User, AuthSession/revocation state, EmailToken |
 | Curriculum | KeyGroup and explicit ordered prerequisites |
+| Courses | Course, immutable CourseVersion, Unit, Lesson/prerequisites, Enrollment and LessonProgress/exemption evidence; exact schema pending |
 | Learning | KeyStat, PairStat, AdaptiveEvent |
 | Sessions | TypingSession, KeystrokeLog, PracticeText |
 | Generation | GenerationAttempt, content/validation version |
@@ -336,6 +408,7 @@ All application routes use `/api/v1`. Define complete request/response schemas a
 | --- | --- |
 | `/auth` | register, verify-email, resend-verification, login, logout, me, forgot-password, reset-password |
 | `/users/me` | profile/preferences update and account deletion |
+| `/courses`, `/enrollments` | published catalog, enrollment and owned paths; draft contracts, not mounted |
 | `/sessions` | start with mode, submit, abandon, owned result, history |
 | `/path` | keyboard map, next activity, due reviews |
 | `/progress` | comparable trends and key heat map |
@@ -372,6 +445,27 @@ Deployment: run committed migrations in a controlled release step, configure HTT
 - Evaluation: equal budgets, multiple seeds and common held-out assessment.
 
 Tests should establish behaviour rather than mirror file structure. Record requirement coverage and evidence using [testing.md](testing.md).
+
+## Course expansion architecture — approved, placeholders only
+
+[SRS section 9.6](srs.md#course-proposal) and [decision 0008](decisions.md#0008) define the approved course behavior. The owner authorized folders and comment-only files for frontend, backend and shared contracts; no runtime implementation is authorized in this task. The trees above show their canonical paths. Course files have no exports and must not be imported until implemented. No Prisma models/migrations, package exports, routes, navigation, dependencies or seed behavior were changed.
+
+Use `modules/courses/` for catalog, authoring, publication, enrollment and progress; retain one `sessions/` lifecycle, adaptive/scoring/generation engine and existing integrations. Student course pages live in `features/courses/`; admin course pages live in `features/admin/courses/`. Existing `features/learning-path/LearningPath.jsx`, `features/admin/AdminView.jsx`, typing components, dictionaries and preferences are preserved; reuse/refactor them only in a later authorized implementation. Catalog/enrollment state belongs in remote-data hooks, not another course Context. Agree exact shared schemas before wiring APIs, hooks and pages. Content under `prisma/content/courses/` remains unseeded until its format/importer is reviewed.
+
+Concepts to review before writing the Prisma schema:
+
+| Concept | Responsibility |
+| --- | --- |
+| Course | Stable identity, catalog metadata and archival state |
+| CourseVersion | Immutable published curriculum snapshot; editable draft successor |
+| Unit / Lesson / LessonPrerequisite | Version-owned order, objectives, permitted activity rules and acyclic dependencies |
+| Enrollment | User, captured course version, start/completion and resume state |
+| LessonProgress / exemption evidence | Enrollment-owned status, objective evaluation, provenance and contributing sessions |
+| Shared KeyStat / PairStat and reviews | Existing user-level evidence; not copied into each enrollment |
+
+Course-linked assignments capture enrollment/version/lesson identity and effective constraints alongside the existing text, settings and engine/scoring versions. Generic practice and standalone tests remain possible without enrollment. The server derives valid relationships from the owned enrollment; never trust a client-supplied course/version/lesson combination. Course eligibility and shared skill state are read under the existing submission concurrency strategy; result, learning evidence, lesson progress and qualifying rewards commit atomically and replay safely. Changing or selecting another course cannot alter a running assignment. Email, LLM and PDF work stay outside that transaction.
+
+Publishing validates graph/content/feasibility and immutable policy references before activation. Retain referenced versions and assigned text independently of later edits. Explicit enrollment migrations need a progress-mapping policy; no automatic remapping is assumed. Reusing evidence must not issue a second session reward. Account deletion/retention covers enrollments and progress without deleting shared course definitions. Exact uniqueness constraints, completion evidence storage and version-transition transactions are design gates, not already accepted models.
 
 ## 10. What may be deferred
 
