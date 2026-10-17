@@ -122,6 +122,7 @@ Frontend styling uses Tailwind CSS through the Vite plugin. Put component styles
 | First clone and everyday commands | This README |
 | PostgreSQL, environment, migrations or troubleshooting | [Development](docs/development.md) |
 | Team workflow, AI task prompts and Figma handoff | [Contributing](docs/contributing.md) |
+| Five-developer frontend sprint, backend roadmap and schema-change tasks | [Project plan](docs/project-plan.md) |
 | Requirements and learning rules | [SRS](docs/srs.md) |
 | Modules and data flow | [Architecture](docs/architecture.md) |
 | Routes, JSON and phase agreements | [API contract](docs/api-contract.md) |

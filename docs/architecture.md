@@ -24,6 +24,8 @@ typeflow/
 │   ├── content-guide.md
 │   ├── security.md
 │   ├── contributing.md
+│   ├── project-plan.md             # frontend-first five-developer delivery backlog
+│   ├── jira-backlog.json            # generated planning manifest; no issue creation implied
 │   └── decisions.md                # history, open questions and record template
 ├── AGENTS.md                       # concise repository-wide agent guidance
 ├── DESIGN.md                       # proposed visual system and Figma brief

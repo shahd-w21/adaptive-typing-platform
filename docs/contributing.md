@@ -8,6 +8,8 @@ Read [current state](context/current-state.md) and the relevant guide/SRS sectio
 
 Five people work in parallel within each phase; owners/reviewers are assigned at the phase meeting. Shared schema/contracts need a coordinating reviewer, not exclusive editing rights.
 
+The [project plan](project-plan.md) turns this workflow into a frontend-first backlog for five developers, followed by backend delivery. It lists file-level tasks, reviewers, dependencies, acceptance checks and schema-change coordination. Dates, actual assignees and draft contracts still need their recorded agreement; the plan does not authorize implementation or establish feature readiness.
+
 ## Branches and reviews
 
 Use a short feature branch and focused PR; do not push directly to `main`. Preserve teammates' changes and review diffs before committing. Record schema changes through committed migrations. Coordinate edits to shared schemas, routing, providers and environment examples early. Integrate frequently and end each phase with an end-to-end demo.
