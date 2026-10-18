@@ -361,6 +361,15 @@ client/
 │   │   └── useTranslation.js
 │   ├── lib/
 │   │   └── queryKeys.js
+│   ├── mocks/                      # unwired synthetic DTOs; see mocks/README.md
+│   │   ├── dashboard.js
+│   │   ├── errors.js
+│   │   ├── gamification.js
+│   │   ├── index.js
+│   │   ├── path.js
+│   │   ├── sessions.js
+│   │   ├── users.js
+│   │   └── README.md
 │   ├── App.jsx
 │   ├── index.css
 │   └── main.jsx

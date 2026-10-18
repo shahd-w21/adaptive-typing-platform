@@ -34,6 +34,8 @@ The SRS owns required behaviour. Draft API fields/design values and documented c
 
 Keep edits focused and preserve teammate changes. Coordinate shared-file edits and update affected guides/contracts together. Record meaningful decisions in the single decision log; do not duplicate numerical rules or save chat transcripts. Human parallel tracks do not automatically authorise AI subagents.
 
+For `*.md` files, follow the [Markdown merge-conflict prevention rules](docs/contributing.md#markdown-merge-conflict-prevention): edit only task-relevant sections, preserve existing formatting and teammate content, and coordinate overlapping edits. Avoid unrelated reformatting, reordering, renames or deletions. These additional rules apply only to Markdown files; existing code workflows remain unchanged.
+
 The active backend is `server/src/server.js`. The teammate's work from `68d311f` is migrated into `server/src/modules/`, middleware and integrations; preserve those features during cleanup. The API contract includes the old-to-new route map and prototype limits. Use ES modules and additive Prisma migrations, not the old SQL bootstrap or a duplicate entry point. Install from the root workspace lockfile; preserve the client's old lockfile until the frontend handoff.
 
 The README lists implemented foundation commands; development records verification and remaining limits. Do not infer feature readiness from setup checks. For code work, run relevant checks and report failures/missing checks. For Markdown-only work, validate links, examples and consistency; application builds are unnecessary. Do not push, deploy or reset shared data without task authorisation. End with changes, verification and material unresolved work.

@@ -18,6 +18,15 @@ For AI-assisted work, give the agent the task, scope, relevant contract and comp
 
 The [AI section below](#using-ai-agents) contains a task prompt and Figma handoff. Use [development](development.md#database-workflow) for schema changes rather than guessing commands from the proposed folder tree.
 
+### Markdown merge-conflict prevention
+
+These additional rules apply only to `*.md` files and reduce conflicts during parallel documentation work:
+
+- Edit only the sections required by the task. Preserve surrounding wording, heading order, line wrapping, whitespace and line endings; avoid whole-file formatting or table alignment changes unrelated to the task.
+- Coordinate edits to the same Markdown section with its current author before changing it in parallel. Keep documentation diffs small and review them against current teammate changes before committing.
+- Preserve existing Markdown paths and headings unless the task requires a coordinated rename, deletion or restructure. Respect the teammate-owned documentation paths listed in [AGENTS.md](../AGENTS.md); change them only when explicitly authorized.
+- When a Markdown conflict occurs, reconcile the affected sections manually and retain valid contributions from both branches. Do not overwrite a whole document or select one side for every conflict. Check links and examples after reconciliation.
+
 ## Phase boundaries and parallel work
 
 At phase start, agree the routes/shared schemas, pure function inputs/outputs, needed schema changes and shared UI props. Assign owners/reviewers and define the end-to-end demo. Each task should depend on earlier deliverables, a current agreed contract or an explicitly named development fixture; record external blockers early.
