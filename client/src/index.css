@@ -3,133 +3,137 @@
 /* ==========================================================================
    TypeFlow Design System Tokens
    Source: DESIGN.md v0.2
-   Warm edclub-inspired Light theme + Layered Navy Dark theme
+   Shared Mint palette in Light and Black Dark themes
    ========================================================================== */
 
 :root,
 [data-theme="light"] {
+  color-scheme: light;
+
   /* Canvas & Surfaces */
-  --tf-color-bg-page: #F5F3F0;
+  --tf-color-bg-page: #F7FAF9;
   --tf-color-bg-surface: #FFFFFF;
-  --tf-color-bg-subtle: #F7F7F9;
-  --tf-color-bg-inverse: #242E3E;
+  --tf-color-bg-subtle: #EDF4F1;
+  --tf-color-bg-inverse: #0F2420;
 
   /* Typography */
-  --tf-color-text-primary: #122947;
-  --tf-color-text-secondary: #556576;
+  --tf-color-text-primary: #152923;
+  --tf-color-text-secondary: #52635D;
   --tf-color-text-inverse: #FFFFFF;
 
   /* Borders */
-  --tf-color-border-subtle: #E5E7EB;
-  --tf-color-border-control: #7C8796;
+  --tf-color-border-subtle: #DAE5DF;
+  --tf-color-border-control: #73847C;
 
   /* Action Buttons */
-  --tf-color-action-primary: #2B3749;
-  --tf-color-action-hover: #354B63;
-  --tf-color-action-pressed: #435F7D;
+  --tf-color-action-primary: #0F766E;
+  --tf-color-action-hover: #115E59;
+  --tf-color-action-pressed: #134E4A;
   --tf-color-action-foreground: #FFFFFF;
-  --tf-color-action-link: #0666DF;
-  --tf-color-focus-ring: #0666DF;
+  --tf-color-action-link: #0369A1;
+  --tf-color-focus-ring: #0369A1;
 
   /* Learning Activity Accent */
-  --tf-color-learning-accent: #8449EB;
+  --tf-color-learning-accent: #0F766E;
   --tf-color-learning-foreground: #FFFFFF;
-  --tf-color-learning-strong: #6D36C4;
-  --tf-color-learning-soft: #F1E9FC;
-  --tf-color-learning-lip: #6D36C4;
+  --tf-color-learning-strong: #115E59;
+  --tf-color-learning-soft: #DDF7EE;
+  --tf-color-learning-lip: #134E4A;
 
   /* Progress & Success */
-  --tf-color-success-accent: #25CBA9;
-  --tf-color-success-text: #186B56;
-  --tf-color-success-soft: #E8F8F1;
+  --tf-color-success-accent: #16A34A;
+  --tf-color-success-text: #166534;
+  --tf-color-success-soft: #E8F7EC;
 
   /* Attention & Warning */
-  --tf-color-warning-accent: #CD964D;
-  --tf-color-warning-text: #8A4B08;
-  --tf-color-warning-soft: #FFF1DE;
+  --tf-color-warning-accent: #D97706;
+  --tf-color-warning-text: #854D0E;
+  --tf-color-warning-soft: #FFF4DB;
 
   /* Error & Destructive */
-  --tf-color-error-text: #B42318;
-  --tf-color-error-soft: #FFF0EE;
+  --tf-color-error-text: #B42335;
+  --tf-color-error-soft: #FFF0F2;
 
   /* Rewards & Gamification */
-  --tf-color-reward-accent: #E0E04C;
-  --tf-color-reward-text: #684500;
-  --tf-color-reward-soft: #FFF7CC;
+  --tf-color-reward-accent: #EAB308;
+  --tf-color-reward-text: #715500;
+  --tf-color-reward-soft: #FEF6CC;
   --tf-color-streak-text: #9A4D00;
 
   /* Disabled States */
-  --tf-color-disabled-bg: #E5E7EB;
-  --tf-color-disabled-text: #556576;
+  --tf-color-disabled-bg: #E0E8E3;
+  --tf-color-disabled-text: #52635D;
 
   /* Overlays & Shadows */
-  --tf-color-overlay: rgba(23, 28, 38, 0.48);
-  --tf-shadow-card: 0 2px 8px rgba(18, 41, 71, 0.06);
-  --tf-shadow-popover: 0 8px 24px rgba(18, 41, 71, 0.12);
-  --lip-primary: 0 3px 0 #171C26;
+  --tf-color-overlay: rgba(15, 36, 32, 0.48);
+  --tf-shadow-card: 0 2px 8px rgba(15, 36, 32, 0.06);
+  --tf-shadow-popover: 0 8px 24px rgba(15, 36, 32, 0.12);
+  --lip-primary: 0 3px 0 var(--tf-color-learning-lip);
   --lip-node: 0 4px 0 var(--tf-color-learning-lip);
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
+
   /* Canvas & Surfaces */
-  --tf-color-bg-page: #171C26;
-  --tf-color-bg-surface: #242E3E;
-  --tf-color-bg-subtle: #2D3A4E;
-  --tf-color-bg-inverse: #101723;
+  --tf-color-bg-page: #000000;
+  --tf-color-bg-surface: #111111;
+  --tf-color-bg-subtle: #1C1C1C;
+  --tf-color-bg-inverse: #080808;
 
   /* Typography */
-  --tf-color-text-primary: #F2F4F8;
-  --tf-color-text-secondary: #B8C4D6;
-  --tf-color-text-inverse: #F2F4F8;
+  --tf-color-text-primary: #F5F5F5;
+  --tf-color-text-secondary: #B8B8B8;
+  --tf-color-text-inverse: #F5F5F5;
 
   /* Borders */
-  --tf-color-border-subtle: #3B4B63;
-  --tf-color-border-control: #7F90A8;
+  --tf-color-border-subtle: #333333;
+  --tf-color-border-control: #858585;
 
   /* Action Buttons */
-  --tf-color-action-primary: #C4A7FF;
-  --tf-color-action-hover: #D6C2FF;
-  --tf-color-action-pressed: #B495EB;
-  --tf-color-action-foreground: #171C26;
-  --tf-color-action-link: #8DC2FF;
-  --tf-color-focus-ring: #8DC2FF;
+  --tf-color-action-primary: #5EEAD4;
+  --tf-color-action-hover: #99F6E4;
+  --tf-color-action-pressed: #2DD4BF;
+  --tf-color-action-foreground: #080808;
+  --tf-color-action-link: #7DD3FC;
+  --tf-color-focus-ring: #7DD3FC;
 
   /* Learning Activity Accent */
-  --tf-color-learning-accent: #C4A7FF;
-  --tf-color-learning-foreground: #171C26;
-  --tf-color-learning-strong: #D6C2FF;
-  --tf-color-learning-soft: #392B53;
-  --tf-color-learning-lip: #8060AB;
+  --tf-color-learning-accent: #5EEAD4;
+  --tf-color-learning-foreground: #080808;
+  --tf-color-learning-strong: #99F6E4;
+  --tf-color-learning-soft: #102D28;
+  --tf-color-learning-lip: #25786C;
 
   /* Progress & Success */
-  --tf-color-success-accent: #52D8B5;
-  --tf-color-success-text: #8BE3C6;
-  --tf-color-success-soft: #173D35;
+  --tf-color-success-accent: #86EFAC;
+  --tf-color-success-text: #A7F3D0;
+  --tf-color-success-soft: #102A1D;
 
   /* Attention & Warning */
-  --tf-color-warning-accent: #EDBD76;
-  --tf-color-warning-text: #FFD08A;
-  --tf-color-warning-soft: #44341E;
+  --tf-color-warning-accent: #FBBF24;
+  --tf-color-warning-text: #FDE68A;
+  --tf-color-warning-soft: #30250D;
 
   /* Error & Destructive */
-  --tf-color-error-text: #FFB4AD;
-  --tf-color-error-soft: #4A292F;
+  --tf-color-error-text: #FDA4AF;
+  --tf-color-error-soft: #35161E;
 
   /* Rewards & Gamification */
-  --tf-color-reward-accent: #E5DE72;
-  --tf-color-reward-text: #F2E595;
-  --tf-color-reward-soft: #3D3820;
-  --tf-color-streak-text: #FFBE80;
+  --tf-color-reward-accent: #FACC15;
+  --tf-color-reward-text: #FDE68A;
+  --tf-color-reward-soft: #2B240C;
+  --tf-color-streak-text: #FDBA74;
 
   /* Disabled States */
-  --tf-color-disabled-bg: #303B4C;
-  --tf-color-disabled-text: #ADB9C9;
+  --tf-color-disabled-bg: #262626;
+  --tf-color-disabled-text: #A3A3A3;
 
   /* Overlays & Shadows */
-  --tf-color-overlay: rgba(11, 16, 24, 0.72);
+  --tf-color-overlay: rgba(0, 0, 0, 0.72);
   --tf-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
   --tf-shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.40);
-  --lip-primary: 0 3px 0 #0B1018;
+  --lip-primary: 0 3px 0 #000000;
   --lip-node: 0 4px 0 var(--tf-color-learning-lip);
 }
 

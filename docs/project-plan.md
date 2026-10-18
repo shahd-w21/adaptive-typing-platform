@@ -207,7 +207,7 @@ There are **35 frontend tasks: seven per developer**. Reuse existing screens and
 
 Every feature owner supplies loading, empty, error, retry and permission states; interface message keys and reviewed Arabic wording; and the relevant browser checks. No frontend task directly changes Prisma. The schema note on each task identifies a contract boundary to coordinate, not authorization to change the database.
 
-### Dev 1 - Accounts, app integration and preferences
+### Shahd - Accounts, app integration and preferences
 
 #### FE-01 — Integrate the existing app and navigation foundation
 
@@ -406,7 +406,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** none; any DTO defect becomes a coordinated issue rather than a silent browser workaround.
 
-### Dev 2 - Typing, tests and official results
+### Merna - Typing, tests and official results
 
 #### FE-05 — Agree the typing assignment/event/result adapter
 
@@ -610,7 +610,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** none; no heuristic is presented as proof of human typing.
 
-### Dev 3 - Data access, progress, rewards and analytics
+### Mahmoud - Data access, progress, rewards and analytics
 
 #### FE-02 — Establish shared transport and frontend contract boundaries
 
@@ -813,7 +813,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** none; contract discrepancies are tracked.
 
-### Dev 4 - Courses, learning paths and course authoring
+### Jonathan - Courses, learning paths and course authoring
 
 #### FE-07 — Build course library, detail and My Courses pages
 
@@ -1001,7 +1001,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** freeze the frontend contract revision for BE-01; later changes follow section 8.
 
-### Dev 5 - Shared UI, forum, certificates and administration
+### Giovanni - Shared UI, forum, certificates and administration
 
 #### FE-03 — Complete reusable shells and common interface states
 

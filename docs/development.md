@@ -102,6 +102,8 @@ The client uses Tailwind CSS v4 with `@tailwindcss/vite`. Root workspace install
 
 Keep CSS limited to shared theme values, document defaults, focus/reduced-motion rules and keyframes. Avoid new screen-specific stylesheets or fixed inline styles. Inline widths remain only for values supplied by data, such as session progress and keyboard key widths. The retired `App.css`, `styles/index.css` and `styles/tokens.css` are consolidated into the single entry point.
 
+The owner's 19 October 2026 appearance update selects a shared Mint palette for Light and Dark modes. Light uses off-white/white surfaces and deep mint actions; Dark uses a black canvas, charcoal surfaces and bright mint actions. Both share green progress, blue links/focus and gold rewards, with shades tuned for contrast. Tokens remain in `client/src/index.css` and match the updated [design colour system](../DESIGN.md#3-proposed-typeflow-colour-system). The existing Light/Dark/System preference resolves to the same two themes; native controls follow the resolved colour scheme. Client lint, production build and 94 opaque contrast checks across both modes pass; this colour change does not verify API integration or broader feature readiness.
+
 Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
 
 ## GitHub CI

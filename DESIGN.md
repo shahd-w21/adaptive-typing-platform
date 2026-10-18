@@ -4,7 +4,9 @@
 
 Version 0.2 · 14 October 2026 · Design owner/reviewer: TBD · Figma file: not created.
 
-Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; exact visual values remain proposed. See [decision 0002](docs/decisions.md#0002). Unresolved learning policies remain separate.
+Palette update · 19 October 2026: the owner selected a shared Mint palette for Light and Dark modes, with a black canvas in Dark mode. Both modes' tokens and contrast values below reflect the implemented client theme; the broader Figma brief retains its proposed status.
+
+Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; the shared Mint palette is owner-selected while the broader visual brief remains proposed. See [decision 0002](docs/decisions.md#0002). Unresolved learning policies remain separate.
 
 ## 1. Read this before designing
 
@@ -89,55 +91,55 @@ Source tokens do not automatically become TypeFlow semantic assignments. Related
 
 edclub's homepage CSS defines a warm hero, generous spacing, bold sans-serif headings, pill-shaped navy actions, blue links and contrasting navy feature sections. Reference values include 72px navigation height, 56px hero gap and 30px CTA radius. Feature panels include asymmetric rounded corners. See the [homepage stylesheet](https://www.edclub.com/_astro/homepage.Ced_z5Jv.css).
 
-**Proposed theme: calm, encouraging keyboard learning.** Warm off-white page backgrounds, white study surfaces and navy typography form the base. Purple identifies the current learning activity, teal supports positive progress, gold marks rewards, and blue identifies links/focus. Colourful illustration belongs on landing, path and achievements; the typing stage stays quiet.
+**Theme: calm, encouraging keyboard learning.** Light mode uses a cool off-white canvas, white study surfaces and dark green-neutral typography. Both modes share mint actions/learning accents, green progress, gold rewards and blue links/focus, with darker accent shades in Light mode for contrast. Colourful illustration belongs on landing, path and achievements; the typing stage stays quiet.
 
 Keep the working TypeFlow name. Propose an original keycap/flow-arrow symbol with an Open Sans wordmark; final branding remains open. Illustrations use simple rounded keyboard keys, hands, letters and milestones. Use rounded vector icons at 20/24px with 2px strokes. Finished screens use original TypeFlow assets rather than competitor logos, mascots or copied screenshots.
 
-Light and Dark are required appearance modes. Keep the warm edclub-inspired Light palette; Dark uses layered deep navy surfaces, soft light text, lilac learning accents, mint progress and light blue focus. These dark values are original TypeFlow proposals, not an extracted edclub dark theme. Avoid pure-black canvases, automatic colour inversion and large bright surfaces around the passage. Navy marketing sections use inverse tokens in both modes.
+Light and Dark are required appearance modes. The owner-selected Mint palette spans both: Light uses off-white/white surfaces with deep mint actions, while Dark uses a pure-black canvas, charcoal surfaces, soft white text and bright mint actions. Green progress, blue links/focus and gold rewards keep the same roles in both modes, with shades tuned for contrast. These values are original TypeFlow choices, not an extracted edclub dark theme. Keep surfaces layered and avoid automatic colour inversion or large bright surfaces around the passage. Marketing sections use inverse tokens in both modes.
 
 ## 3. Proposed TypeFlow colour system
 
-Create Figma colour variables with these exact names. Semantic variables may alias primitives. All values are **proposed**, including reused edclub values. Additional tints and dark status colours support readable UI.
+Create Figma colour variables with these exact names. Semantic variables may alias primitives. Both modes reflect the owner's shared Mint palette selection. Additional tints and status colours support readable UI.
 
 | Semantic variable | Light | Dark | Role |
 | --- | --- | --- | --- |
-| `color/bg/page` | `#F5F3F0` | `#171C26` | Canvas |
-| `color/bg/surface` | `#FFFFFF` | `#242E3E` | Cards, inputs, passage, dialogs |
-| `color/bg/subtle` | `#F7F7F9` | `#2D3A4E` | Muted sections/table headings |
-| `color/bg/inverse` | `#242E3E` | `#101723` | Selected marketing sections |
-| `color/text/primary` | `#122947` | `#F2F4F8` | Main text/upcoming characters |
-| `color/text/secondary` | `#556576` | `#B8C4D6` | Supporting copy/metadata |
-| `color/text/inverse` | `#FFFFFF` | `#F2F4F8` | Text on inverse sections |
-| `color/border/subtle` | `#E5E7EB` | `#3B4B63` | Decorative edges only |
-| `color/border/control` | `#7C8796` | `#7F90A8` | Identifying control outlines |
-| `color/action/primary` | `#2B3749` | `#C4A7FF` | Main CTA fill |
-| `color/action/hover` | `#354B63` | `#D6C2FF` | Hovered CTA fill |
-| `color/action/pressed` | `#435F7D` | `#B495EB` | Pressed CTA fill |
-| `color/action/foreground` | `#FFFFFF` | `#171C26` | Text/icons on all primary CTA states |
-| `color/action/link` | `#0666DF` | `#8DC2FF` | Underlined prose links |
-| `color/focus/ring` | `#0666DF` | `#8DC2FF` | Focus/current-character caret |
-| `color/learning/accent` | `#8449EB` | `#C4A7FF` | Current node/learning accent |
-| `color/learning/foreground` | `#FFFFFF` | `#171C26` | Text/icons on solid accent nodes |
-| `color/learning/strong` | `#6D36C4` | `#D6C2FF` | Review text on learning-soft |
-| `color/learning/soft` | `#F1E9FC` | `#392B53` | Selection/review-chip background |
-| `color/learning/lip` | `#6D36C4` | `#8060AB` | Decorative node lip |
-| `color/success/accent` | `#25CBA9` | `#52D8B5` | Progress decoration |
-| `color/success/text` | `#186B56` | `#8BE3C6` | Success/correct characters |
-| `color/success/soft` | `#E8F8F1` | `#173D35` | Success/mastered backgrounds |
-| `color/warning/accent` | `#CD964D` | `#EDBD76` | Attention icon |
-| `color/warning/text` | `#8A4B08` | `#FFD08A` | Warning text |
-| `color/warning/soft` | `#FFF1DE` | `#44341E` | Attention background |
-| `color/error/text` | `#B42318` | `#FFB4AD` | Errors/incorrect characters/destructive text |
-| `color/error/soft` | `#FFF0EE` | `#4A292F` | Error panels/cells |
-| `color/reward/accent` | `#E0E04C` | `#E5DE72` | Reward decoration |
-| `color/reward/text` | `#684500` | `#F2E595` | XP/badge labels |
-| `color/reward/soft` | `#FFF7CC` | `#3D3820` | Earned-reward background |
-| `color/streak/text` | `#9A4D00` | `#FFBE80` | Streak icon/label on surface |
-| `color/disabled/bg` | `#E5E7EB` | `#303B4C` | Disabled fill |
-| `color/disabled/text` | `#556576` | `#ADB9C9` | Disabled label/explanation |
-| `color/overlay` | `#171C26` at 48% | `#0B1018` at 72% | Modal scrim |
+| `color/bg/page` | `#F7FAF9` | `#000000` | Canvas |
+| `color/bg/surface` | `#FFFFFF` | `#111111` | Cards, inputs, passage, dialogs |
+| `color/bg/subtle` | `#EDF4F1` | `#1C1C1C` | Muted sections/table headings |
+| `color/bg/inverse` | `#0F2420` | `#080808` | Selected marketing sections |
+| `color/text/primary` | `#152923` | `#F5F5F5` | Main text/upcoming characters |
+| `color/text/secondary` | `#52635D` | `#B8B8B8` | Supporting copy/metadata |
+| `color/text/inverse` | `#FFFFFF` | `#F5F5F5` | Text on inverse sections |
+| `color/border/subtle` | `#DAE5DF` | `#333333` | Decorative edges only |
+| `color/border/control` | `#73847C` | `#858585` | Identifying control outlines |
+| `color/action/primary` | `#0F766E` | `#5EEAD4` | Main CTA fill |
+| `color/action/hover` | `#115E59` | `#99F6E4` | Hovered CTA fill |
+| `color/action/pressed` | `#134E4A` | `#2DD4BF` | Pressed CTA fill |
+| `color/action/foreground` | `#FFFFFF` | `#080808` | Text/icons on all primary CTA states |
+| `color/action/link` | `#0369A1` | `#7DD3FC` | Underlined prose links |
+| `color/focus/ring` | `#0369A1` | `#7DD3FC` | Focus/current-character caret |
+| `color/learning/accent` | `#0F766E` | `#5EEAD4` | Current node/learning accent |
+| `color/learning/foreground` | `#FFFFFF` | `#080808` | Text/icons on solid accent nodes |
+| `color/learning/strong` | `#115E59` | `#99F6E4` | Review text on learning-soft |
+| `color/learning/soft` | `#DDF7EE` | `#102D28` | Selection/review-chip background |
+| `color/learning/lip` | `#134E4A` | `#25786C` | Decorative node lip |
+| `color/success/accent` | `#16A34A` | `#86EFAC` | Progress decoration |
+| `color/success/text` | `#166534` | `#A7F3D0` | Success/correct characters |
+| `color/success/soft` | `#E8F7EC` | `#102A1D` | Success/mastered backgrounds |
+| `color/warning/accent` | `#D97706` | `#FBBF24` | Attention icon |
+| `color/warning/text` | `#854D0E` | `#FDE68A` | Warning text |
+| `color/warning/soft` | `#FFF4DB` | `#30250D` | Attention background |
+| `color/error/text` | `#B42335` | `#FDA4AF` | Errors/incorrect characters/destructive text |
+| `color/error/soft` | `#FFF0F2` | `#35161E` | Error panels/cells |
+| `color/reward/accent` | `#EAB308` | `#FACC15` | Reward decoration |
+| `color/reward/text` | `#715500` | `#FDE68A` | XP/badge labels |
+| `color/reward/soft` | `#FEF6CC` | `#2B240C` | Earned-reward background |
+| `color/streak/text` | `#9A4D00` | `#FDBA74` | Streak icon/label on surface |
+| `color/disabled/bg` | `#E0E8E3` | `#262626` | Disabled fill |
+| `color/disabled/text` | `#52635D` | `#A3A3A3` | Disabled label/explanation |
+| `color/overlay` | `#0F2420` at 48% | `#000000` at 72% | Modal scrim |
 
-Use each mode's semantic foreground/background pair. Primary button/node text uses its dedicated foreground token, not inverse-section text: white text on the dark theme's light-lilac CTA is unsuitable. Keep instructional text at full opacity. Do not use decorative accent colours as untested small text or sole control outlines. The source's lighter blue link is replaced with its darker blue in Light mode.
+Use each mode's semantic foreground/background pair. Primary button/node text uses its dedicated foreground token, not inverse-section text: white text on the dark theme's mint CTA is unsuitable. Keep instructional text at full opacity. Do not use decorative accent colours as untested small text or sole control outlines. The source's lighter blue link is replaced with its darker blue in Light mode.
 
 ### 3.1 Appearance control and persistence
 
@@ -156,32 +158,34 @@ These opaque sRGB pairs were calculated during this documentation task using rel
 
 | Foreground / background | Ratio |
 | --- | --- |
-| Primary `#122947` / white `#FFFFFF` | 14.65:1 |
-| Secondary `#556576` / page `#F5F3F0` | 5.40:1 |
-| White / CTA `#2B3749` | 12.03:1 |
-| White / learning accent `#8449EB` | 5.08:1 |
-| Link/focus `#0666DF` / white | 5.28:1 |
-| Link/focus `#0666DF` / page | 4.77:1 |
-| Success `#186B56` / `#E8F8F1` | 5.84:1 |
-| Error `#B42318` / `#FFF0EE` | 5.93:1 |
-| Warning `#8A4B08` / `#FFF1DE` | 6.11:1 |
-| Reward `#684500` / `#FFF7CC` | 7.96:1 |
-| Dark primary `#F2F4F8` / surface `#242E3E` | 12.42:1 |
-| Dark secondary `#B8C4D6` / page `#171C26` | 9.67:1 |
-| Dark secondary `#B8C4D6` / subtle `#2D3A4E` | 6.52:1 |
-| Dark CTA foreground `#171C26` / fill `#C4A7FF` | 8.39:1 |
-| Dark CTA foreground `#171C26` / pressed `#B495EB` | 6.86:1 |
-| Dark link/focus `#8DC2FF` / surface `#242E3E` | 7.36:1 |
-| Dark link/focus `#8DC2FF` / subtle `#2D3A4E` | 6.18:1 |
-| Dark success `#8BE3C6` / `#173D35` | 7.92:1 |
-| Dark error `#FFB4AD` / `#4A292F` | 7.51:1 |
-| Dark warning `#FFD08A` / `#44341E` | 8.34:1 |
-| Dark reward `#F2E595` / `#3D3820` | 9.20:1 |
-| Dark control border `#7F90A8` / subtle `#2D3A4E` | 3.53:1 |
+| Primary `#152923` / white `#FFFFFF` | 15.29:1 |
+| Secondary `#52635D` / page `#F7FAF9` | 6.06:1 |
+| White / CTA `#0F766E` | 5.47:1 |
+| White / learning accent `#0F766E` | 5.47:1 |
+| Link/focus `#0369A1` / white | 5.93:1 |
+| Link/focus `#0369A1` / page | 5.65:1 |
+| Success `#166534` / `#E8F7EC` | 6.43:1 |
+| Error `#B42335` / `#FFF0F2` | 5.88:1 |
+| Warning `#854D0E` / `#FFF4DB` | 6.27:1 |
+| Reward `#715500` / `#FEF6CC` | 6.42:1 |
+| Dark primary `#F5F5F5` / surface `#111111` | 17.32:1 |
+| Dark secondary `#B8B8B8` / page `#000000` | 10.59:1 |
+| Dark secondary `#B8B8B8` / subtle `#1C1C1C` | 8.59:1 |
+| Dark CTA foreground `#080808` / fill `#5EEAD4` | 13.54:1 |
+| Dark CTA foreground `#080808` / pressed `#2DD4BF` | 10.76:1 |
+| Dark link/focus `#7DD3FC` / surface `#111111` | 11.33:1 |
+| Dark link/focus `#7DD3FC` / subtle `#1C1C1C` | 10.22:1 |
+| Dark success `#A7F3D0` / `#102A1D` | 11.94:1 |
+| Dark error `#FDA4AF` / `#35161E` | 8.64:1 |
+| Dark warning `#FDE68A` / `#30250D` | 12.08:1 |
+| Dark reward `#FDE68A` / `#2B240C` | 12.40:1 |
+| Dark control border `#858585` / subtle `#1C1C1C` | 4.62:1 |
 
-Check all actual text/icon/chart/focus pairings in Figma, including selected status chips and hovered controls; these calculations do not verify rendering, transparency or unlisted combinations. On inverse marketing surfaces use a light ring with a navy separation gap. See [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html). All listed ratios are rounded for reporting; pass/fail uses unrounded values.
+Check all actual text/icon/chart/focus pairings in Figma, including selected status chips and hovered controls; these calculations do not verify rendering, transparency or unlisted combinations. On inverse marketing surfaces use a light ring with an inverse-surface separation gap. See [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html). All listed ratios are rounded for reporting; pass/fail uses unrounded values.
 
 Documentation verification on 14 October 2026: all 35 semantic colour variables have Light/Dark values; 62 opaque semantic foreground/background checks passed their 4.5:1 text or 3:1 non-text targets. The matrix covered body/secondary text, primary-button states, links, focus, control outlines, learning/status/reward text and inverse surfaces. Translucent overlays, rendered charts/illustrations and browser states still need visual verification.
+
+Palette verification on 19 October 2026: 94 opaque foreground/background checks across Light and Dark passed the 4.5:1 text or 3:1 non-text targets for the implemented Mint palette, including action states, learning/status pairs, links/focus, control borders and disabled labels. Ratios above reflect the current tokens; rendered states and translucent combinations need separate browser review.
 
 ## 4. Proposed typography
 
