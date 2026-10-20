@@ -8,12 +8,20 @@ import { HttpError } from './middleware/validate.js';
 
 export function createApp({ database, clientUrl, config = {}, sendMail, now, random }) {
   const app = express();
+  const allowedOrigins = new Set([clientUrl]);
+  if (config.NODE_ENV === 'development') {
+    const clientOrigin = new URL(clientUrl);
+    if (clientOrigin.hostname === 'localhost' || clientOrigin.hostname === '127.0.0.1') {
+      clientOrigin.hostname = clientOrigin.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
+      allowedOrigins.add(clientOrigin.origin);
+    }
+  }
   app.disable('x-powered-by');
-  app.use(cors({ origin: clientUrl, credentials: true }));
+  app.use(cors({ origin: [...allowedOrigins], credentials: true }));
   app.use(express.json({ limit: '512kb' }));
   app.use(cookieParser());
   app.use((request, _response, next) => {
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.get('Origin') && request.get('Origin') !== clientUrl) {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.get('Origin') && !allowedOrigins.has(request.get('Origin'))) {
       return next(new HttpError(403, 'ORIGIN_FORBIDDEN', 'Request origin is not allowed'));
     }
     next();

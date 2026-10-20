@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
+import { useAdminPing } from './hooks/useAdmin.js';
 
 export function AdminView() {
   const { isRTL } = useTranslation();
+  const adminPing = useAdminPing();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'settings' | 'moderation'
 
   // Mock platform analytics per SYS-44
@@ -32,6 +34,11 @@ export function AdminView() {
           <p className="text-[16px] leading-[26px] font-normal text-muted">
             Supervise learning health, adaptive settings, content generation, and accounts.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" role={adminPing.isError ? 'alert' : 'status'}>
+            <span className={`size-2 rounded-full ${adminPing.isSuccess ? 'bg-success-accent' : adminPing.isError ? 'bg-error-text' : 'animate-pulse bg-warning-accent'}`} aria-hidden="true" />
+            {adminPing.isPending ? 'Checking server-side admin access…' : adminPing.isError ? 'Could not confirm admin access with the server.' : adminPing.data.message}
+            {adminPing.isError && <button type="button" onClick={() => adminPing.refetch()} className="font-bold underline">Retry</button>}
+          </div>
         </div>
 
         {/* Tab Controls */}

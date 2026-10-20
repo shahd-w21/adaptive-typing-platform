@@ -33,7 +33,7 @@ test('fresh checkout creates environments from tracked templates with a unique s
   assert.match(server, /JWT_SECRET=[a-f0-9]{64}/);
   assert.match(server, /localhost:55432\/typeflow_dev/);
   assert.match(server, /localhost:55432\/typeflow_test/);
-  assert.equal(await readFile(new URL('client/.env', root), 'utf8'), 'VITE_API_URL=http://localhost:5000/api/v1\n');
+  assert.equal((await readFile(new URL('client/.env', root), 'utf8')).replaceAll('\r\n', '\n'), 'VITE_API_URL=http://localhost:5000/api/v1\n');
   await setupEnvironment(root, () => {});
   assert.equal(await readFile(new URL('server/.env', root), 'utf8'), server);
 });

@@ -1,2 +1,8 @@
-// Coming soon: Shared authentication-context access; no duplicate user cache.
-// Placeholder only: no implementation, exports or runtime wiring.
+import { useContext } from 'react';
+import { AuthContext } from '../context/authContext.js';
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used inside AuthProvider');
+  return context;
+}

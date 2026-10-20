@@ -1,109 +1,89 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
+import { useProgress } from './hooks/useProgress.js';
+
+const EMPTY_SESSIONS = [];
+
+function dateLabel(value, locale) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
 
 export function ProgressView() {
-  const { isRTL } = useTranslation();
+  const { isRTL, locale, t } = useTranslation();
   const [filterMode, setFilterMode] = useState('all');
+  const { data, isPending, isError, refetch } = useProgress();
+  const sessions = data?.sessions ?? EMPTY_SESSIONS;
+  const filteredHistory = useMemo(() => filterMode === 'all'
+    ? sessions
+    : sessions.filter(session => session.mode === filterMode), [filterMode, sessions]);
+  const average = field => {
+    const values = sessions.map(session => session[field]).filter(value => Number.isFinite(value));
+    return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+  };
+  const averageNetWpm = average('netWpm');
+  const averageRawAccuracy = average('rawAccuracy');
 
-  const historyData = [
-    { id: '1', date: 'Oct 14, 2026', mode: 'Adaptive Practice', netWpm: 52, grossWpm: 54, rawAccuracy: 97.4, finalAccuracy: 100 },
-    { id: '2', date: 'Oct 14, 2026', mode: 'Spaced Review', netWpm: 50, grossWpm: 51, rawAccuracy: 98.1, finalAccuracy: 100 },
-    { id: '3', date: 'Oct 13, 2026', mode: 'Timed Test (3m)', netWpm: 48, grossWpm: 52, rawAccuracy: 94.6, finalAccuracy: 98 },
-    { id: '4', date: 'Oct 12, 2026', mode: 'Adaptive Practice', netWpm: 45, grossWpm: 49, rawAccuracy: 95.0, finalAccuracy: 100 },
-    { id: '5', date: 'Oct 11, 2026', mode: 'Adaptive Practice', netWpm: 42, grossWpm: 46, rawAccuracy: 93.2, finalAccuracy: 96 },
-  ];
-
-  const filteredHistory = filterMode === 'all'
-    ? historyData
-    : historyData.filter((h) => h.mode.toLowerCase().includes(filterMode));
+  if (isPending) return <p className="mx-auto max-w-3xl rounded-card border border-border-subtle bg-surface p-6 text-muted shadow-card" role="status">{t('progress.loading')}</p>;
+  if (isError) return (
+    <section className="mx-auto max-w-3xl rounded-card border border-error-text/30 bg-error-soft p-6 text-error-text" role="alert">
+      <h1 className="mb-2 font-display text-2xl font-bold">{t('progress.errorTitle')}</h1>
+      <p className="mb-4">{t('progress.errorDescription')}</p>
+      <button type="button" onClick={() => refetch()} className="min-h-11 rounded-full border border-error-text/40 px-5 py-2 font-bold">{t('common.retry')}</button>
+    </section>
+  );
 
   return (
-    <div className="max-w-256 my-0 mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
-            Progress & Session Analytics
-          </h1>
-          <p className="text-[16px] leading-[26px] font-normal text-muted">
-            Track speed development and raw accuracy stability over time.
-          </p>
+          <h1 className="mb-1 font-display text-[32px] font-bold leading-tight max-md:text-2xl">{t('progress.title')}</h1>
+          <p className="text-muted">{t('progress.description')}</p>
         </div>
-
-        {/* Filter Dropdown */}
-        <div className="flex gap-2">
-          {['all', 'adaptive', 'review', 'test'].map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilterMode(f)}
-              className={[
-                "py-1.5 px-3.5 rounded-full border border-border-subtle font-bold text-[13px] cursor-pointer",
-                filterMode === f ? 'bg-action-primary text-action-foreground' : 'bg-surface text-ink',
-              ].filter(Boolean).join(' ')}
-            >
-              {f.toUpperCase()}
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('progress.filter')}>
+          {[["all", t('progress.all')], ["practice", t('progress.practice')]].map(([value, label]) => (
+            <button key={value} type="button" aria-pressed={filterMode === value} onClick={() => setFilterMode(value)} className={`rounded-full border px-4 py-2 text-sm font-bold transition-colors ${filterMode === value ? 'border-action-primary bg-action-primary text-action-foreground' : 'border-border-subtle bg-surface text-ink hover:bg-subtle'}`}>
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Speed & Accuracy Trend Overview Cards */}
-      <div className="grid grid-cols-[1fr_1fr] gap-5 mb-7">
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <div className="text-[14px] leading-[22px] font-normal text-muted">Average Net Speed</div>
-          <div className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-learning-strong my-2 mx-0">
-            47.4 <span className="text-[20px] text-muted">WPM</span>
-          </div>
-          <div className="text-[13px] text-success-text font-bold">
-            ↑ +5.4 WPM in the last 7 days
-          </div>
-        </div>
-
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <div className="text-[14px] leading-[22px] font-normal text-muted">Average Raw Accuracy</div>
-          <div className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-success-text my-2 mx-0">
-            95.7%
-          </div>
-          <div className="text-[13px] text-muted">
-            Consistently above the 95% gate
-          </div>
-        </div>
+      <div className="mb-7 grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+        <article className="rounded-card border border-border-subtle bg-surface p-6 shadow-card">
+          <p className="text-sm font-semibold text-muted">{t('progress.averageSpeed')}</p>
+          <p className="my-2 font-mono text-4xl font-extrabold text-learning-strong" dir="ltr">{averageNetWpm == null ? '—' : averageNetWpm.toFixed(1)} <span className="text-base text-muted">WPM</span></p>
+          <p className="text-xs text-muted">{t('progress.sessionsCount', { count: sessions.length })}</p>
+        </article>
+        <article className="rounded-card border border-border-subtle bg-surface p-6 shadow-card">
+          <p className="text-sm font-semibold text-muted">{t('progress.averageAccuracy')}</p>
+          <p className="my-2 font-mono text-4xl font-extrabold text-success-text" dir="ltr">{averageRawAccuracy == null ? '—' : `${averageRawAccuracy.toFixed(1)}%`}</p>
+          <p className="text-xs text-muted">{t('progress.serverScored')}</p>
+        </article>
       </div>
 
-      {/* Historical Sessions Table */}
-      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-        <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">
-          Session Records
-        </h2>
-
-        <table className={[
-                 "w-full border-collapse",
-                 isRTL ? 'text-right' : 'text-left',
-               ].filter(Boolean).join(' ')}>
-          <thead>
-            <tr className="border-b-2 border-b-border-subtle text-muted text-[13px]">
-              <th className="py-2.5 px-3">Date</th>
-              <th className="py-2.5 px-3">Mode</th>
-              <th className="py-2.5 px-3">Net WPM</th>
-              <th className="py-2.5 px-3">Gross WPM</th>
-              <th className="py-2.5 px-3">Raw Accuracy</th>
-              <th className="py-2.5 px-3">Final Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredHistory.map((s) => (
-              <tr key={s.id} className="border-b border-b-border-subtle text-[14px]">
-                <td className="p-3">{s.date}</td>
-                <td className="p-3">{s.mode}</td>
-                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3 font-bold">{s.netWpm}</td>
-                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.grossWpm}</td>
-                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.rawAccuracy}%</td>
-                <td className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! p-3">{s.finalAccuracy}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <section className="overflow-hidden rounded-card border border-border-subtle bg-surface shadow-card" aria-labelledby="session-records-title">
+        <div className="border-b border-border-subtle px-6 py-5"><h2 id="session-records-title" className="font-display text-xl font-bold">{t('progress.records')}</h2></div>
+        {filteredHistory.length === 0 ? (
+          <p className="p-6 text-sm text-muted">{sessions.length ? t('progress.noMatch') : t('progress.empty')}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className={`w-full min-w-[680px] border-collapse ${isRTL ? 'text-right' : 'text-left'}`}>
+              <thead><tr className="border-b border-border-subtle text-xs text-muted"><th className="px-4 py-3">{t('progress.completed')}</th><th className="px-4 py-3">{t('progress.mode')}</th><th className="px-4 py-3">{t('progress.netWpm')}</th><th className="px-4 py-3">{t('progress.grossWpm')}</th><th className="px-4 py-3">{t('progress.rawAccuracy')}</th><th className="px-4 py-3">{t('progress.finalAccuracy')}</th></tr></thead>
+              <tbody>{filteredHistory.map(session => (
+                <tr key={session.id} className="border-b border-border-subtle text-sm last:border-0">
+                  <td className="px-4 py-3">{dateLabel(session.completedAt, locale)}</td>
+                  <td className="px-4 py-3 font-semibold">{session.mode}</td>
+                  <td className="px-4 py-3 font-mono font-bold" dir="ltr">{session.netWpm ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono" dir="ltr">{session.grossWpm ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono" dir="ltr">{session.rawAccuracy == null ? '—' : `${session.rawAccuracy}%`}</td>
+                  <td className="px-4 py-3 font-mono" dir="ltr">{session.finalAccuracy == null ? '—' : `${session.finalAccuracy}%`}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

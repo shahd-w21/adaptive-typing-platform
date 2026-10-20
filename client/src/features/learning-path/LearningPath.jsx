@@ -1,60 +1,55 @@
 import { useState } from 'react';
 import { PlayIcon, CheckIcon, LockIcon } from '../../components/ui/Icons.jsx';
 import { KeyboardGuide } from '../typing/components/KeyboardGuide.jsx';
+import { useLearningPath } from './useLearningPath.js';
 
 export function LearningPath({ onStartExercise }) {
   const [activeTab, setActiveTab] = useState('path'); // 'path' | 'map'
   const [selectedKey, setSelectedKey] = useState('f');
 
-  const groups = [
-    {
-      id: 'g1',
-      title: 'Group 1: Home Row Essentials',
-      description: 'The foundation of touch typing: A, S, D, F, J, K, L, ;',
-      nodes: [
-        { id: 'n1', title: 'Home Row Drill 1 (F & J)', status: "mastered", keys: 'fj' },
-        { id: 'n2', title: 'Home Row Drill 2 (D & K)', status: "mastered", keys: 'dk' },
-        { id: 'n3', title: 'Home Row Complete Words', status: "mastered", keys: 'asdfjkl;' },
-      ],
-    },
-    {
-      id: 'g2',
-      title: 'Group 2: Top Row Index & Middle',
-      description: 'Reaching upward with index and middle fingers: R, U, E, I',
-      nodes: [
-        { id: 'n4', title: 'Index Reach: R & U', status: "mastered", keys: 'ru' },
-        { id: 'n5', title: 'Middle Reach: E & I', status: 'recommended', keys: 'ei' },
-        { id: 'n6', title: 'Word Sequences (Home + Top)', status: 'available', keys: 'asdfjkl;ruei' },
-      ],
-    },
-    {
-      id: 'g3',
-      title: 'Group 3: Top Row Ring & Pinky',
-      description: 'Strengthening outer fingers: W, O, Q, P',
-      nodes: [
-        { id: 'n7', title: 'Ring Reach: W & O', status: 'locked', prerequisite: 'Complete Group 2' },
-        { id: 'n8', title: 'Pinky Reach: Q & P', status: 'locked', prerequisite: 'Complete Group 2' },
-        { id: 'n9', title: 'Complex Vocabulary Practice', status: 'locked', prerequisite: 'Complete Group 2' },
-      ],
-    },
-  ];
-
-  const keyDetails = {
-    f: { key: 'F', status: 'Mastered', accuracy: '98.5%', samples: 142, latency: '185 ms' },
-    j: { key: 'J', status: 'Mastered', accuracy: '97.8%', samples: 138, latency: '192 ms' },
-    e: { key: 'E', status: 'In Progress', accuracy: '92.1%', samples: 28, latency: '240 ms' },
-    i: { key: 'I', status: 'In Progress', accuracy: '91.4%', samples: 25, latency: '255 ms' },
-    p: { key: 'P', status: 'Review Due', accuracy: '88.0%', samples: 44, latency: '310 ms' },
-  };
-
-  const currentKeyStats = keyDetails[selectedKey.toLowerCase()] || {
-    key: selectedKey.toUpperCase(),
-    status: 'Insufficient Evidence',
-    accuracy: 'N/A',
-    samples: 4,
-    latency: 'N/A',
-  };
-
+  const pathQuery = useLearningPath();
+  const data = pathQuery.data;
+  if (pathQuery.isPending) return <p className="mx-auto max-w-3xl rounded-card border border-border-subtle bg-surface p-6 text-muted shadow-card" role="status">Loading your learning path...</p>;
+  if (pathQuery.isError) return (
+    <section className="mx-auto max-w-3xl rounded-card border border-error-text/30 bg-error-soft p-6 text-error-text" role="alert">
+      <h1 className="mb-2 font-display text-2xl font-bold">Learning path could not load</h1>
+      <p className="mb-4">Your saved progress remains on the server. Check your connection and retry.</p>
+      <button type="button" onClick={() => pathQuery.refetch()} className="rounded-full border border-error-text/40 px-5 py-2 font-bold">Retry</button>
+    </section>
+  );
+  const stats = data?.keys ?? [];
+  const weakestKey = data?.recommendation?.weakestKey?.toLowerCase();
+  const activeKey = stats.find(stat => stat.key.toLowerCase() === weakestKey)?.key
+    ?? stats.find(stat => stat.status === 'in_progress')?.key;
+  const groupNames = new Map((data?.groups ?? []).map(group => [group.id, group.name]));
+  const groups = (data?.groups ?? []).map(group => ({
+    id: String(group.id),
+    title: group.name,
+    description: [...(group.keys ?? '')].join(' / '),
+    nodes: [...(group.keys ?? '')].map(key => {
+      const stat = stats.find(item => item.key === key);
+      const recommended = key.toLowerCase() === activeKey?.toLowerCase();
+      return {
+        id: group.id + '-' + key,
+        title: 'Key ' + key.toUpperCase(),
+        status: stat?.status === 'mastered' ? 'mastered'
+          : stat?.status === 'locked' || !stat ? 'locked'
+            : recommended ? 'recommended' : 'available',
+        keys: key,
+        prerequisite: group.prerequisiteId ? 'Complete ' + (groupNames.get(group.prerequisiteId) ?? 'the previous group') : undefined,
+      };
+    }),
+  }));
+  const currentKeyStats = (() => {
+    const stat = stats.find(item => item.key.toLowerCase() === selectedKey.toLowerCase());
+    return {
+      key: selectedKey.toUpperCase(),
+      status: stat?.status === 'mastered' ? 'Mastered' : stat?.status === 'in_progress' ? 'In progress' : stat?.status === 'locked' ? 'Locked' : 'No evidence yet',
+      accuracy: Number.isFinite(stat?.accuracy) ? stat.accuracy.toFixed(1) + '%' : 'Not available',
+      samples: stat?.attempts ?? 0,
+      latency: Number.isFinite(stat?.avgMs) ? Math.round(stat.avgMs) + ' ms' : 'Not available',
+    };
+  })();
   return (
     <div className="max-w-240 my-0 mx-auto">
       {/* View Switcher Tabs */}
@@ -123,7 +118,7 @@ export function LearningPath({ onStartExercise }) {
                       {/* Node Circle */}
                       <button
                         type="button"
-                        disabled={isLocked}
+                        disabled={isLocked || isMastered}
                         onClick={() => onStartExercise(node)}
                         className={[
                           "rounded-full flex items-center justify-center shrink-0 [transition:translate_var(--motion-fast)]",
@@ -182,11 +177,11 @@ export function LearningPath({ onStartExercise }) {
               Select any key on the physical keyboard guide to inspect recorded evidence and latency.
             </p>
 
-            <KeyboardGuide nextChar={selectedKey} masteredKeys={new Set(['f', 'j', 'd', 'k', 'a', 's', 'l', ';', 'r', 'u'])} />
+            <KeyboardGuide nextChar={selectedKey} masteredKeys={new Set(stats.filter(stat => stat.status === 'mastered').map(stat => stat.key.toLowerCase()))} />
 
             {/* Quick Key Selection Palette */}
             <div className="flex justify-center gap-2 mt-5">
-              {['f', 'j', 'e', 'i', 'p'].map((k) => (
+              {stats.slice(0, 8).map((stat) => { const k = stat.key.toLowerCase(); return (
                 <button
                   key={k}
                   type="button"
@@ -198,7 +193,7 @@ export function LearningPath({ onStartExercise }) {
                 >
                   Key: {k.toUpperCase()}
                 </button>
-              ))}
+              ); })}
             </div>
           </div>
 
@@ -223,13 +218,13 @@ export function LearningPath({ onStartExercise }) {
             <div>
               <div className="text-[14px] leading-[22px] font-normal text-muted">Samples Recorded</div>
               <div className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{currentKeyStats.samples}</div>
-              <div className="text-[12px] text-muted mt-1">Req. $\ge 30$ for gate</div>
+              <div className="text-[12px] text-muted mt-1">Evidence stored by the server</div>
             </div>
 
             <div>
               <div className="text-[14px] leading-[22px] font-normal text-muted">Average Latency</div>
               <div className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{currentKeyStats.latency}</div>
-              <div className="text-[12px] text-muted mt-1">Target: &lt; 220 ms</div>
+              <div className="text-[12px] text-muted mt-1">Server-recorded timing data</div>
             </div>
           </div>
         </div>

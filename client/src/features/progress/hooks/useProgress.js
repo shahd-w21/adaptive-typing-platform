@@ -1,2 +1,7 @@
-// Coming soon: Mode/difficulty-aware trends and history for existing ProgressView.jsx.
-// Placeholder only: no implementation, exports or runtime wiring.
+import { useQuery } from '@tanstack/react-query';
+import { fetchProgress } from '../../../api/progress.js';
+import { queryKeys } from '../../../lib/queryKeys.js';
+
+export function useProgress() {
+  return useQuery({ queryKey: queryKeys.progress, queryFn: fetchProgress });
+}

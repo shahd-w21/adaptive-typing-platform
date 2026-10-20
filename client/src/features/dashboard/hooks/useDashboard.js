@@ -1,2 +1,7 @@
-// Coming soon: Confirmed dashboard summary and next actions for existing Dashboard.jsx.
-// Placeholder only: no implementation, exports or runtime wiring.
+import { useQuery } from '@tanstack/react-query';
+import { fetchDashboard } from '../../../api/dashboard.js';
+import { queryKeys } from '../../../lib/queryKeys.js';
+
+export function useDashboard() {
+  return useQuery({ queryKey: queryKeys.dashboard, queryFn: fetchDashboard });
+}

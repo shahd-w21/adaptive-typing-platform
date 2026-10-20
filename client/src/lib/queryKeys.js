@@ -1,2 +1,7 @@
-// Coming soon: Central remote-data cache keys with account/enrollment scope and logout cleanup.
-// Placeholder only: no implementation, exports or runtime wiring.
+export const queryKeys = {
+  auth: { current: ['auth', 'me'] },
+  dashboard: ['dashboard'],
+  path: ['learning-path'],
+  progress: ['progress'],
+  gamification: ['gamification'],
+};

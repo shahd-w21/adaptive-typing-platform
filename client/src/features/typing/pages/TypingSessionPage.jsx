@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../../context/preferences.js';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { KeystrokeRecorder } from '../engine/keystrokeRecorder.js';
@@ -9,13 +10,21 @@ import { OfficialResult } from '../../result/OfficialResult.jsx';
 import { AppearanceSelector } from '../../../components/controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../../../components/controls/LanguageSelector.jsx';
 import { PlayIcon, PauseIcon, RotateCcwIcon, ArrowLeftIcon, AlertCircleIcon } from '../../../components/ui/Icons.jsx';
+import { submitSession } from '../../../api/sessions.js';
+import { useAuth } from '../../../hooks/useAuth.js';
+import { queryKeys } from '../../../lib/queryKeys.js';
 
 export function TypingSessionPage({
   sessionId = 'session-101',
   mode = 'Adaptive Practice',
   assignedText = 'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
+  isFixture = true,
+  onRetrySession,
+  isActive = true,
   onExit,
 }) {
+  const { csrfToken } = useAuth();
+  const queryClient = useQueryClient();
   const { largeText, setLargeText, reducedPressure, setReducedPressure } = usePreferences();
   const { t, isRTL } = useTranslation();
 
@@ -27,6 +36,7 @@ export function TypingSessionPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [officialResult, setOfficialResult] = useState(null);
+  const [submissionError, setSubmissionError] = useState('');
 
   // Dialog states
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -34,20 +44,36 @@ export function TypingSessionPage({
 
   // Monotonic recorder ref
   const recorderRef = useRef(null);
+  const autoPausedRef = useRef(false);
   const timerIntervalRef = useRef(null);
   const [elapsedMs, setElapsedMs] = useState(0);
 
   // Initialise recorder once per session
   useEffect(() => {
     recorderRef.current = new KeystrokeRecorder();
+    autoPausedRef.current = false;
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [sessionId]);
 
+  useEffect(() => {
+    if (!isActive && buffer.length > 0 && !isPaused && !isCompleted) {
+      recorderRef.current?.recordPause();
+      autoPausedRef.current = true;
+      // Pause the recorder when navigation hides the active session.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsPaused(true);
+    } else if (isActive && autoPausedRef.current && isPaused) {
+      recorderRef.current?.recordResume();
+      autoPausedRef.current = false;
+      setIsPaused(false);
+    }
+  }, [isActive, buffer.length, isPaused, isCompleted]);
+
   // Active elapsed timer
   useEffect(() => {
-    if (buffer.length> 0 && !isPaused && !isCompleted) {
+    if (buffer.length > 0 && !isPaused && !isCompleted && isActive) {
       timerIntervalRef.current = setInterval(() => {
         if (recorderRef.current) {
           setElapsedMs(recorderRef.current.getElapsedMs());
@@ -59,11 +85,11 @@ export function TypingSessionPage({
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [buffer.length, isPaused, isCompleted]);
+  }, [buffer.length, isPaused, isCompleted, isActive]);
 
   // Handle Printable Character Input
   const handleCharInput = (char) => {
-    if (isCompleted || isPaused) return;
+    if (isCompleted || isPaused || !isActive || isSubmitting) return;
 
     const currentPos = buffer.length;
     if (currentPos>= assignedText.length) return;
@@ -89,7 +115,7 @@ export function TypingSessionPage({
 
   // Handle End-of-Buffer Backspace
   const handleBackspace = () => {
-    if (buffer.length === 0 || isCompleted || isPaused) return;
+    if (buffer.length === 0 || isCompleted || isPaused || !isActive || isSubmitting) return;
 
     recorderRef.current?.recordBackspace();
     setBuffer((prev) => prev.slice(0, -1));
@@ -108,24 +134,31 @@ export function TypingSessionPage({
   };
 
   // Session Submission & Official Scoring
-  const handleComplete = (finalBuffer, finalTotalInserts, finalCorrectInserts) => {
+  const handleComplete = async (finalBuffer, finalTotalInserts, finalCorrectInserts) => {
     setIsSubmitting(true);
-    const finalDuration = recorderRef.current?.getElapsedMs() || 45000;
-
-    // Simulate official server-side verification and replay
-    setTimeout(() => {
-      const computed = computeOfficialResults({
-        totalInserts: finalTotalInserts,
-        correctInserts: finalCorrectInserts,
-        buffer: finalBuffer,
-        assignedText,
-        activeDurationMs: finalDuration,
-      });
-
-      setOfficialResult(computed);
-      setIsSubmitting(false);
+    setSubmissionError('');
+    if (isFixture) {
+      const result = computeOfficialResults({ totalInserts: finalTotalInserts, correctInserts: finalCorrectInserts,
+        buffer: finalBuffer, assignedText, activeDurationMs: recorderRef.current?.getElapsedMs() ?? 0 });
+      setOfficialResult({ ...result, sample: true });
       setIsCompleted(true);
-    }, 600);
+      setIsSubmitting(false);
+      return;
+    }
+    try {
+      const payload = recorderRef.current.getSubmissionPayload(sessionId);
+      const result = await submitSession(sessionId, { events: payload.events, finishTimeMs: payload.finishTime }, csrfToken);
+      for (const queryKey of [queryKeys.dashboard, queryKeys.path, queryKeys.progress, queryKeys.gamification]) {
+        void queryClient.invalidateQueries({ queryKey });
+      }
+      setOfficialResult({ ...result.metrics, durationMs: result.metrics.activeDurationMs,
+        xpEarned: result.xpEarned, streakDays: result.streak });
+      setIsCompleted(true);
+    } catch (error) {
+      setSubmissionError(error.message || t('typing.submitFailed'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Restart attempt
@@ -137,6 +170,7 @@ export function TypingSessionPage({
     setElapsedMs(0);
     setIsPaused(false);
     setIsCompleted(false);
+    setSubmissionError('');
     setShowRestartConfirm(false);
   };
 
@@ -158,8 +192,11 @@ export function TypingSessionPage({
     return (
       <OfficialResult
         result={officialResult}
+        isOfficial={!officialResult.sample}
+        xpEarned={officialResult.xpEarned}
+        streakDays={officialResult.streakDays}
         onContinue={onExit}
-        onRetry={handleRestart}
+        onRetry={isFixture ? handleRestart : onRetrySession}
       />
     );
   }
@@ -170,9 +207,9 @@ export function TypingSessionPage({
     <div className="min-h-screen bg-page">
       {/* Study Shell Top Bar */}
       <div
-        className="h-16 border-b border-b-border-subtle bg-surface flex items-center justify-between px-6"
+        className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-b-border-subtle bg-surface px-4 py-3 sm:px-6"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => {
@@ -195,7 +232,7 @@ export function TypingSessionPage({
         </div>
 
         {/* View Options & Preferences */}
-        <div className="flex items-center gap-3.5">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3.5">
           {/* Large Text Toggle */}
           <button
             type="button"
@@ -226,9 +263,9 @@ export function TypingSessionPage({
       </div>
 
       {/* Main 960px Study Stage */}
-      <div className="max-w-[var(--study-max)] mx-auto p-6 relative">
+      <div className="relative mx-auto max-w-[var(--study-max)] p-4 sm:p-6">
         {/* Activity Header */}
-        <div className="flex justify-between items-center mb-5">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-1">
               Home Row & Upper Reach Drill
@@ -240,7 +277,7 @@ export function TypingSessionPage({
 
           {/* Live Provisional Metrics Bar */}
           {!reducedPressure ? (
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-[11px] text-muted font-bold">
                   {t('typing.liveProvisional')}
@@ -271,13 +308,20 @@ export function TypingSessionPage({
           buffer={buffer}
           onCharInput={handleCharInput}
           onBackspace={handleBackspace}
-          isActive={!isCompleted && !isSubmitting}
+          isActive={isActive && !isCompleted && !isSubmitting}
           isPaused={isPaused}
         />
 
+        {submissionError && (
+          <div className="mt-4 flex items-center gap-3 rounded-card border border-error-text/30 bg-error-soft p-4 text-error-text" role="alert">
+            <p className="flex-1">{submissionError}</p>
+            <button type="button" onClick={handleComplete} className="font-bold underline">{t('common.retry')}</button>
+          </div>
+        )}
+
         {/* Controls Bar */}
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex gap-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={togglePause}

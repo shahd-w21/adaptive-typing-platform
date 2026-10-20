@@ -12,6 +12,7 @@ export function OfficialResult({
   xpEarned = 75,
   streakDays = 5,
   reason = 'Great consistency! Your next activity focuses on strengthening right-hand pinky reach for P and semicolon.',
+  isOfficial = true,
   onContinue,
   onRetry,
 }) {
@@ -27,11 +28,11 @@ export function OfficialResult({
           className="inline-flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-success-soft text-success-text text-[14px] font-bold mb-3"
         >
           <CheckIcon size={16} />
-          <span>{t('results.officialResult')}</span>
+          <span>{isOfficial ? t('results.officialResult') : 'Development sample'}</span>
         </div>
         <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px]">Session Completed!</h1>
         <p className="text-[16px] leading-[26px] font-normal text-muted mt-1.5">
-          Official server-verified performance metrics
+          {isOfficial ? 'Official server-verified performance metrics.' : 'Calculated in this browser for layout review; not saved or used for progression.'}
         </p>
       </div>
 
@@ -102,7 +103,7 @@ export function OfficialResult({
       </div>
 
       {/* Rewards & Next Steps Grid */}
-      <div className="grid grid-cols-[1fr_1fr] gap-5 mb-8">
+      {isOfficial && <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2">
         {/* Rewards Earned Card */}
         <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex flex-col justify-center">
           <div className="flex items-center gap-2 mb-3 text-reward-text">
@@ -135,7 +136,7 @@ export function OfficialResult({
             {reason}
           </p>
         </div>
-      </div>
+      </div>}
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-4">
@@ -153,7 +154,7 @@ export function OfficialResult({
           onClick={onContinue}
           className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-8"
         >
-          <span>{t('results.nextStep')}</span>
+          <span>{isOfficial ? t('results.nextStep') : 'Return to practice'}</span>
           <ArrowRightIcon size={18} className={[
                                       isRTL ? 'rotate-180' : 'transform-none',
                                     ].filter(Boolean).join(' ')} />

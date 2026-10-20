@@ -30,12 +30,12 @@ export function DeviceGuidance({ onBack }) {
       >
         <div className="flex items-center gap-2.5 mb-2 font-bold">
           <MonitorIcon size={18} />
-          <span>Minimum Requirements:</span>
+          <span>{t('typingGuidance.minimumRequirements')}</span>
         </div>
         <ul className="ps-5 m-0 text-muted">
-          <li>Desktop or Laptop computer</li>
-          <li>Physical English QWERTY keyboard</li>
-          <li>Viewport width of at least 1024 CSS pixels</li>
+          <li>{t('typingGuidance.desktopRequirement')}</li>
+          <li>{t('typingGuidance.keyboardRequirement')}</li>
+          <li>{t('typingGuidance.viewportRequirement')}</li>
         </ul>
       </div>
 
@@ -47,7 +47,7 @@ export function DeviceGuidance({ onBack }) {
         <ArrowLeftIcon size={18} className={[
                                    isRTL ? 'rotate-180' : 'transform-none',
                                  ].filter(Boolean).join(' ')} />
-        <span>Back to Dashboard</span>
+        <span>{t('typingGuidance.backToDashboard')}</span>
       </button>
     </div>
   );

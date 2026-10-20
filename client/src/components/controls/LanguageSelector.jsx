@@ -4,7 +4,7 @@ import { useTranslation } from '../../i18n/useTranslation.js';
 import { GlobeIcon, CheckIcon } from '../ui/Icons.jsx';
 
 export function LanguageSelector({ compact = false }) {
-  const { uiLocale, setUiLocale } = usePreferences();
+  const { uiLocale, setUiLocale, saveStatus, retryPreferenceSave } = usePreferences();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -20,8 +20,8 @@ export function LanguageSelector({ compact = false }) {
   }, []);
 
   const languages = [
-    { code: 'en', label: 'English' },
-    { code: 'ar', label: 'العربية' },
+    { code: 'en', label: t('preferences.langEn') },
+    { code: 'ar', label: t('preferences.langAr') },
   ];
 
   const currentLang = languages.find((l) => l.code === uiLocale) || languages[0];
@@ -83,6 +83,20 @@ export function LanguageSelector({ compact = false }) {
           >
             {t('preferences.langHelper')}
           </div>
+        </div>
+      )}
+
+      {(saveStatus === 'saving' || saveStatus === 'error') && (
+        <div
+          className="fixed end-3 top-[calc(var(--header-height)+0.5rem)] z-100 flex w-[min(22rem,calc(100vw-1.5rem))] items-center gap-3 rounded-control border border-border-subtle bg-surface p-3 text-sm shadow-popover"
+          role={saveStatus === 'error' ? 'alert' : 'status'}
+        >
+          <span className="flex-1 text-ink">{t(saveStatus === 'saving' ? 'preferences.saving' : 'preferences.saveFailed')}</span>
+          {saveStatus === 'error' && (
+            <button type="button" onClick={retryPreferenceSave} className="shrink-0 rounded-full px-3 py-1 font-bold text-action-link hover:bg-learning-soft">
+              {t('preferences.saveRetry')}
+            </button>
+          )}
         </div>
       )}
     </div>

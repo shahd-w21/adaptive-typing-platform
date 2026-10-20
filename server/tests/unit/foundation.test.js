@@ -18,6 +18,21 @@ test('readiness executes the database probe and permits the configured browser o
     .expect('Access-Control-Allow-Origin', clientUrl).expect('Access-Control-Allow-Credentials', 'true').expect(200);
   assert.equal(queried, true);
 });
+test('development CORS permits localhost and its loopback IP alias', async () => {
+  const app = createApp({
+    clientUrl: 'http://127.0.0.1:5173',
+    config: { NODE_ENV: 'development' },
+    database: {},
+  });
+  await request(app).options('/api/v1/auth/register')
+    .set('Origin', 'http://localhost:5173')
+    .set('Access-Control-Request-Method', 'POST')
+    .set('Access-Control-Request-Headers', 'content-type')
+    .expect('Access-Control-Allow-Origin', 'http://localhost:5173')
+    .expect('Access-Control-Allow-Credentials', 'true')
+    .expect(204);
+  await request(app).post('/api/v1/not-built').set('Origin', 'http://localhost:5173').expect(404);
+});
 test('unknown routes and malformed JSON return bounded errors', async () => {
   const app = createApp({ clientUrl, database: {} });
   await request(app).get('/api/v1/not-built').expect(404);

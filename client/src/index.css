@@ -259,3 +259,188 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+/* Public landing: a calm, keyboard-first hero using the shared Mint tokens. */
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+  max-width: 1200px;
+  margin: 48px auto 64px;
+  padding: 72px clamp(28px, 6vw, 76px);
+  overflow: hidden;
+  border: 1px solid var(--tf-color-border-subtle);
+  border-radius: 32px;
+  background:
+    radial-gradient(ellipse at 88% 16%, color-mix(in srgb, var(--tf-color-learning-accent) 16%, transparent), transparent 38%),
+    radial-gradient(ellipse at 4% 100%, color-mix(in srgb, var(--tf-color-success-accent) 9%, transparent), transparent 34%),
+    var(--tf-color-bg-surface);
+  box-shadow: var(--tf-shadow-card);
+  text-align: start;
+}
+
+.landing-hero::after {
+  position: absolute;
+  z-index: -1;
+  inset-inline-end: 5%;
+  top: 50%;
+  width: min(38%, 410px);
+  height: 220px;
+  content: "";
+  transform: translateY(-42%) rotate(-7deg);
+  border: 1px solid color-mix(in srgb, var(--tf-color-learning-accent) 28%, var(--tf-color-border-subtle));
+  border-radius: 26px;
+  background-color: color-mix(in srgb, var(--tf-color-learning-soft) 46%, var(--tf-color-bg-surface));
+  background-image:
+    linear-gradient(90deg, transparent 91%, color-mix(in srgb, var(--tf-color-learning-accent) 15%, transparent) 92%),
+    linear-gradient(transparent 84%, color-mix(in srgb, var(--tf-color-learning-accent) 15%, transparent) 85%);
+  background-size: 54px 48px;
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--tf-color-learning-accent) 15%, transparent), inset 0 -8px 0 color-mix(in srgb, var(--tf-color-learning-accent) 12%, transparent);
+}
+
+.landing-hero > * {
+  position: relative;
+  z-index: 1;
+  max-width: 62%;
+}
+
+.landing-hero h1 {
+  margin-block: 0 20px;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.landing-hero h1 + p {
+  margin-inline: 0;
+  max-width: 570px;
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.landing-hero h1 + p + div {
+  justify-content: flex-start;
+}
+
+.landing-features {
+  max-width: 1200px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 20px;
+}
+
+.landing-features > div {
+  position: relative;
+  min-height: 208px;
+  padding: 28px;
+  border-radius: 22px;
+  transition: transform var(--motion-standard), box-shadow var(--motion-standard), border-color var(--motion-standard);
+}
+
+.landing-features > div:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--tf-color-learning-accent) 36%, var(--tf-color-border-subtle));
+  box-shadow: var(--tf-shadow-popover);
+}
+
+.landing-features > div > div:first-child {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  margin-block-end: 20px;
+  border: 1px solid color-mix(in srgb, var(--tf-color-learning-accent) 18%, transparent);
+  border-radius: 16px;
+  background: var(--tf-color-learning-soft);
+  color: var(--tf-color-learning-strong);
+}
+
+.landing-features h2 {
+  margin-block-end: 8px;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.site-header {
+  background: color-mix(in srgb, var(--tf-color-bg-surface) 92%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--tf-color-border-subtle) 72%, transparent);
+}
+
+/* Shared surface polish: keep borders and subtle depth legible in both themes. */
+.bg-surface.rounded-card {
+  background-image: linear-gradient(145deg, color-mix(in srgb, var(--tf-color-learning-soft) 24%, transparent), transparent 52%);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  max-width: 100%;
+  color: var(--tf-color-text-primary);
+  background-color: var(--tf-color-bg-surface);
+}
+
+::selection {
+  color: var(--tf-color-learning-foreground);
+  background-color: var(--tf-color-learning-accent);
+}
+
+@media (max-width: 900px) {
+  .landing-hero {
+    margin: 28px 20px 40px;
+    padding: 52px clamp(24px, 6vw, 52px);
+    text-align: center;
+  }
+
+  .landing-hero::after {
+    display: none;
+  }
+
+  .landing-hero > * {
+    max-width: 100%;
+  }
+
+  .landing-hero h1 + p {
+    margin-inline: auto;
+  }
+
+  .landing-hero h1 + p + div {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .landing-hero {
+    margin: 16px 12px 30px;
+    padding: 40px 22px;
+    border-radius: 24px;
+  }
+
+  .landing-hero h1 {
+    font-size: clamp(2.2rem, 11vw, 3rem);
+  }
+
+  .landing-hero h1 + p {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .landing-hero h1 + p + div {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .landing-features {
+    gap: 14px;
+    padding-inline: 12px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-features > div {
+    transition: none;
+  }
+
+  .landing-features > div:hover {
+    transform: none;
+  }
+}

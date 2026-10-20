@@ -1,2 +1,12 @@
-// Coming soon: Remote-data client configuration when its dependency/contracts are agreed; no installation or instance supplied.
-// Placeholder only: no implementation, exports or runtime wiring.
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: { retry: false },
+  },
+});
