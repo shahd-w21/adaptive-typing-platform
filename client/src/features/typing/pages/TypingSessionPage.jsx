@@ -23,7 +23,7 @@ export function TypingSessionPage({
   isActive = true,
   onExit,
 }) {
-  const { csrfToken } = useAuth();
+  const { csrfToken, user } = useAuth();
   const queryClient = useQueryClient();
   const { largeText, setLargeText, reducedPressure, setReducedPressure } = usePreferences();
   const { t, isRTL } = useTranslation();
@@ -149,7 +149,9 @@ export function TypingSessionPage({
       const payload = recorderRef.current.getSubmissionPayload(sessionId);
       const result = await submitSession(sessionId, { events: payload.events, finishTimeMs: payload.finishTime }, csrfToken);
       for (const queryKey of [queryKeys.dashboard, queryKeys.path, queryKeys.progress, queryKeys.gamification]) {
-        void queryClient.invalidateQueries({ queryKey });
+        // Refresh saved summaries for this owner; presentation/typing state
+        // stays local and must not be reset by cache invalidation.
+        if (user) void queryClient.invalidateQueries({ queryKey: queryKey(user.id) });
       }
       setOfficialResult({ ...result.metrics, durationMs: result.metrics.activeDurationMs,
         xpEarned: result.xpEarned, streakDays: result.streak });

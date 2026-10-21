@@ -43,8 +43,10 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
     try {
       const { user: updatedUser } = await updateMyProfile({ name: displayName.trim() || null, targetWpm }, csrfToken);
       updateUser(updatedUser);
-      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.gamification });
+      // Profile targets affect dashboard/reward displays. Refresh only this
+      // account's cached summaries after the server confirms the saved values.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(user.id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.gamification(user.id) });
       setDisplayName(updatedUser.name ?? '');
       setTargetWpm(updatedUser.targetWpm);
       setProfileStatus('saved');
