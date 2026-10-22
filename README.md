@@ -51,7 +51,7 @@ npm run db:migrate
 npm run db:seed
 ```
 
-`db:up` starts PostgreSQL and Mailpit and waits for readiness. `db:migrate` applies committed migrations to local `typeflow_dev`. `db:seed` adds missing starter key groups and an immutable development policy without replacing existing content or creating accounts. Fresh Docker volumes also create `typeflow_test`. Prisma migrations are the only schema setup path; existing data is preserved.
+`db:up` starts PostgreSQL and Mailpit and waits for readiness. `db:migrate` applies committed migrations to local `typeflow_dev`. `db:seed` adds missing starter key groups, an immutable development policy and a verified [local Admin account](docs/development.md#local-development-admin) without replacing existing content or accounts. Fresh Docker volumes also create `typeflow_test`. Prisma migrations are the only schema setup path; existing data is preserved.
 
 To open a database terminal:
 
@@ -97,7 +97,7 @@ Pull the latest changes, run `npm install` if dependency manifests changed, appl
 | `npm run build` | Generate Prisma client, build frontend, check server entry syntax |
 | `npm run db:migrate` | Apply committed development migrations |
 | `npm run db:generate` | Generate the Prisma JavaScript client after install/schema changes |
-| `npm run db:seed` | Add missing migrated starter curriculum/policy; preserve accounts/content |
+| `npm run db:seed` | Add missing starter curriculum/policy and local Admin; preserve existing accounts/content |
 | `npm run db:studio` | Inspect development data in Prisma Studio |
 | `npm run db:stop` | Stop supporting services while keeping stored data |
 

@@ -43,7 +43,7 @@ npm run db:seed
 npm run dev
 ```
 
-`npm ci` installs all workspaces from the root lockfile. Environment setup creates missing local files and a signing secret; existing files remain unchanged. Prisma generation creates the backend database client. Docker downloads the pinned service images on the first `db:up`, which may take longer, then waits for readiness. Migrations create/update the development tables; seeding adds starter curriculum without creating accounts. `dev` starts the website and API; keep its terminal open. Do not commit actual `.env` files.
+`npm ci` installs all workspaces from the root lockfile. Environment setup creates missing local files and a signing secret; existing files remain unchanged. Prisma generation creates the backend database client. Docker downloads the pinned service images on the first `db:up`, which may take longer, then waits for readiness. Migrations create/update the development tables; seeding adds starter curriculum and a verified [local Admin](#local-development-admin) when missing. `dev` starts the website and API; keep its terminal open. Do not commit actual `.env` files.
 
 Check the website at http://localhost:5173 and API readiness at http://localhost:5000/health/ready, which should return `{"status":"ready"}`. Open http://localhost:8025 for verification/reset emails captured by Mailpit; these are not delivered to real recipients. To inspect registered accounts and other records, run `npm run db:studio` in another root terminal and open the address it prints.
 
@@ -231,7 +231,7 @@ Prisma owns schema and migrations in `server/prisma/`. Root scripts resolve the 
 | --- | --- |
 | First clone or pulling committed schema changes | `npm run db:migrate` applies existing migrations to the development database only |
 | You intentionally change the schema | Coordinate with schema reviewer; `npm run db:migration:create -- --name short-description` creates a development migration |
-| Starter content needs loading | `npm run db:seed` adds missing key groups and prototype settings version without replacing content/accounts |
+| Starter content needs loading | `npm run db:seed` adds missing key groups, prototype settings version and local Admin without replacing content/accounts |
 | Inspect data in a browser | `npm run db:studio` opens Prisma Studio for the development database |
 | Integration tests | `npm run test:integration` explicitly targets `TEST_DATABASE_URL`, with an identity check before resets |
 | Deployment | Controlled release applies committed migrations; production procedure reviewed before release |
@@ -247,6 +247,17 @@ An “already exists” message means it is already created. The integration wra
 Never edit an applied shared migration or use `db push` on shared data. Review generated SQL for dropped data, backfills, defaults and compatibility; test both a fresh database and an upgrade. Do not reset the database or delete volumes as a routine fix for drift. Seeded demo accounts must be synthetic and local-only; do not commit real passwords or silently reset existing roles/passwords.
 
 Use Prisma for ordinary access and parameterised SQL where it makes complex reporting clearer. Validate returned shapes; handle BigInt/numeric serialisation without unsafe casts. Ownership filters, timezone/report windows and dynamic sort allowlists remain required. Pass the transaction client through every participating helper; global-client calls escape that transaction. Keep external service calls outside it and test duplicate/concurrent submissions. See [architecture](architecture.md) for the result-saving flow.
+
+### Local development Admin
+
+`npm run db:seed` creates an active, email-verified Admin in the loopback `typeflow_dev` database when `NODE_ENV=development`:
+
+- Email: `admin@typeflow.local`
+- Password: `TypeFlow!7-9zVRoBNtw4lUzRPG`
+
+These are public, synthetic local-development credentials. No verification email is needed. Repeating the seed preserves existing accounts, including their password, role, activation and verification state; an existing account with this email is never silently promoted or reset. If that account's password was changed, use its current password or the normal reset flow. Test content seeding omits this account, and production/remote targets are rejected. Production Admin provisioning remains a separate release procedure.
+
+Verified on 22 October 2026: two `npm run db:seed` runs preserved every field of the existing local Admin, and the real authentication service accepted these credentials. All 32 unit tests, lint, seed-file syntax and diff checks passed; the added guard test rejects production/test modes and remote or unintended databases before database access.
 
 ## Troubleshooting
 
