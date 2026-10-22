@@ -10,6 +10,8 @@ import { seedStarter } from '../../src/modules/settings/starter.js';
 import { ensureKeyProgress, updateKeyProgress } from '../../src/modules/stats/service.js';
 import { purgeKeystrokeLogs } from '../../src/jobs/purgeKeystrokeLogs.js';
 import { createSessionService } from '../../src/modules/sessions/service.js';
+import { once } from 'node:events';
+import { request as frontendRequest } from '../../../client/src/api/client.js';
 
 const config = { JWT_SECRET: 'test-only-migration-signing-secret-longer-than-32', NODE_ENV: 'test', CLIENT_URL: 'http://localhost:5173' };
 const password = 'StrongPass123';
@@ -43,6 +45,119 @@ async function fixture(run) {
   }
 }
 const emailToken = mail => new URL(mail.text.match(/https?:\/\/\S+/)[0]).searchParams.get('token');
+
+// FE-02 acceptance exercises the browser transport against real API handlers
+// and the dedicated test database. The fixture removes its accounts afterward;
+// browser-specific CORS/rendering behavior still needs a separate browser check.
+test('FE-02 real HTTP transport validates login/profile/session DTOs and server CSRF rejection', async () =>
+  fixture(async ({ app, user, advance }) => {
+    const person = await user();
+    const server = app.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const base = `http://127.0.0.1:${server.address().port}`;
+    // Node has no browser cookie jar. Retain only the real cookie set by login;
+    // this adapter neither injects identity nor bypasses server authentication.
+    let cookie = '';
+    const fetchImpl = async (url, options) => {
+      const headers = new Headers(options.headers);
+      headers.set('Origin', config.CLIENT_URL);
+      if (cookie) headers.set('Cookie', cookie);
+      const response = await fetch(`${base}${new URL(url).pathname}`, {
+        ...options,
+        headers,
+      });
+      const received = response.headers.getSetCookie()[0];
+      if (received) cookie = received.split(';')[0];
+      return response;
+    };
+    const call = (path, options) =>
+      frontendRequest(path, { ...options, fetchImpl });
+    try {
+      const session = await call('/auth/login', {
+        method: 'POST',
+        body: { email: person.email, password, role: 'admin' },
+      });
+      assert.equal(session.user.id, person.id);
+      assert.equal(session.user.role, 'student');
+      const restored = await call('/auth/me');
+      assert.equal(restored.csrfToken, session.csrfToken);
+      const patch = { preferences: { uiLocale: 'ar' } };
+      const changed = await call('/users/me', {
+        method: 'PATCH',
+        csrfToken: restored.csrfToken,
+        body: patch,
+      });
+      assert.equal(changed.user.preferences.uiLocale, 'ar');
+      // Deliberately bypass the local guard to demonstrate the SERVER rejects it.
+      const rejected = await fetchImpl(`${base}/api/v1/users/me`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      assert.equal(rejected.status, 403);
+      assert.equal((await rejected.json()).error.code, 'CSRF_FAILED');
+      const invalid = await fetchImpl(`${base}/api/v1/users/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': restored.csrfToken,
+        },
+        body: JSON.stringify({ role: 'admin' }),
+      });
+      assert.equal(invalid.status, 400);
+      await call('/users/me', {
+        method: 'PATCH',
+        csrfToken: restored.csrfToken,
+        body: { preferences: { uiLocale: 'en' } },
+      });
+      const assignment = await call('/sessions', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: {},
+      });
+      await call(`/sessions/${assignment.sessionId}`);
+      advance(60000);
+      const submission = {
+        events: [...assignment.text].map((char, seq) => ({
+          seq,
+          type: 'insert',
+          t: seq * 200,
+          char,
+        })),
+        finishTimeMs: (assignment.text.length - 1) * 200,
+      };
+      const result = await call(`/sessions/${assignment.sessionId}/submit`, {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: submission,
+      });
+      assert.equal(result.status, 'completed');
+      assert.deepEqual(await call(`/sessions/${assignment.sessionId}`), result);
+      assert.equal((await call('/sessions')).sessions.length, 1);
+      const abandoned = await call('/sessions', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: {},
+      });
+      await call(`/sessions/${abandoned.sessionId}/abandon`, {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+      });
+      await call(`/sessions/${abandoned.sessionId}`);
+      await call('/auth/logout', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+      });
+      await assert.rejects(call('/auth/me'), {
+        status: 401,
+        code: 'UNAUTHENTICATED',
+      });
+    } finally {
+      await new Promise((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  }));
 
 test('registration, single-use verification, CSRF, logout and reset revocation', async () => fixture(async ({ agent, inbox, database, emails, prefix }) => {
   const email = `${prefix}@example.test`; emails.push(email);

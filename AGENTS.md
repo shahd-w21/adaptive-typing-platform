@@ -30,6 +30,14 @@ The SRS owns required behaviour. Draft API fields/design values and documented c
 - Save learning/rewards once atomically; make identical retries safe and concurrent updates lossless. Keep network/PDF work outside database transactions.
 - Enforce server ownership, role, revocation and input checks. Never expose secrets or private logs; plausible browser logs are not proof of human typing.
 
+## Code readability and comments
+
+- Whenever writing or modifying code, make it clean and easy for teammates to read. Use descriptive names, consistent indentation, blank lines between logical steps and explicit braces for control flow. Expand objects, schemas, options, imports and complex expressions across multiple lines; do not compress several statements or an entire function onto one line.
+- Add a short file-level comment explaining the responsibility of each new code file. For existing files, add or update that explanation when the task changes their responsibility.
+- Document new or changed functions with useful comments or JSDoc explaining their purpose, inputs, return values and important side effects or failure cases. Explain the behavior rather than merely repeating the function name.
+- Comment non-obvious code and decisions, especially validation, authentication/CSRF, ownership, caching, retries, transactions, timing and units. Explain why a rule exists and any important limitations; avoid comments that only restate obvious syntax.
+- Keep comments accurate when behavior changes. Preserve readable formatting in tests as well as application code. Limit formatting and documentation changes to the task's scope; do not reformat unrelated teammate work.
+
 ## Workflow
 
 Keep edits focused and preserve teammate changes. Coordinate shared-file edits and update affected guides/contracts together. Record meaningful decisions in the single decision log; do not duplicate numerical rules or save chat transcripts. Human parallel tracks do not automatically authorise AI subagents.

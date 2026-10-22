@@ -35,6 +35,45 @@ Preserved intent with deliberate corrections: no destructive schema bootstrap; p
 
 The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned reward/integrity defaults are prototype migration policy, pending the open team decisions. Full pair statistics, placement/review/timed/certified modes, difficulty progression, AI text generation, badges, certificates, forum and full admin APIs remain unimplemented. Their existing schema concepts are retained, including the one-accepted-answer-per-thread index. This migration does not certify the entire SRS or approve the remaining draft contract.
 
+## FE-02 current frontend boundary — 22 October 2026
+
+**Implementation status: implemented; Dev 1 review and browser acceptance pending.** This section describes current runtime DTOs, not approved future Prisma models. Existing draft examples below do not override these schemas. The transport remains Fetch; Axios is not added. Existing `request(path, options)` callers and `ApiError.status/code` remain supported.
+
+| Boundary | Request schema | Response schema | Field/verification status |
+| --- | --- | --- | --- |
+| `POST /auth/register` | `registerSchema` | `acknowledgementSchema` | Implemented; extra fields stripped, including role; server always creates Student |
+| `POST /auth/login`, `GET /auth/me` | `loginSchema` / no body | `authResponseSchema` | Implemented; real HTTP login/me schema checks passed |
+| Verify/resend/forgot/reset | `tokenSchema`, `emailSchema`, `resetPasswordSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained; frontend schema tests are not complete browser coverage |
+| `POST /auth/logout` | `emptyRequestSchema` | `acknowledgementSchema` | Implemented; real HTTP logout/revocation passed |
+| `GET/PATCH /users/me` | no body / `profileSchema` | `profileResponseSchema` | Implemented; real HTTP partial update, restoration and unknown-field rejection passed |
+| Password change / account deletion | `changePasswordSchema` / `deleteAccountSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained |
+| `POST /sessions` (practice only) | `startSessionSchema` | `sessionAssignmentSchema` | Implemented; real HTTP assignment checked |
+| `GET /sessions`, `GET /sessions/:id` | no body; UUID ID | `sessionHistorySchema`, `sessionDetailSchema` | Implemented; real HTTP empty/history and created/completed/abandoned DTO checks split across unit/integration tests |
+| Submit / abandon | `submissionSchema` / `emptyRequestSchema` | `sessionResultSchema` / `sessionAbandonmentSchema` | Implemented; real HTTP result/retrieval/abandon checks passed |
+| Error envelope | — | `apiErrorResponseSchema` | Current `{error:{code,message?}}`; requestId/retryable are not server fields |
+| Dashboard/path/progress/gamification/admin reads | — | Feature-owner DTO review pending | Existing endpoints pass through transport; no invented response schemas or future filters |
+| Courses/enrollments, analytics and future reward/progress extensions | Draft only | No new runtime modules | Unimplemented shapes remain pending feature-owner review |
+
+Current fields and units:
+
+- `publicUserSchema`: UUID `id`, `email`, nullable `name`, lowercase `role`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, `xp`, `level`, `streak`, and `preferences.{themePreference,uiLocale}`. No `displayName`, `emailVerified`, token, password hash or internal auth record. Login/me add a 64-character hexadecimal `csrfToken`; profile replies do not.
+- Assignment fields are `sessionId,mode,text,source,issuedAt,expiresAt,rules`. Current source is `fallback`, mode is `practice`; rules are `pauseAllowed,eventVersion,settingsVersion,targetWpm`. Dates are UTC ISO strings, event/active times are milliseconds. Draft `textSource`, `versions` and `canPause` are not current fields.
+- `sessionResultSchema` matches the implemented result list above, including server metrics with nullable unknown values, XP reward records, nullable problem-key average latency and `certificate:null`. No client score is accepted. Future certificate/reward variants require a coordinated schema change.
+- History is `{sessions:[{id,mode,status,netWpm,rawAccuracy,completedAt}]}` with nullable metrics/completion time and a maximum of 100 rows. No agreed pagination/filter parameters. Non-completed detail returns `sessionId,status,mode,text,expiresAt`; completed detail is the official result.
+
+Validation and transport rules:
+
+- Auth request objects strip extra fields; profile (including nested preferences), start and submission objects reject them. Responses strip unrecognized fields and reject missing/invalid required fields. Request schema failures stop before Fetch; the backend independently validates requests and returns `400 INVALID_REQUEST` for invalid fields, rather than the draft 422 validation convention. Invalid replay/submission semantics use 422.
+- The transport validates current auth/user/session routes automatically and accepts explicit `requestSchema`/`responseSchema` for subsequently reviewed boundaries. Calls keep JSON-string bodies; schema-backed calls also accept plain objects. Authenticated writes require an explicit CSRF token. Unreviewed writes without a request schema are rejected. Paths are relative API paths; query strings are not supported until an endpoint's query contract is agreed.
+- Cookies use `credentials:include`; authenticated writes send `X-CSRF-Token`. AuthProvider remains the only auth-state owner and receives CSRF from real login/me; no JWT/CSRF persistence or duplicate token store is introduced. CSRF rejection never automatically retries a write or invents a token.
+- `ApiError` exposes safe `code`, `status`, `messageKey`, `retryable`, `retryAfterMs` and `authenticationRequired`. Server message/details are never surfaced verbatim. Known statuses include 400/401/403/404/409/422/429/5xx; malformed success DTOs produce `CONTRACT_ERROR`, network failure `NETWORK_ERROR`, and cancellation remains an AbortError. Retry metadata does not authorize replaying a write. Retry-After is usable only if exposed to the browser by the server/CORS policy.
+- AuthProvider retains ownership of logout/cache clearing. Transport signals protected-session rejection through `authenticationRequired`; it does not clear global auth on arbitrary late requests. Automatic protected-401 UI/session recovery and stale-account response handling require Dev 1 integration review; this task does not claim those browser flows verified.
+- `available:false` explicitly produces `FEATURE_UNAVAILABLE` before any request. Unmounted/unknown resources returning 404 remain `NOT_FOUND`, not empty arrays. Only a successful valid empty response represents empty data. No automatic fixture fallback exists. Existing fixture DTOs are synthetic schema-test inputs, never real authentication evidence.
+- Protected query factories now require owner ID: `queryKeys.dashboard(userId)` (likewise path/progress/gamification/sessions/adminAccess), detail uses `queryKeys.session(userId,sessionId)`, cleanup uses `queryKeys.owner(userId)`. Prefix is `['owner',userId]`; unsupported filters throw instead of colliding in cache. Auth bootstrap retains `['auth','me']`; public keys have a separate `public` prefix. Existing query/invalidation callers were migrated together; protected query functions forward TanStack's abort signal to Fetch. Routing/providers are unchanged.
+- Safe interface keys live under `apiErrors.CODE` in English/Arabic dictionaries. Arabic wording is supplied for review; human wording approval and feature-page adoption of `messageKey` remain pending.
+
+Verification evidence: `server/tests/unit/frontend-contracts.test.js` (transport/schema/cache-key tests, using explicit synthetic fixtures, plus real TanStack owner-cache removal and request cancellation), and the FE-02 real-HTTP test in `server/tests/integration/features.test.js` (real PostgreSQL test account, real login cookie, profile write/restoration, missing-CSRF rejection by the server, session submission/result, logout). The Node integration adapter retains the actual login cookie because Node Fetch has no browser cookie jar; it does not bypass authentication. All 31 unit tests and 6 integration tests passed; lint and client build passed. The existing bundle-size warning remains. Browser CORS/cookies, account-switch races, English/Arabic/appearance/viewport/accessibility and active typing presentation checks are **not yet verified**; owner/reviewer sign-off is pending.
+
 ## Conventions to agree
 
 Implement shared schemas as JavaScript ES modules in `packages/shared/`, consumed by root-level `client/` and `server/`. Validate payloads at runtime. The language/folder change does not change these JSON contracts or the `/api/v1` URL prefix.
@@ -131,10 +170,10 @@ Request to `POST /auth/login`:
 {"email":"student@example.com","password":"example-only-not-a-real-password"}
 ```
 
-Proposed 200 response (authentication cookie is set separately):
+Current 200 response fragment (authentication cookie is set separately; `publicUserSchema` above defines all required user fields):
 
 ```json
-{"user":{"id":"example-user","displayName":"Layla","role":"student","emailVerified":true,"preferences":{"themePreference":"system","uiLocale":"en"}}}
+{"user":{"id":"10000000-0000-4000-8000-000000000001","name":"Layla","role":"student","preferences":{"themePreference":"system","uiLocale":"en"}},"csrfToken":"<64-character hexadecimal token from the server>"}
 ```
 
 ### Start
@@ -147,7 +186,7 @@ Request to `POST /sessions`:
 
 Proposed mode values: `placement`, `lesson`, `practice`, `review`, `timed`, `certified`. Timed mode requests `durationSeconds` from the allowed set. Certified duration comes from approved server policy; the client cannot choose certificate thresholds. Theme options, restart replacement and start-request retry behaviour must be agreed before integration.
 
-Illustrative 201 assignment response:
+Future draft 201 assignment proposal (not the current DTO; see FE-02 above):
 
 ```json
 {
