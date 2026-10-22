@@ -74,6 +74,26 @@ Validation and transport rules:
 
 Verification evidence: `server/tests/unit/frontend-contracts.test.js` (transport/schema/cache-key tests, using explicit synthetic fixtures, plus real TanStack owner-cache removal and request cancellation), and the FE-02 real-HTTP test in `server/tests/integration/features.test.js` (real PostgreSQL test account, real login cookie, profile write/restoration, missing-CSRF rejection by the server, session submission/result, logout). The Node integration adapter retains the actual login cookie because Node Fetch has no browser cookie jar; it does not bypass authentication. All 31 unit tests and 6 integration tests passed; lint and client build passed. The existing bundle-size warning remains. Browser CORS/cookies, account-switch races, English/Arabic/appearance/viewport/accessibility and active typing presentation checks are **not yet verified**; owner/reviewer sign-off is pending.
 
+## FE-06 / FE-10 current frontend boundaries — 22 October 2026
+
+**Status: implementation under verification; owner/reviewer and Arabic wording review pending.** No Prisma or server endpoint changes. Real dashboard/path/practice flows use Fetch with cookies; development course cards are isolated samples.
+
+| Boundary | Current fields / behavior | Status |
+| --- | --- | --- |
+| `GET /dashboard` | `user.{name,email,xp,level}`, `streak`, `dailyGoal.{goalMinutes,minutesToday,done}`, `recommendation.{activity,reason,weakestKey?}`, `recentSessions` | Existing API; runtime `dashboardResponseSchema` validates current fields |
+| Recent session | `id,mode,netWpm,grossWpm,rawAccuracy,finalAccuracy,durationMs,xpEarned,completedAt` | Practice only; nullable score values stay unknown; missing required fields fail validation |
+| `GET /path` | `groups`, `keys`, `recommendation` | Existing API; `pathResponseSchema` validates current groups/statistics; absent key evidence is not assumed locked |
+| Practice lifecycle | Existing start/detail/submit/abandon shapes | `useTypingSession` owns assignments; `useSubmitSession` delegates frozen submission/reconciliation to the same controller |
+| Reload pointer | Tab-local `{ownerId,sessionId}` | No JWT, CSRF, text or events persisted; real owned status is checked before recovery |
+| Course resume | No accepted runtime fields | Development-only labelled sample; no target, mastery value or resume action; FE-07/FE-12 review required |
+
+- Dashboard values remain server-derived; required-field failures are contract errors, not zero/empty fallbacks. A path failure does not hide the dashboard. Failed background refresh retains previously loaded data with a warning.
+- The recommendation's English reason is preserved with English/LTR markup. Translated labels explain that placement/timed modes are unavailable; a separately labelled action starts real practice. Future reason codes/parameters need backend-owner agreement.
+- An explicit retry checks owned status before sending the frozen `{events,finishTimeMs}` again. Completed recovery displays the saved result and supplies no new reward notifications. No automatic write retries or replacement assignments hide uncertain writes.
+- Full assignments and typing state stay in memory across presentation changes. Reload recovers a saved result, or explains lost typing progress and requires explicit abandon/restart. Failed abandonment cannot allocate another attempt.
+- Start has no backend idempotency key. A lost start response may leave an orphan assignment; the UI explains the uncertainty and does not automatically retry. A future backend contract is needed to remove this limitation.
+- Developer handoff comments mark unavailable modes, course contracts, reason translation and future reward-notification integration. They are deferred work, not completed feature claims.
+
 ## Conventions to agree
 
 Implement shared schemas as JavaScript ES modules in `packages/shared/`, consumed by root-level `client/` and `server/`. Validate payloads at runtime. The language/folder change does not change these JSON contracts or the `/api/v1` URL prefix.

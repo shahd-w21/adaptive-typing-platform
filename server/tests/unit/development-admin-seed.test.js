@@ -5,7 +5,7 @@ import {
   developmentAdmin,
   seedDevelopmentAdmin,
 } from '../../prisma/seed.js';
-import { registerSchema } from '@typeflow/shared';
+import { loginSchema } from '@typeflow/shared';
 
 test('default Admin seed refuses non-development and non-local development targets before database access', async () => {
   // Any accidental database access fails this check, including reads before the guard.
@@ -34,5 +34,6 @@ test('default Admin seed refuses non-development and non-local development targe
     }), /requires a loopback PostgreSQL database named typeflow_dev/);
   }
 
-  assert.equal(registerSchema.safeParse(developmentAdmin).success, true);
+  // The synthetic seed bypasses registration; its password must work with login.
+  assert.equal(loginSchema.safeParse(developmentAdmin).success, true);
 });

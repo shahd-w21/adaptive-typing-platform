@@ -1,5 +1,5 @@
 // FE-03 behavior checks use explicit HTTP fixtures; no account or scored session is created.
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../support/browser.js';
 import AxeBuilder from '@axe-core/playwright';
 
 const student = {

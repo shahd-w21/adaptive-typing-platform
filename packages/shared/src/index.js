@@ -11,3 +11,4 @@ export const emptyRequestSchema = z.object({}).strict();
 export * from './auth.js';
 export * from './session.js';
 export * from './metrics.js';
+export * from './dashboard.js';
