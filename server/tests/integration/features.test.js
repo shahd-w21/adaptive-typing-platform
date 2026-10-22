@@ -12,6 +12,7 @@ import { purgeKeystrokeLogs } from '../../src/jobs/purgeKeystrokeLogs.js';
 import { createSessionService } from '../../src/modules/sessions/service.js';
 import { once } from 'node:events';
 import { request as frontendRequest } from '../../../client/src/api/client.js';
+import { toSessionPayload } from '../../../client/src/features/typing/engine/sessionPayload.js';
 import { dashboardResponseSchema, pathResponseSchema } from '@typeflow/shared';
 import { createSessionController } from '../../../client/src/features/typing/sessionController.js';
 
@@ -113,7 +114,7 @@ test('FE-06/FE-10 real dashboard refresh and lost-response recovery preserve one
 // FE-02 acceptance exercises the browser transport against real API handlers
 // and the dedicated test database. The fixture removes its accounts afterward;
 // browser-specific CORS/rendering behavior still needs a separate browser check.
-test('FE-02 real HTTP transport validates login/profile/session DTOs and server CSRF rejection', async () =>
+test('FE-02/FE-05 real HTTP session transport accepts the canonical captured payload', async () =>
   fixture(async ({ app, user, advance }) => {
     const person = await user();
     const server = app.listen(0, '127.0.0.1');
@@ -179,17 +180,27 @@ test('FE-02 real HTTP transport validates login/profile/session DTOs and server 
         csrfToken: session.csrfToken,
         body: {},
       });
+      assert.equal(assignment.mode, 'practice');
+      assert.equal(assignment.source, 'fallback');
       await call(`/sessions/${assignment.sessionId}`);
       advance(60000);
-      const submission = {
+      const capturedRecording = {
+        sessionId: assignment.sessionId,
         events: [...assignment.text].map((char, seq) => ({
           seq,
           type: 'insert',
           t: seq * 200,
           char,
         })),
-        finishTimeMs: (assignment.text.length - 1) * 200,
+        finishTime: (assignment.text.length - 1) * 200,
+        clientEventCount: assignment.text.length,
+        clientScore: 100,
       };
+      const submission = toSessionPayload(capturedRecording);
+      assert.deepEqual(Object.keys(submission).sort(), [
+        'events',
+        'finishTimeMs',
+      ]);
       const result = await call(`/sessions/${assignment.sessionId}/submit`, {
         method: 'POST',
         csrfToken: session.csrfToken,

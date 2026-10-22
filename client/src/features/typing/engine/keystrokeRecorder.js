@@ -104,7 +104,6 @@ export class KeystrokeRecorder {
       sessionId,
       events: [...this.events],
       finishTime: this.events.at(-1)?.t ?? 0,
-      clientEventCount: this.events.length,
-    };
+      clientEventCount: this.events.length, };
   }
 }
