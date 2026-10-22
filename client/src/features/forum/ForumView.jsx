@@ -13,6 +13,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { useForum } from './hooks/useForum.js';
 import { ForumForm } from './components/ForumForm.jsx';
+import { ForumFilters } from './components/ForumFilters.jsx';
 import {
   ForumPagination,
   ForumThread,
@@ -96,6 +97,8 @@ export function ForumView({ api }) {
       {forum.source === 'development-fixture' && <p role="note" className="mb-5 rounded-control border border-warning-accent/40 bg-warning-soft p-3 text-sm text-warning-text">{t('forum.fixtureNotice')}</p>}
       {notice && <p role="status" className="mb-5 rounded-control bg-success-soft p-3 text-success-text">{t(notice)}</p>}
 
+      {!selection.threadId && forum.source !== 'unavailable' && <ForumFilters forum={forum} />}
+
       {selection.threadId ? (
         <>
           <button type="button" disabled={pending} onClick={() => {
@@ -120,7 +123,12 @@ export function ForumView({ api }) {
       ) : (
         <>
           {list.data?.permissions?.canCreateThread !== true && <p className="mb-4 text-muted">{t('forum.readOnly')}</p>}
-          {!list.data?.items.length ? <EmptyState title={t('forum.noThreads')} description={t('forum.noThreadsHelp')} /> : (
+          {!list.data?.items.length ? (
+            <EmptyState
+              title={t(forum.hasFilters ? 'forum.noMatches' : 'forum.noThreads')}
+              description={t(forum.hasFilters ? 'forum.noMatchesHelp' : 'forum.noThreadsHelp')}
+            />
+          ) : (
             <div className="flex flex-col gap-3.5">
               {list.data.items.map(item => item.status !== 'visible' ? (
                 <UnavailablePost key={item.id} status={item.status} />

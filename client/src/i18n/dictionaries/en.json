@@ -1,5 +1,18 @@
 {
   "forum": {
+    "searchAndFilter": "Search and filter discussions",
+    "searchDiscussions": "Search discussions",
+    "searchPlaceholder": "Find a discussion…",
+    "searchHelp": "Search titles and discussion text. Combine filters to narrow the results.",
+    "allCategories": "All categories",
+    "answerStatus": "Answer status",
+    "allStatuses": "All discussions",
+    "withAcceptedAnswer": "Has an accepted answer",
+    "withoutAcceptedAnswer": "No accepted answer",
+    "clearFilters": "Clear filters",
+    "resultCount": "Discussions found: {count}",
+    "noMatches": "No matching discussions",
+    "noMatchesHelp": "Try another search or clear the filters to see more discussions.",
     "title": "Learner Community Forum",
     "description": "Ask questions, share touch typing techniques, and help colleagues progress.",
     "newDiscussion": "+ New Discussion",

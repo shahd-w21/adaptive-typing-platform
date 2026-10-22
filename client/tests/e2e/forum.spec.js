@@ -41,6 +41,100 @@ test('list loading, safe failure and explicit retry; empty collection', async ({
   await expect(page.getByRole('button', { name: '+ New Discussion' })).toBeEnabled();
 });
 
+test('search and combined filters reset pagination, clear results and exclude hidden text', async ({ page }) => {
+  await openFixture(page);
+  await page.getByRole('navigation', { name: 'Discussion pages' }).getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByText('This post is hidden.', { exact: true })).toBeVisible();
+
+  const search = page.getByRole('searchbox', { name: 'Search discussions' });
+  const category = page.getByRole('combobox', { name: 'Topic category' });
+  const answerStatus = page.getByRole('combobox', { name: 'Answer status' });
+  await category.selectOption('hardware');
+  await expect(page.getByRole('button', { name: 'Mechanical vs laptop keyboard for learning touch typing' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Discussion pages' })).toHaveCount(0);
+  await search.fill('  COMFORTABLE  ');
+  await expect(page.getByRole('status').filter({ hasText: 'Discussions found: 1' })).toBeVisible();
+  await answerStatus.selectOption('accepted');
+  await expect(page.getByRole('heading', { name: 'No matching discussions' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(search).toHaveValue('');
+  await expect(category).toHaveValue('all');
+  await expect(answerStatus).toHaveValue('all');
+  await expect(page.getByRole('navigation', { name: 'Discussion pages' })).toContainText('Page 1 of 2');
+  await answerStatus.selectOption('accepted');
+  await expect(page.getByRole('button', { name: firstTitle })).toBeVisible();
+  await expect(page.getByRole('button', { name: secondTitle })).toHaveCount(0);
+  await answerStatus.selectOption('unaccepted');
+  await expect(page.getByRole('status').filter({ hasText: 'Discussions found: 2' })).toBeVisible();
+  await expect(page.getByRole('button', { name: firstTitle })).toHaveCount(0);
+  await answerStatus.selectOption('all');
+
+  for (const privateText of ['HIDDEN_PRIVATE_TITLE', 'HIDDEN_PRIVATE_THREAD', 'HIDDEN_PRIVATE_TEXT', 'DELETED_PRIVATE_TEXT']) {
+    await search.fill(privateText);
+    await expect(page.getByRole('status').filter({ hasText: 'Discussions found: 0' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No matching discussions' })).toBeVisible();
+    await expect(page.getByText('This post is hidden.', { exact: true })).toHaveCount(0);
+    await expect(page.locator('[data-forum] article')).toHaveCount(0);
+  }
+});
+
+test('search covers all pages and keeps Arabic criteria through detail and presentation changes', async ({ page }, testInfo) => {
+  await openFixture(page);
+  await page.getByRole('button', { name: '+ New Discussion' }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Topic category').selectOption('general');
+  await dialog.getByLabel('Question or title').fill('كيف أحافظ على الدقة؟');
+  await dialog.getByLabel('Discussion text').fill('نقاش حول التدريب اليومي');
+  await dialog.getByRole('button', { name: 'Publish Discussion' }).click();
+  await expect(dialog).not.toBeVisible();
+  await page.getByRole('button', { name: 'Back to discussions' }).click();
+
+  const offPageTitle = 'Mechanical vs laptop keyboard for learning touch typing';
+  await expect(page.getByRole('button', { name: offPageTitle })).toHaveCount(0);
+  await page.getByRole('searchbox', { name: 'Search discussions' }).fill('MECHANICAL');
+  await expect(page.getByRole('button', { name: offPageTitle })).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Search discussions' }).fill('التدريب');
+  await page.getByRole('combobox', { name: 'Topic category' }).selectOption('general');
+  await page.getByRole('combobox', { name: 'Answer status' }).selectOption('unaccepted');
+  await expect(page.getByRole('button', { name: 'كيف أحافظ على الدقة؟' })).toBeVisible();
+  await page.getByRole('button', { name: 'كيف أحافظ على الدقة؟' }).click();
+  await page.getByRole('button', { name: 'Back to discussions' }).click();
+  await expect(page.getByRole('searchbox', { name: 'Search discussions' })).toHaveValue('التدريب');
+
+  await page.getByRole('button', { name: 'Appearance: Light' }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('menuitemradio', { name: 'العربية', exact: true }).click();
+  await page.setViewportSize({ width: 320, height: 740 });
+  await expect(page.getByRole('searchbox', { name: 'البحث في النقاشات' })).toHaveValue('التدريب');
+  await expect(page.getByRole('combobox', { name: 'تصنيف الموضوع' })).toHaveValue('general');
+  await expect(page.getByRole('combobox', { name: 'حالة الإجابة' })).toHaveValue('unaccepted');
+  await expect(page.getByRole('button', { name: 'كيف أحافظ على الدقة؟' })).toBeVisible();
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '200%';
+  });
+  await checkPresentation(page);
+  await page.screenshot({ path: testInfo.outputPath('forum-filtered-arabic.png'), fullPage: true });
+});
+
+test('filtered read failure retains criteria for retry and rapid search uses the latest text', async ({ page }) => {
+  await openFixture(page);
+  await expect(page.getByRole('button', { name: firstTitle })).toBeVisible();
+  await failNext(page, 'list');
+  const search = page.getByRole('searchbox', { name: 'Search discussions' });
+  await search.fill('rAw aCcUrAcY');
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(search).toHaveValue('rAw aCcUrAcY');
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(page.getByRole('button', { name: secondTitle })).toBeVisible();
+  await search.fill('plateau');
+  await search.fill('keyboard');
+  await expect(page.getByRole('button', { name: 'Mechanical vs laptop keyboard for learning touch typing' })).toBeVisible();
+  await expect(page.getByRole('button', { name: firstTitle })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: secondTitle })).toHaveCount(0);
+});
+
 test('list/reply pagination, empty thread, hidden and unavailable posts', async ({ page }) => {
   await openFixture(page);
   const pages = page.getByRole('navigation', { name: 'Discussion pages' });
@@ -181,6 +275,7 @@ for (const locale of ['en', 'ar']) {
         await openFixture(page, `?locale=${locale}&theme=${theme}`);
         await expect(page.getByRole('button', { name: firstTitle })).toBeVisible();
         await checkPresentation(page);
+        await page.screenshot({ path: testInfo.outputPath('forum-list.png'), fullPage: true });
         const create = page.getByRole('button', { name: locale === 'ar' ? '+ نقاش جديد' : '+ New Discussion' });
         await create.focus();
         await page.keyboard.press('Enter');

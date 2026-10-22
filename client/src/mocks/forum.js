@@ -181,20 +181,61 @@ export function createForumFixture({ user, empty = false, readOnly = false, dela
     failNext(method, { code = 'NETWORK_ERROR', afterCommit = false } = {}) {
       failures.set(method, { code, afterCommit });
     },
-    /** Return summaries without reply bodies, plus explicit create permission. */
+    /**
+     * Search visible titles/bodies and combine category/acceptance filters before
+     * pagination. Never inspect hidden text for matches or reveal it in counts.
+     * Unfiltered browsing retains the existing structural placeholders.
+     */
     list(options = {}) {
       return run('list', options, () => {
         const pageSize = 3;
-        const page = options.page ?? 1;
+        const requestedPage = options.page ?? 1;
+        const search = options.search ?? '';
+        const category = options.category ?? 'all';
+        const answerStatus = options.answerStatus ?? 'all';
+        if (
+          typeof search !== 'string' ||
+          !['all', ...categories].includes(category) ||
+          !['all', 'accepted', 'unaccepted'].includes(answerStatus) ||
+          !Number.isInteger(requestedPage) ||
+          requestedPage < 1
+        ) {
+          reject('INVALID_REQUEST');
+        }
+
+        const query = search.trim().toLowerCase();
+        const hasFilters = Boolean(query || category !== 'all' || answerStatus !== 'all');
+        const matchingThreads = threads.filter(thread => {
+          if (!hasFilters) {
+            return true;
+          }
+          if (thread.status !== 'visible') {
+            return false;
+          }
+          if (category !== 'all' && thread.category !== category) {
+            return false;
+          }
+          if (answerStatus === 'accepted' && !thread.acceptedReplyId) {
+            return false;
+          }
+          if (answerStatus === 'unaccepted' && thread.acceptedReplyId) {
+            return false;
+          }
+          return thread.title.toLowerCase().includes(query) || thread.body.toLowerCase().includes(query);
+        });
+        const totalPages = Math.max(1, Math.ceil(matchingThreads.length / pageSize));
+        // Writes can remove the last match on a page. Return the last valid page.
+        const page = Math.min(requestedPage, totalPages);
         return {
-          items: threads.slice((page - 1) * pageSize, page * pageSize).map(thread => {
+          items: matchingThreads.slice((page - 1) * pageSize, page * pageSize).map(thread => {
             const summary = threadDto(thread);
             delete summary.replies;
             delete summary.body;
             return summary;
           }),
           page,
-          totalPages: Math.max(1, Math.ceil(threads.length / pageSize)),
+          totalPages,
+          totalItems: matchingThreads.length,
           permissions: { canCreateThread: canParticipate },
         };
       });

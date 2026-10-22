@@ -131,6 +131,8 @@ Data boundaries remain explicit: authentication, session restoration, profile/pr
 
 The existing forum view now supports list/detail pagination, discussion/reply forms, one accepted answer with owner-only controls, post reports, retained drafts/explicit retry, and hidden/unavailable placeholders. Authored strings render as plain text with their original language and direction. Shared states/dialogs and the existing styling entry point remain in use; preference changes do not reset forum drafts/pages or alter the typing lifecycle.
 
+Forum discovery also includes live title/discussion-text search, category and accepted-answer filters, result counts, no-match guidance and Clear filters. Criteria are combined before fixture pagination, reset the list to page 1 when changed, and remain selected on return from a thread or after presentation changes. Hidden content never participates in matching or filtered counts. Search/filters remain development fixtures under the same API gate.
+
 Every forum flow uses a **development fixture**, not a real API. Vite development loads a disposable adapter for the current account/view; changes disappear when leaving the screen or reloading. Production reports `FEATURE_UNAVAILABLE` without making forum requests. The page owns its fixture notice, replacing the generic route notice for this screen. No Prisma, backend, public reading or browser moderation policy is changed. See the [draft fixture DTO boundary](api-contract.md#fe-08-forum-development-fixture-boundary) and [FE-08 verification](testing.md#fe-08-forum-browser-checks). Real API/schema/access agreement and Dev 5/Dev 4 demonstration remain integration gates.
 
 ## GitHub CI

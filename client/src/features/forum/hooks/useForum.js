@@ -1,4 +1,4 @@
-// Account/view-scoped forum queries and explicit, non-optimistic participation writes.
+// Account/view-scoped forum queries, list search/filters and explicit participation writes.
 import {
   useId,
   useMemo,
@@ -31,7 +31,12 @@ export function useForum(providedApi) {
     name,
   }), [providedApi, accountId, role, name]);
   const queryClient = useQueryClient();
-  const [listPage, setListPage] = useState(1);
+  const [listOptions, setListOptions] = useState({
+    page: 1,
+    search: '',
+    category: 'all',
+    answerStatus: 'all',
+  });
   const [selection, setSelection] = useState({
     threadId: null,
     page: 1,
@@ -43,9 +48,9 @@ export function useForum(providedApi) {
     instanceId,
   ];
   const list = useQuery({
-    queryKey: [...prefix, 'list', listPage],
+    queryKey: [...prefix, 'list', listOptions],
     queryFn: ({ signal }) => api.list({
-      page: listPage,
+      ...listOptions,
       signal,
     }),
     enabled: Boolean(accountId),
@@ -87,6 +92,24 @@ export function useForum(providedApi) {
     });
   }
 
+  /** Apply list criteria and reset the page together; each combination owns its cache key. */
+  function updateFilters(patch) {
+    setListOptions(current => ({
+      ...current,
+      ...patch,
+      page: 1,
+    }));
+  }
+
+  /** Clear all list criteria without altering the selected thread or its reply draft. */
+  function clearFilters() {
+    updateFilters({
+      search: '',
+      category: 'all',
+      answerStatus: 'all',
+    });
+  }
+
   /**
    * Submit exactly once per click; forms retain requestId on retry after a lost
    * response. Only acknowledged writes refresh DTOs; no invented success/counts.
@@ -111,8 +134,18 @@ export function useForum(providedApi) {
     source: api.source,
     list,
     detail,
-    listPage,
-    setListPage,
+    listOptions,
+    hasFilters: Boolean(
+      listOptions.search.trim() ||
+      listOptions.category !== 'all' ||
+      listOptions.answerStatus !== 'all'
+    ),
+    updateFilters,
+    clearFilters,
+    setListPage: page => setListOptions(current => ({
+      ...current,
+      page,
+    })),
     selection,
     openThread,
     setReplyPage: page => setSelection(current => ({

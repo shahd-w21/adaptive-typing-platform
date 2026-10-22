@@ -1,5 +1,18 @@
 {
   "forum": {
+    "searchAndFilter": "البحث في النقاشات وتصفيتها",
+    "searchDiscussions": "البحث في النقاشات",
+    "searchPlaceholder": "ابحث عن نقاش…",
+    "searchHelp": "ابحث في العناوين ونصوص النقاشات. اجمع بين خيارات التصفية لتضييق النتائج.",
+    "allCategories": "كل التصنيفات",
+    "answerStatus": "حالة الإجابة",
+    "allStatuses": "كل النقاشات",
+    "withAcceptedAnswer": "توجد إجابة مقبولة",
+    "withoutAcceptedAnswer": "لا توجد إجابة مقبولة",
+    "clearFilters": "مسح خيارات التصفية",
+    "resultCount": "عدد النقاشات المطابقة: {count}",
+    "noMatches": "لا توجد نقاشات مطابقة",
+    "noMatchesHelp": "جرّب بحثًا آخر أو امسح خيارات التصفية لعرض المزيد من النقاشات.",
     "title": "منتدى مجتمع المتعلمين",
     "description": "اطرح أسئلتك وشارك أساليب الكتابة باللمس وساعد زملاءك على التقدم.",
     "newDiscussion": "+ نقاش جديد",
