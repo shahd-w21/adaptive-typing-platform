@@ -11,8 +11,10 @@ import { ErrorMessage } from './ErrorMessage.jsx';
  */
 export function ConfirmDialog({
   open,
+  isOpen,
   title,
   description,
+  message,
   confirmLabel,
   cancelLabel,
   onConfirm,
@@ -20,15 +22,21 @@ export function ConfirmDialog({
   pending = false,
   error,
   destructive = false,
+  isDestructive = false,
 }) {
   const { t } = useTranslation();
   const titleId = useId();
   const descriptionId = useId();
   const cancelRef = useRef(null);
 
+  const isDialogOpen = open ?? isOpen;
+  const isDanger = destructive || isDestructive;
+  const bodyText =
+    description ?? message ?? t('interfaceStates.confirmDescription');
+
   return (
     <Dialog
-      open={open}
+      open={isDialogOpen}
       onClose={onCancel}
       labelledBy={titleId}
       describedBy={descriptionId}
@@ -37,18 +45,49 @@ export function ConfirmDialog({
       role="alertdialog"
       className="m-auto w-[calc(100%_-_2rem)] max-w-md rounded-dialog p-6 wrap-anywhere sm:p-8"
     >
-      <h2 id={titleId} className="mb-3 font-display text-xl font-bold">{title ?? t('interfaceStates.confirmTitle')}</h2>
-      <p id={descriptionId} className="mb-6 text-muted">{description ?? t('interfaceStates.confirmDescription')}</p>
-      {error && <div className="mb-5"><ErrorMessage error={error} /></div>}
-      {pending && <p role="status" className="mb-4 text-muted">{t('common.saving')}</p>}
+      <h2 id={titleId} className="mb-3 font-display text-xl font-bold">
+        {title ?? t('interfaceStates.confirmTitle')}
+      </h2>
+      <p id={descriptionId} className="mb-6 text-muted">
+        {bodyText}
+      </p>
+      {error && (
+        <div className="mb-5">
+          <ErrorMessage error={error} />
+        </div>
+      )}
+      {pending && (
+        <p role="status" className="mb-4 text-muted">
+          {t('common.saving')}
+        </p>
+      )}
       <div className="flex flex-wrap justify-end gap-3" aria-busy={pending}>
-        <button ref={cancelRef} type="button" disabled={pending} onClick={onCancel} className="min-h-11 max-w-full rounded-full border border-border-control bg-surface px-5 py-2 font-bold hover:bg-subtle disabled:cursor-wait disabled:text-disabled-text">
+        <button
+          ref={cancelRef}
+          type="button"
+          disabled={pending}
+          onClick={onCancel}
+          className="min-h-11 max-w-full rounded-full border border-border-control bg-surface px-5 py-2 font-bold hover:bg-subtle disabled:cursor-wait disabled:text-disabled-text"
+        >
           {cancelLabel ?? t('common.cancel')}
         </button>
-        <button type="button" disabled={pending} onClick={onConfirm} className={`min-h-11 max-w-full rounded-full px-5 py-2 font-bold disabled:cursor-wait disabled:bg-disabled-bg disabled:text-disabled-text ${destructive ? 'border border-error-text bg-error-soft text-error-text hover:bg-surface' : 'bg-action-primary text-action-foreground hover:bg-action-hover'}`}>
-          {pending ? t('common.saving') : (confirmLabel ?? t('common.confirm'))}
+        <button
+          type="button"
+          disabled={pending}
+          onClick={onConfirm}
+          className={`min-h-11 max-w-full rounded-full px-5 py-2 font-bold disabled:cursor-wait disabled:bg-disabled-bg disabled:text-disabled-text ${
+            isDanger
+              ? 'border border-error-text bg-error-soft text-error-text hover:bg-surface'
+              : 'bg-action-primary text-action-foreground hover:bg-action-hover'
+          }`}
+        >
+          {pending
+            ? t('common.saving')
+            : confirmLabel ?? t('common.confirm')}
         </button>
       </div>
     </Dialog>
   );
 }
+
+export default ConfirmDialog;

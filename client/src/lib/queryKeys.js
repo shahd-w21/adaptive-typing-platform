@@ -52,4 +52,14 @@ export const queryKeys = {
     }
     return [...owner(ownerId), 'session', sessionId];
   },
+  // Published courses catalog and details
+  courses: (filters = {}) => ['public', 'courses', filters],
+  course: (courseId) => {
+    if (typeof courseId !== 'string' || !courseId.trim()) {
+      throw new TypeError('A course ID is required');
+    }
+    return ['public', 'course', courseId];
+  },
+  // Student owned enrollments
+  myCourses: resource('my-courses'),
 };
