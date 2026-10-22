@@ -1,5 +1,5 @@
 /**
- * FE-02 boundary tests executed by the root Node test runner.
+ * FE-02/FE-05 boundary tests executed by the root Node test runner.
  * Injected Fetch responses and synthetic DTOs test serialization/error handling;
  * real HTTP/database authentication is covered in integration/features.test.js.
  * TanStack tests below use its real cache without mounting React components.
@@ -7,7 +7,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { request, ApiError } from '../../../client/src/api/client.js';
+import {
+  startPracticeSession,
+  submitSession,
+} from '../../../client/src/api/sessions.js';
 import { queryKeys } from '../../../client/src/lib/queryKeys.js';
+import { toSessionPayload } from '../../../client/src/features/typing/engine/sessionPayload.js';
+import { KeystrokeRecorder } from '../../../client/src/features/typing/engine/keystrokeRecorder.js';
 import {
   sessionAssignmentSchema,
   sessionResultSchema,
@@ -18,6 +24,7 @@ import {
 import {
   sessionAssignment,
   sessionResult,
+  sessionSubmission,
   sessionHistoryResponse,
 } from '../../../client/src/mocks/sessions.js';
 import { studentUser } from '../../../client/src/mocks/users.js';
@@ -85,6 +92,64 @@ test('strict request boundaries reject unknown nested fields and client scores b
       { code: 'INVALID_REQUEST' },
     );
   }
+});
+
+test('practice API preserves the assignment and emits only the canonical submission body', async (context) => {
+  let startRequest;
+  let submitRequest;
+  context.mock.method(globalThis, 'fetch', async (url, options) => {
+    if (url.endsWith('/sessions')) {
+      startRequest = { url, options };
+      return json(sessionAssignment);
+    }
+    submitRequest = { url, options };
+    return json(sessionResult);
+  });
+
+  const assignment = await startPracticeSession(csrfToken);
+  assert.deepEqual(JSON.parse(startRequest.options.body), {
+    mode: 'practice',
+  });
+  assert.equal(assignment.mode, 'practice');
+  assert.equal(assignment.text, sessionAssignment.text);
+  assert.equal(assignment.source, 'fallback');
+  assert.deepEqual(assignment.rules, sessionAssignment.rules);
+
+  const recorder = new KeystrokeRecorder();
+  recorder.events = [...sessionSubmission.events];
+  const recorderSnapshot = recorder.getSubmissionPayload(
+    assignment.sessionId,
+  );
+  Object.assign(recorderSnapshot, {
+    score: 100,
+    expectedKeys: ['a', 's'],
+    correctness: true,
+  });
+  const result = await submitSession(
+    assignment.sessionId,
+    recorderSnapshot,
+    csrfToken,
+  );
+  const body = JSON.parse(submitRequest.options.body);
+
+  assert.match(submitRequest.url, new RegExp(
+    `/sessions/${assignment.sessionId}/submit$`,
+  ));
+  assert.deepEqual(body, {
+    events: sessionSubmission.events,
+    finishTimeMs: sessionSubmission.finishTimeMs,
+  });
+  assert.deepEqual(Object.keys(body).sort(), ['events', 'finishTimeMs']);
+  assert.deepEqual(
+    toSessionPayload({
+      events: sessionSubmission.events,
+      finishTimeMs: sessionSubmission.finishTimeMs,
+      recorderDiagnostics: { source: 'local' },
+    }),
+    body,
+  );
+  assert.equal(result.sessionId, assignment.sessionId);
+  assert.equal(result.status, 'completed');
 });
 
 test('authenticated writes require explicit CSRF and caller headers cannot override it', async () => {
@@ -260,11 +325,25 @@ test('current synthetic DTOs match runtime contracts; future modes are not silen
     false,
   );
   assert.equal(
+    sessionAssignmentSchema.safeParse({
+      ...sessionAssignment,
+      enrollmentId: 'draft-only',
+    }).success,
+    false,
+  );
+  assert.equal(
     sessionResultSchema.safeParse({
       ...sessionResult,
       metrics: { ...sessionResult.metrics, rawAccuracy: null },
     }).success,
     true,
+  );
+  assert.equal(
+    sessionResultSchema.safeParse({
+      ...sessionResult,
+      clientScore: 100,
+    }).success,
+    false,
   );
 });
 
