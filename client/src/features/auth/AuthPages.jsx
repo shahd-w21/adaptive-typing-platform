@@ -89,6 +89,7 @@ function authMessageFor(error, t) {
     EMAIL_REGISTERED: 'emailRegistered',
     RATE_LIMITED: 'rateLimited',
     EMAIL_UNAVAILABLE: 'verifyUnavailable',
+    ACCOUNT_INACTIVE: 'accountInactive',
   };
   return t(`auth.${messages[error?.code] || 'requestFailed'}`);
 }
