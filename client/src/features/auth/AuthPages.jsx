@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+// Existing public screens; authentication modal delegates keyboard and focus behavior to Dialog.
+import { useState } from 'react';
+import { Dialog } from '../../components/ui/Dialog.jsx';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema } from '@typeflow/shared';
@@ -106,12 +108,6 @@ export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
     defaultValues: { email: '', password: '', confirmPassword: '' },
   });
 
-  useEffect(() => {
-    const closeOnEscape = event => { if (event.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose]);
-
   const submit = handleSubmit(async values => {
     setNotice('');
     try {
@@ -130,11 +126,8 @@ export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
   });
 
   return (
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-overlay p-4 backdrop-blur-sm sm:p-6"
-      onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}
-    >
-      <div className="relative my-auto w-full max-w-105 rounded-dialog border border-border-subtle bg-surface p-6 shadow-popover sm:p-8" role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title">
+    <Dialog open onClose={onClose} labelledBy="auth-dialog-title" className="m-auto w-[calc(100%_-_2rem)] max-w-105 rounded-dialog p-6 sm:p-8">
+      <div className="relative">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-learning-soft text-learning-strong" aria-hidden="true">
           <ShieldIcon size={23} />
         </div>
@@ -209,7 +202,7 @@ export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
           ✕
         </button>
       </div>
-    </div>
+    </Dialog>
   );
 }
 

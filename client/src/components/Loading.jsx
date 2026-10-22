@@ -1,38 +1,42 @@
+// Shared indeterminate status; the owning page controls what is loading.
 import { useTranslation } from '../i18n/useTranslation.js';
+import { LoaderIcon } from './ui/Icons.jsx';
 
-/**
- * Accessible loading spinner and message conforming to TypeFlow design tokens.
- *
- * @param {object} props
- * @param {string} [props.message] Optional custom loading text (defaults to t('common.loading'))
- * @param {'sm'|'md'|'lg'} [props.size='md'] Spinner dimension
- * @param {string} [props.className] Additional container classes
- */
-export function Loading({ message, size = 'md', className = '' }) {
+/** Announce a localized status without moving focus or fabricating progress. */
+export function Loading({
+  label,
+  labelKey = 'common.loading',
+  compact = false,
+  message,
+  size = 'md',
+  className = '',
+}) {
   const { t } = useTranslation();
-  const displayMessage = message ?? t('common.loading');
+  const text = label ?? message ?? t(labelKey);
 
-  const spinnerSizes = {
-    sm: 'size-4 border-2',
-    md: 'size-6 border-2',
-    lg: 'size-10 border-3',
+  const sizeClasses = {
+    sm: 'size-4',
+    md: 'size-5',
+    lg: 'size-6',
   };
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`flex flex-col items-center justify-center gap-3 p-6 text-muted ${className}`}
+      aria-atomic="true"
+      className={`flex min-w-0 items-center justify-center gap-3 text-muted ${
+        compact
+          ? 'py-2'
+          : 'rounded-card border border-border-subtle bg-surface p-6'
+      } ${className}`}
     >
-      <div
-        className={`animate-spin rounded-full border-border-subtle border-t-learning-accent ${spinnerSizes[size] || spinnerSizes.md}`}
-        aria-hidden="true"
+      <LoaderIcon
+        className={`shrink-0 animate-spin motion-reduce:animate-none ${
+          sizeClasses[size] || sizeClasses.md
+        }`}
       />
-      {displayMessage && (
-        <span className="text-sm font-medium tracking-wide">
-          {displayMessage}
-        </span>
-      )}
+      <span className="min-w-0 wrap-anywhere">{text}</span>
     </div>
   );
 }

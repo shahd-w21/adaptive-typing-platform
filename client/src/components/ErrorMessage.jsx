@@ -1,53 +1,69 @@
+// Shared safe error and permission state; never render arbitrary server error text.
+import { useId } from 'react';
 import { useTranslation } from '../i18n/useTranslation.js';
-import { AlertCircleIcon, RotateCcwIcon } from './ui/Icons.jsx';
+import { AlertCircleIcon } from './ui/Icons.jsx';
 
 /**
- * Accessible error message with optional retry trigger.
- *
- * @param {object} props
- * @param {string} [props.title] Error headline
- * @param {string} props.message Error description or reason
- * @param {() => void} [props.onRetry] Optional retry callback
- * @param {string} [props.retryLabel] Custom text for retry button (defaults to t('common.retry'))
- * @param {string} [props.className] Additional container classes
+ * Map known API codes to interface messages, with a generic English/Arabic fallback.
+ * title/message are trusted, localized UI copy, not exception or response messages.
+ * Retries are user initiated; the caller owns pending state and retry safety.
  */
 export function ErrorMessage({
+  error,
   title,
   message,
   onRetry,
+  retrying = false,
   retryLabel,
   className = '',
 }) {
   const { t } = useTranslation();
-  const retryText = retryLabel ?? t('common.retry');
+  const titleId = useId();
+  const code =
+    typeof error?.code === 'string' && /^[A-Z_]+$/.test(error.code)
+      ? error.code
+      : '';
+  const messageKey = `apiErrors.${code}`;
+  const translated = code ? t(messageKey) : messageKey;
+  const permissionDenied = code === 'FORBIDDEN';
+
+  const displayMessage =
+    message ??
+    (translated !== messageKey
+      ? translated
+      : t('interfaceStates.errorDescription'));
 
   return (
-    <div
+    <section
       role="alert"
-      className={`flex items-start gap-3.5 rounded-card border border-error-text/30 bg-error-soft p-4 text-error-text shadow-sm ${className}`}
+      aria-labelledby={titleId}
+      className={`min-w-0 rounded-card border border-error-text/40 bg-error-soft p-5 text-error-text wrap-anywhere ${className}`}
     >
-      <div className="shrink-0 pt-0.5 text-error-text" aria-hidden="true">
-        <AlertCircleIcon size={20} />
+      <div className="flex items-start gap-3">
+        <AlertCircleIcon className="mt-1 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <h2 id={titleId} className="mb-1 font-display text-lg font-bold">
+            {title ??
+              t(
+                permissionDenied
+                  ? 'auth.permissionDenied'
+                  : 'common.error',
+              )}
+          </h2>
+          <p>{displayMessage}</p>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        {title && (
-          <h4 className="mb-1 text-sm font-bold tracking-tight">
-            {title}
-          </h4>
-        )}
-        <p className="text-sm leading-relaxed">{message}</p>
-      </div>
-      {onRetry && (
+      {onRetry && !permissionDenied && (
         <button
           type="button"
+          disabled={retrying}
           onClick={onRetry}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-control border border-error-text/40 bg-surface/80 px-3 py-1.5 text-xs font-bold text-error-text transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-error-text/50"
+          className="mt-4 min-h-11 max-w-full rounded-full border border-error-text px-5 py-2 font-bold hover:bg-surface disabled:cursor-wait disabled:opacity-70"
         >
-          <RotateCcwIcon size={14} aria-hidden="true" />
-          <span>{retryText}</span>
+          {retryLabel ?? t(retrying ? 'common.loading' : 'common.retry')}
         </button>
       )}
-    </div>
+    </section>
   );
 }
 

@@ -1,18 +1,18 @@
+// Existing server-backed dashboard reuses shared request and empty states.
+import { Loading } from '../../components/Loading.jsx';
+import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { EmptyState } from '../../components/EmptyState.jsx';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { PlayIcon, FlameIcon, ArrowRightIcon, CheckIcon, LockIcon } from '../../components/ui/Icons.jsx';
 import { useDashboard } from './hooks/useDashboard.js';
 import { useLearningPath } from '../learning-path/useLearningPath.js';
 
+/** Display current request state without replacing the dashboard's data ownership. */
 function RequestState({ error, onRetry, loading = false }) {
-  const { t } = useTranslation();
-  if (loading) return <p className="rounded-control bg-subtle p-4 text-sm text-muted" role="status">{t('common.loading')}</p>;
-  if (!error) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-control border border-error-text/30 bg-error-soft p-4 text-sm text-error-text" role="alert">
-      <span className="flex-1">{t('dashboard.requestError')}</span>
-      <button type="button" onClick={onRetry} className="rounded-full border border-error-text/40 px-4 py-2 font-bold hover:bg-surface">{t('common.retry')}</button>
-    </div>
-  );
+  if (loading) {
+    return <Loading compact />;
+  }
+  return error ? <ErrorMessage error={error} onRetry={onRetry} /> : null;
 }
 
 function formatSessionDate(value, locale) {
@@ -48,7 +48,7 @@ export function Dashboard({ user: sessionUser, onStartPractice, onNavigate }) {
   const pathQuery = useLearningPath();
 
   if (dashboardQuery.isPending) {
-    return <main className="mx-auto max-w-4xl rounded-card border border-border-subtle bg-surface p-8 text-muted shadow-card" role="status">{t('dashboard.loading')}</main>;
+    return <Loading labelKey="dashboard.loading" />;
   }
   if (dashboardQuery.isError) {
     return <div className="mx-auto max-w-3xl"><h1 className="mb-4 font-display text-3xl font-bold">{t('dashboard.title')}</h1><RequestState error={dashboardQuery.error} onRetry={() => dashboardQuery.refetch()} /></div>;
@@ -135,7 +135,7 @@ export function Dashboard({ user: sessionUser, onStartPractice, onNavigate }) {
         <section className="overflow-hidden rounded-card border border-border-subtle bg-surface shadow-card" aria-labelledby="recent-sessions-title">
           <div className="border-b border-border-subtle px-4 py-4 sm:px-6 sm:py-5"><h2 id="recent-sessions-title" className="font-display text-xl font-bold">{t('dashboard.recentSessions')}</h2></div>
           {recentSessions.length === 0 ? (
-            <p className="p-6 text-sm text-muted">{t('dashboard.emptySessions')}</p>
+            <EmptyState description={t('dashboard.emptySessions')} />
           ) : (
             <div className="overflow-x-auto">
               <table className={`w-full min-w-[520px] border-collapse ${isRTL ? 'text-right' : 'text-left'}`}>

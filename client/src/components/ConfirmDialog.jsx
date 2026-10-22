@@ -1,133 +1,92 @@
-import { useEffect, useRef } from 'react';
+// Controlled confirmation UI; callers own mutation, pending state and failure recovery.
+import { useId, useRef } from 'react';
 import { useTranslation } from '../i18n/useTranslation.js';
-import { AlertCircleIcon, XIcon } from './ui/Icons.jsx';
+import { Dialog } from './ui/Dialog.jsx';
+import { ErrorMessage } from './ErrorMessage.jsx';
 
 /**
- * Accessible confirmation dialog with focus trap and escape handling.
- *
- * @param {object} props
- * @param {boolean} props.isOpen Dialog visibility state
- * @param {string} props.title Dialog title
- * @param {string} props.message Main explanation / prompt text
- * @param {string} [props.confirmLabel] Label for confirm button (defaults to t('common.confirm'))
- * @param {string} [props.cancelLabel] Label for cancel button (defaults to t('common.cancel'))
- * @param {() => void} props.onConfirm Callback on confirmation
- * @param {() => void} props.onCancel Callback on cancel or dismiss
- * @param {boolean} [props.isDestructive=false] Style confirm button with error/danger treatment
+ * Start focus on Cancel and restore the opener after closing. onConfirm does not
+ * close automatically: the owner closes after success and supplies errors on failure.
+ * Pending writes cannot be dismissed or submitted a second time through this UI.
  */
 export function ConfirmDialog({
+  open,
   isOpen,
   title,
+  description,
   message,
   confirmLabel,
   cancelLabel,
   onConfirm,
   onCancel,
+  pending = false,
+  error,
+  destructive = false,
   isDestructive = false,
 }) {
   const { t } = useTranslation();
-  const confirmRef = useRef(null);
+  const titleId = useId();
+  const descriptionId = useId();
   const cancelRef = useRef(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const previousFocus = document.activeElement;
-    cancelRef.current?.focus();
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onCancel();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      if (previousFocus && typeof previousFocus.focus === 'function') {
-        previousFocus.focus();
-      }
-    };
-  }, [isOpen, onCancel]);
-
-  if (!isOpen) return null;
+  const isDialogOpen = open ?? isOpen;
+  const isDanger = destructive || isDestructive;
+  const bodyText =
+    description ?? message ?? t('interfaceStates.confirmDescription');
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-desc"
+    <Dialog
+      open={isDialogOpen}
+      onClose={onCancel}
+      labelledBy={titleId}
+      describedBy={descriptionId}
+      initialFocusRef={cancelRef}
+      dismissible={!pending}
+      role="alertdialog"
+      className="m-auto w-[calc(100%_-_2rem)] max-w-md rounded-dialog p-6 wrap-anywhere sm:p-8"
     >
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-page/80 backdrop-blur-sm transition-opacity"
-        onClick={onCancel}
-        aria-hidden="true"
-      />
-
-      {/* Modal Surface */}
-      <div className="relative w-full max-w-md rounded-card border border-border-subtle bg-surface p-6 shadow-modal transition-all sm:p-7">
+      <h2 id={titleId} className="mb-3 font-display text-xl font-bold">
+        {title ?? t('interfaceStates.confirmTitle')}
+      </h2>
+      <p id={descriptionId} className="mb-6 text-muted">
+        {bodyText}
+      </p>
+      {error && (
+        <div className="mb-5">
+          <ErrorMessage error={error} />
+        </div>
+      )}
+      {pending && (
+        <p role="status" className="mb-4 text-muted">
+          {t('common.saving')}
+        </p>
+      )}
+      <div className="flex flex-wrap justify-end gap-3" aria-busy={pending}>
+        <button
+          ref={cancelRef}
+          type="button"
+          disabled={pending}
+          onClick={onCancel}
+          className="min-h-11 max-w-full rounded-full border border-border-control bg-surface px-5 py-2 font-bold hover:bg-subtle disabled:cursor-wait disabled:text-disabled-text"
+        >
+          {cancelLabel ?? t('common.cancel')}
+        </button>
         <button
           type="button"
-          onClick={onCancel}
-          aria-label={t('common.close')}
-          className="absolute top-4 end-4 rounded-control p-1 text-muted transition-colors hover:bg-subtle hover:text-ink focus:outline-none focus:ring-2 focus:ring-action-focus"
+          disabled={pending}
+          onClick={onConfirm}
+          className={`min-h-11 max-w-full rounded-full px-5 py-2 font-bold disabled:cursor-wait disabled:bg-disabled-bg disabled:text-disabled-text ${
+            isDanger
+              ? 'border border-error-text bg-error-soft text-error-text hover:bg-surface'
+              : 'bg-action-primary text-action-foreground hover:bg-action-hover'
+          }`}
         >
-          <XIcon size={18} />
+          {pending
+            ? t('common.saving')
+            : confirmLabel ?? t('common.confirm')}
         </button>
-
-        <div className="flex items-start gap-4">
-          <div
-            className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
-              isDestructive
-                ? 'bg-error-soft text-error-text'
-                : 'bg-learning-soft text-learning-strong'
-            }`}
-            aria-hidden="true"
-          >
-            <AlertCircleIcon size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3
-              id="confirm-dialog-title"
-              className="font-display text-lg font-bold text-ink"
-            >
-              {title}
-            </h3>
-            <p
-              id="confirm-dialog-desc"
-              className="mt-2 text-sm leading-relaxed text-muted"
-            >
-              {message}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-          <button
-            ref={cancelRef}
-            type="button"
-            onClick={onCancel}
-            className="min-h-10 rounded-full border border-border-subtle bg-surface px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-action-focus"
-          >
-            {cancelLabel ?? t('common.cancel')}
-          </button>
-          <button
-            ref={confirmRef}
-            type="button"
-            onClick={onConfirm}
-            className={`min-h-10 rounded-full px-5 py-2 text-sm font-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-action-focus ${
-              isDestructive
-                ? 'bg-error-text text-white hover:opacity-90'
-                : 'bg-action-primary text-action-foreground shadow-primary hover:bg-action-hover'
-            }`}
-          >
-            {confirmLabel ?? t('common.confirm')}
-          </button>
-        </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
 
