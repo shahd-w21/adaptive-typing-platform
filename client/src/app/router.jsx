@@ -17,6 +17,9 @@ import { CertificatesView } from '../features/certificates/CertificatesView.jsx'
 import { ForumView } from '../features/forum/ForumView.jsx';
 import { AdminView } from '../features/admin/AdminView.jsx';
 import { ProfileView } from '../features/profile/ProfileView.jsx';
+import { CourseLibraryPage } from '../features/courses/pages/CourseLibraryPage.jsx';
+import { CourseDetailPage } from '../features/courses/pages/CourseDetailPage.jsx';
+import { MyCoursesPage } from '../features/courses/pages/MyCoursesPage.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTranslation } from '../i18n/useTranslation.js';
 import { abandonSession, startPracticeSession } from '../api/sessions.js';
@@ -25,11 +28,13 @@ const VIEW_PATHS = {
   landing: '/', dashboard: '/dashboard', path: '/learning-path', practice: '/practice',
   review: '/review', tests: '/tests', progress: '/progress', achievements: '/achievements',
   certificates: '/certificates', forum: '/forum', admin: '/admin', profile: '/profile',
+  courses: '/courses', 'my-courses': '/my-courses', myCourses: '/my-courses',
   typing: '/typing', 'verify-cert': '/verify-certificate', login: '/login', register: '/register',
 };
 const PROTECTED_PATHS = new Set([
   '/dashboard', '/learning-path', '/path', '/practice', '/review', '/tests', '/progress',
   '/achievements', '/certificates', '/forum', '/admin', '/profile', '/typing',
+  '/courses', '/my-courses',
 ]);
 
 function routeForView(view) {
@@ -293,6 +298,9 @@ function AppRoutes() {
             <Route path="/achievements" element={<AchievementsView />} />
             <Route path="/certificates" element={<CertificatesView onVerifyClick={() => onNavigate('verify-cert')} />} />
             <Route path="/forum" element={<ForumView />} />
+            <Route path="/courses" element={<CourseLibraryPage />} />
+            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+            <Route path="/my-courses" element={<MyCoursesPage />} />
             <Route path="/typing" element={null} />
           </Route>
           <Route element={<RequireRole role="admin" />}>

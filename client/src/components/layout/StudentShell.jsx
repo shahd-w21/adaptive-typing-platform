@@ -33,6 +33,8 @@ export function StudentShell({
 
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: ArrowRightIcon },
+    { id: 'courses', label: t('nav.courses'), icon: KeyboardIcon },
+    { id: 'my-courses', label: t('nav.myCourses'), icon: CheckIcon },
     { id: 'path', label: t('nav.learningPath'), icon: CheckIcon },
     { id: 'practice', label: t('nav.practice'), icon: PracticeIcon },
     { id: 'review', label: t('nav.review'), icon: RotateCcwIcon },
