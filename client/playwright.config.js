@@ -1,9 +1,9 @@
-// FE-03 browser checks use installed Chrome and an isolated Vite test origin.
+// Shared-interface and forum browser checks use Chrome and an isolated Vite origin.
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testMatch: 'shared-ui.spec.js',
+  testMatch: ['shared-ui.spec.js', 'forum.spec.js'],
   fullyParallel: true,
   workers: 2,
   reporter: 'list',

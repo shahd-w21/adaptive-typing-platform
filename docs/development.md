@@ -127,6 +127,12 @@ Typing launch now checks the live viewport before either a real assignment reque
 
 Data boundaries remain explicit: authentication, session restoration, profile/preferences, dashboard and adaptive-practice start/submit use the real API. Forum, certificate list, Admin management/analytics and sample review/tests remain development fixtures; Admin access probing uses the real API. Shared states/dialogs do not fetch or persist data. FE-03 browser tests intercept all API calls with disposable presentation fixtures and do not use a live database. The suite is restored; previously deleted results remain absent. See [test evidence and remaining review](testing.md#fe-03-shared-interface-browser-checks).
 
+### FE-08 forum UI handoff
+
+The existing forum view now supports list/detail pagination, discussion/reply forms, one accepted answer with owner-only controls, post reports, retained drafts/explicit retry, and hidden/unavailable placeholders. Authored strings render as plain text with their original language and direction. Shared states/dialogs and the existing styling entry point remain in use; preference changes do not reset forum drafts/pages or alter the typing lifecycle.
+
+Every forum flow uses a **development fixture**, not a real API. Vite development loads a disposable adapter for the current account/view; changes disappear when leaving the screen or reloading. Production reports `FEATURE_UNAVAILABLE` without making forum requests. The page owns its fixture notice, replacing the generic route notice for this screen. No Prisma, backend, public reading or browser moderation policy is changed. See the [draft fixture DTO boundary](api-contract.md#fe-08-forum-development-fixture-boundary) and [FE-08 verification](testing.md#fe-08-forum-browser-checks). Real API/schema/access agreement and Dev 5/Dev 4 demonstration remain integration gates.
+
 ## GitHub CI
 
 [The CI workflow](../.github/workflows/ci.yml) uses Ubuntu 24.04 and the Node.js version in `.nvmrc`. It installs all workspaces from the root lockfile, generates Prisma, runs lint, unit tests and PostgreSQL integration tests, then builds the client and checks server entry syntax. It supplies an ephemeral `typeflow_test` database and CI-only configuration; integration tests inject a mail sink. Failed steps stop later checks.

@@ -172,7 +172,7 @@ function AuthenticatedLayout({ activeSessionConfig, launchError, onClearSession,
   const { t } = useTranslation();
   const location = useLocation();
   const isTypingRoute = location.pathname === '/typing';
-  const fixtureRoutes = ['/review', '/tests', '/achievements', '/certificates', '/forum', '/admin'];
+  const fixtureRoutes = ['/review', '/tests', '/achievements', '/certificates', '/admin'];
   const usesFixtureData = fixtureRoutes.includes(location.pathname);
   const showDeviceGuidance = isTypingRoute && viewportWidth < 1024;
   const Shell = user?.role === 'admin' ? AdminShell : StudentShell;
