@@ -1,4 +1,22 @@
 {
+  "navigation": {
+    "adminSections": "أقسام الإدارة",
+    "userDirectory": "دليل المستخدمين، مرر أفقياً لعرض جميع الأعمدة",
+    "skipToContent": "انتقل إلى المحتوى الرئيسي",
+    "public": "التنقل العام",
+    "student": "تنقل الطالب",
+    "admin": "تنقل الإدارة",
+    "homeLabel": "الصفحة الرئيسية لتايب فلو"
+  },
+  "interfaceStates": {
+    "emptyTitle": "لا توجد عناصر بعد",
+    "emptyDescription": "ستظهر العناصر الجديدة هنا عندما تصبح متاحة.",
+    "errorDescription": "تعذر إكمال هذا الطلب. يرجى المحاولة مرة أخرى.",
+    "confirmTitle": "هل تريد تأكيد هذا الإجراء؟",
+    "confirmDescription": "راجع هذا الإجراء قبل المتابعة.",
+    "exitTitle": "هل تريد مغادرة التمرين؟",
+    "restartTitle": "هل تريد إعادة بدء الجلسة؟"
+  },
   "apiErrors": {
     "INVALID_REQUEST": "تحقق من بيانات الطلب وحاول مرة أخرى.",
     "INVALID_CREDENTIALS": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",

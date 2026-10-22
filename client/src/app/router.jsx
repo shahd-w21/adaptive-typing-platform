@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+// FE-01 routes and session ownership; shared shells supply presentation and focus behavior.
+import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { RequireAuth } from '../components/RequireAuth.jsx';
 import { RequireRole } from '../components/RequireRole.jsx';
 import { PublicHeader } from '../components/layout/PublicHeader.jsx';
 import { StudentShell } from '../components/layout/StudentShell.jsx';
+import { AdminShell } from '../components/layout/AdminShell.jsx';
+import { Loading } from '../components/Loading.jsx';
+import { ErrorMessage } from '../components/ErrorMessage.jsx';
+import { Dialog } from '../components/ui/Dialog.jsx';
 import { DeviceGuidance } from '../components/layout/DeviceGuidance.jsx';
 import { LandingPage, AuthModal, PublicCertificateVerification } from '../features/auth/AuthPages.jsx';
 import { VerifyEmailPage } from '../features/auth/pages/VerifyEmailPage.jsx';
@@ -38,10 +43,21 @@ function routeForView(view) {
 
 function PublicLayout({ activeTab, children }) {
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // A route can replace the dialog opener. Give the destination a meaningful
+    // focus target, while leaving initial page loads in normal keyboard order.
+    if (navigationType !== 'POP') {
+      document.getElementById('main-content')?.focus({ preventScroll: true });
+    }
+  }, [navigationType, pathname]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader activeTab={activeTab} onNavigate={view => navigate(routeForView(view))} />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">{children}</main>
     </div>
   );
 }
@@ -77,9 +93,8 @@ function SessionError() {
   const { retrySession } = useAuth();
   const { t } = useTranslation();
   return (
-    <div className="mx-auto my-6 flex max-w-xl items-center gap-4 rounded-card border border-error-text/25 bg-error-soft p-5 text-error-text" role="alert">
-      <p className="flex-1">{t('auth.sessionFailed')}</p>
-      <button type="button" onClick={() => retrySession()} className="font-bold underline">{t('common.retry')}</button>
+    <div className="mx-auto my-6 max-w-xl">
+      <ErrorMessage message={t('auth.sessionFailed')} onRetry={() => retrySession()} />
     </div>
   );
 }
@@ -91,7 +106,7 @@ function AuthRoute({ mode }) {
   const navigate = useNavigate();
 
   if (status === 'loading') {
-    return <main className="flex min-h-screen items-center justify-center bg-page text-muted" role="status">{t('auth.sessionLoading')}</main>;
+    return <main className="flex min-h-screen items-center justify-center bg-page p-6"><Loading label={t('auth.sessionLoading')} /></main>;
   }
   if (status === 'authenticated') return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
 
@@ -160,6 +175,7 @@ function AuthenticatedLayout({ activeSessionConfig, launchError, onClearSession,
   const fixtureRoutes = ['/review', '/tests', '/achievements', '/certificates', '/forum', '/admin'];
   const usesFixtureData = fixtureRoutes.includes(location.pathname);
   const showDeviceGuidance = isTypingRoute && viewportWidth < 1024;
+  const Shell = user?.role === 'admin' ? AdminShell : StudentShell;
   const exitSession = async () => {
     if (activeSessionConfig?.source === 'server') {
       try { await abandonSession(activeSessionConfig.sessionId, csrfToken); } catch { /* Completed, expired, or already abandoned sessions are already unavailable. */ }
@@ -174,7 +190,7 @@ function AuthenticatedLayout({ activeSessionConfig, launchError, onClearSession,
     <>
       <div hidden={isTypingRoute} aria-hidden={isTypingRoute}>
         {launchError && <div className="mx-auto my-4 max-w-4xl rounded-card border border-error-text/30 bg-error-soft p-4 text-error-text" role="alert">{launchError}</div>}
-        <StudentShell
+        <Shell
           activeTab={location.pathname === '/learning-path' || location.pathname === '/path' ? 'path' : location.pathname.slice(1)}
           onNavigate={onNavigate}
           onLogout={onLogout}
@@ -184,7 +200,7 @@ function AuthenticatedLayout({ activeSessionConfig, launchError, onClearSession,
             {usesFixtureData && <p className="mb-5 rounded-control border border-warning-accent/40 bg-warning-soft p-3 text-sm text-warning-text" role="note">{t(location.pathname === '/admin' ? 'common.adminFixtureNotice' : 'common.fixtureNotice')}</p>}
             <Outlet />
           </>
-        </StudentShell>
+        </Shell>
       </div>
       {activeSessionConfig && (
         <div hidden={!isTypingRoute || showDeviceGuidance} aria-hidden={!isTypingRoute || showDeviceGuidance}>
@@ -201,9 +217,9 @@ function AuthenticatedLayout({ activeSessionConfig, launchError, onClearSession,
         </div>
       )}
       {showDeviceGuidance && (
-        <div className="fixed inset-0 z-100 overflow-y-auto bg-page" role="dialog" aria-modal="true" aria-label="Desktop typing guidance">
+        <Dialog open onClose={exitSession} dismissible={false} label={t('typing.deviceGuidanceTitle')} className="m-auto w-[calc(100%_-_2rem)] max-w-xl rounded-dialog p-4">
           <DeviceGuidance onBack={exitSession} />
-        </div>
+        </Dialog>
       )}
     </>
   );
@@ -225,9 +241,12 @@ function NotFoundRoute() {
 function AppRoutes() {
   const navigate = useNavigate();
   const { user, csrfToken, signOut } = useAuth();
+  const { t } = useTranslation();
   const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1200 : window.innerWidth);
   const [activeSessionConfig, setActiveSessionConfig] = useState(null);
   const [launchError, setLaunchError] = useState('');
+  const [deviceGuidanceOpen, setDeviceGuidanceOpen] = useState(false);
+  const sessionLaunchPending = useRef(false);
 
   useEffect(() => {
     const updateViewportWidth = () => setViewportWidth(window.innerWidth);
@@ -241,9 +260,20 @@ function AppRoutes() {
     navigate(path);
   };
 
+  /** Launch one desktop attempt; phone guidance returns without API or fixture creation. */
   const launchTyping = async config => {
+    // Check the live viewport before any request. A guidance-only visit must not
+    // allocate a server assignment; resizing an existing attempt keeps its state.
+    if (window.innerWidth < 1024) {
+      setDeviceGuidanceOpen(true);
+      return;
+    }
+    if (sessionLaunchPending.current) {
+      return;
+    }
     setLaunchError('');
     if (config.serverPractice) {
+      sessionLaunchPending.current = true;
       try {
         const session = await startPracticeSession(csrfToken);
         setActiveSessionConfig({
@@ -255,6 +285,8 @@ function AppRoutes() {
         navigate('/typing');
       } catch (error) {
         setLaunchError(error.message || 'Practice could not be started. Retry in a moment.');
+      } finally {
+        sessionLaunchPending.current = false;
       }
       return;
     }
@@ -277,6 +309,10 @@ function AppRoutes() {
   };
 
   return (
+    <>
+    <Dialog open={deviceGuidanceOpen} onClose={() => setDeviceGuidanceOpen(false)} label={t('typing.deviceGuidanceTitle')} className="m-auto w-[calc(100%_-_2rem)] max-w-xl rounded-dialog p-4">
+      <DeviceGuidance onBack={() => setDeviceGuidanceOpen(false)} backLabel={t('common.back')} />
+    </Dialog>
     <Routes>
       <Route path="/" element={<LandingRoute />} />
       <Route path="/verify-certificate" element={<CertificateVerificationRoute />} />
@@ -311,6 +347,7 @@ function AppRoutes() {
       </Route>
       <Route path="*" element={<NotFoundRoute />} />
     </Routes>
+    </>
   );
 }
 

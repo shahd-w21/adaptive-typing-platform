@@ -1,7 +1,10 @@
-import { useState } from 'react';
+// Existing forum fixture reuses the shared modal boundary; local posting remains a fixture.
+import { useId, useState } from 'react';
+import { Dialog } from '../../components/ui/Dialog.jsx';
 import { CheckIcon } from '../../components/ui/Icons.jsx';
 
 export function ForumView() {
+  const dialogTitleId = useId();
   const [showNewThreadModal, setShowNewThreadModal] = useState(false);
   const [threads, setThreads] = useState([
     {
@@ -57,7 +60,7 @@ export function ForumView() {
 
   return (
     <div className="max-w-240 my-0 mx-auto">
-      <div className="flex justify-between items-center mb-7">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Learner Community Forum
@@ -84,7 +87,7 @@ export function ForumView() {
             className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] hover:border-border-control hover:-translate-y-0.5 hover:shadow-popover p-5 flex justify-between items-center cursor-pointer"
           >
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
                 <span
                   className="py-0.5 px-2 rounded-full bg-subtle text-[12px] font-bold"
                 >
@@ -120,20 +123,23 @@ export function ForumView() {
 
       {/* New Thread Modal */}
       {showNewThreadModal && (
-        <div
-          className="fixed inset-0 bg-overlay flex items-center justify-center z-100 p-4"
+        <Dialog
+          open
+          onClose={() => setShowNewThreadModal(false)}
+          labelledBy={dialogTitleId}
+          className="m-auto w-[calc(100%_-_2rem)] max-w-130 rounded-dialog p-5 sm:p-6"
         >
-          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] w-full max-w-130">
-            <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-4">
+            <h2 id={dialogTitleId} className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-4">
               Start a New Discussion
             </h2>
 
             <form onSubmit={handleCreateThread} className="flex flex-col gap-4">
               <div>
-                <label className="block text-[13px] font-bold mb-1.5">
+                <label htmlFor="forum-category" className="block text-[13px] font-bold mb-1.5">
                   Topic Category
                 </label>
                 <select
+                  id="forum-category"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   className="w-full py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] h-11"
@@ -146,10 +152,11 @@ export function ForumView() {
               </div>
 
               <div>
-                <label className="block text-[13px] font-bold mb-1.5">
+                <label htmlFor="forum-title" className="block text-[13px] font-bold mb-1.5">
                   Question or Title
                 </label>
                 <input
+                  id="forum-title"
                   type="text"
                   required
                   className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
@@ -159,7 +166,7 @@ export function ForumView() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2.5 mt-3">
+              <div className="mt-3 flex flex-wrap justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setShowNewThreadModal(false)}
@@ -176,8 +183,7 @@ export function ForumView() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );
