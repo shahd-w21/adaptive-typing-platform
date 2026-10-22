@@ -45,6 +45,24 @@ For each implemented requirement, add a row or link to a tracked test. Do not ma
 
 Expand to cover all requirements before release. Use a dedicated test database with a positive identity check before any reset. Never run destructive test setup against shared development or production data.
 
+## FE-03 shared interface browser checks
+
+Run `npm run test:ui --workspace=client` from the repository root after the root workspace install. The restored suite uses installed Google Chrome through Playwright and starts/stops an isolated Vite server on `127.0.0.1:5174`; port 5174 must be free. No Docker services or login credentials are needed. All `/api/v1/` requests are intercepted with synthetic responses, and `tests/fixtures/shared-ui.html` is a test entry only, outside the production build. Runs normally generate ignored artifacts under `client/test-results/`; the previously deleted results have not been restored.
+
+The restored [browser suite](../client/tests/e2e/shared-ui.spec.js) covers:
+
+- Public, Student and Admin headers/drawers in English/Arabic and Light/Dark at 320px and 1280px; axe checks of headers, sidebars and open drawers, focus containment/return and page-width assertions with overflow masking removed.
+- Keyboard skip links, public destinations/authentication, Admin/profile navigation, preference menu arrows/Home/End/Escape, and the same authorized Admin destinations/actions on phones.
+- Loading, empty, safe generic/permission errors, explicit retry, Cancel-first confirmation focus, pending dismissal prevention, failed confirmation retry and successful focus return in both locales/themes.
+- Mobile typing entry issuing zero assignment requests; an existing sample review retaining entered correct/incorrect characters and English/LTR passage after theme, locale and viewport changes, including confirmation dismissal.
+- Existing profile/forum modal labels and focus behavior; supporting-page reflow; wrong-role denial; all Admin section controls and a contained, keyboard-focusable user table at 320px with 200% root text size.
+
+**Local verification, 22 October 2026:** `npm run lint` passed; `npm test` passed all 31 tests; `npm run build` passed Prisma generation, the client production build and server entry syntax; `npm run test:ui --workspace=client` passed all 24 browser tests using Windows Google Chrome 155.0.8059.86, Playwright 1.64.1 and axe-core 4.14.0. Representative Light/Dark and Arabic drawer screenshots were visually inspected. New documentation links, translation encoding and `git diff --check` passed. Database integration tests and remote CI were not rerun for this frontend task.
+
+This is focused shared-interface evidence, not acceptance of the entire SYS-11/53–55 range. Owner Dev 5 and reviewer Dev 1 still need to demonstrate the flows together and review the new Arabic copy. Manual screen-reader/forced-colour checks, Firefox/Edge, real-API browser journeys, complete feature-page localisation and broader release acceptance remain pending. Admin/forum/certificate screen bodies and workflows belong to their follow-on feature tasks; their fixture notices remain visible. Official scoring, reward saving and database behavior are outside FE-03.
+
+Defects found and corrected during FE-03: missing phone public navigation, drawer/dialog keyboard boundaries and focus return, disappearing menu-option focus, unsafe narrow popup placement, nested loading/permission main landmarks, assignment creation before phone guidance, overflowing certificate actions, and uncontained Admin navigation/table layout. Test-selector mistakes and Arabic encoding damage introduced during implementation were corrected before the final run. The production bundle still emits the existing over-500-kB chunk warning; local Node 24.13.1 is below the repository's pinned 24.14.0 and emitted an engine warning during test-tool installation.
+
 ## Appearance, interface language and responsive acceptance
 
 SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns proposed tokens, frame sizes and layouts. These checks are planned, not executed browser evidence.

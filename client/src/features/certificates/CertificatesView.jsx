@@ -1,3 +1,4 @@
+// Existing certificate fixture; responsive card actions use the shared shell without overflow.
 import { ShieldIcon } from '../../components/ui/Icons.jsx';
 
 export function CertificatesView({ onVerifyClick }) {
@@ -32,16 +33,16 @@ export function CertificatesView({ onVerifyClick }) {
         {certificates.map((cert) => (
           <div
             key={cert.id}
-            className="bg-surface rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex justify-between items-center p-6 border border-border-control"
+            className="bg-surface rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex min-w-0 flex-col items-stretch justify-between gap-5 p-4 border border-border-control sm:p-6 lg:flex-row lg:items-center"
           >
-            <div className="flex items-center gap-5">
+            <div className="flex min-w-0 items-start gap-3 sm:gap-5">
               <div
-                className="w-13 h-13 rounded-2xl bg-success-soft text-success-text flex items-center justify-center"
+                className="w-13 h-13 shrink-0 rounded-2xl bg-success-soft text-success-text flex items-center justify-center"
               >
                 <ShieldIcon size={28} />
               </div>
 
-              <div>
+              <div className="min-w-0 wrap-anywhere">
                 <div className="font-extrabold text-[18px] mb-1">{cert.title}</div>
                 <div className="text-[13px] text-muted">
                   Issued {cert.issueDate} • Code:{' '}
@@ -49,14 +50,14 @@ export function CertificatesView({ onVerifyClick }) {
                     {cert.code}
                   </span>
                 </div>
-                <div className="flex gap-4 mt-2 text-[13px]">
+                <div className="flex flex-wrap gap-4 mt-2 text-[13px]">
                   <span>Net Speed: <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{cert.netWpm} WPM</strong></span>
                   <span>Raw Accuracy: <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{cert.rawAccuracy}</strong></span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap gap-2.5">
               <button
                 type="button"
                 onClick={() => alert(`Downloading PDF for ${cert.code}...`)}

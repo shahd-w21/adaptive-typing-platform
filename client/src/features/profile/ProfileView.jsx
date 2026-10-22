@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// Existing account actions; the deletion modal uses the shared focus boundary.
+import { useState, useRef } from 'react';
+import { Dialog } from '../../components/ui/Dialog.jsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../context/preferences.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
@@ -22,6 +24,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
     setReducedPressure,
   } = usePreferences();
   const { t } = useTranslation();
+  const deleteCancelRef = useRef(null);
 
   const [targetWpm, setTargetWpm] = useState(user?.targetWpm ?? 60);
   const [displayName, setDisplayName] = useState(user?.name ?? '');
@@ -286,10 +289,15 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
 
       {/* Deletion Modal */}
       {showDeleteModal && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-overlay p-4 sm:p-6"
+        <Dialog
+          open
+          onClose={() => setShowDeleteModal(false)}
+          dismissible={deleteStatus !== 'deleting'}
+          labelledBy="delete-account-title"
+          initialFocusRef={deleteCancelRef}
+          role="alertdialog"
+          className="m-auto w-[calc(100%_-_2rem)] max-w-110 rounded-dialog p-5 text-center sm:p-6"
         >
-          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-account-title" className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-110 overflow-y-auto rounded-card border border-border-subtle bg-surface p-5 text-center shadow-card sm:p-6">
             <div className="text-error-text mb-3">
               <AlertCircleIcon size={36} />
             </div>
@@ -303,7 +311,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
             <input id="delete-account-password" type="password" autoComplete="current-password" value={deletePassword} onChange={event => setDeletePassword(event.target.value)} className="mb-4 h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
             {deleteError && <p className="mb-4 text-start text-sm text-error-text" role="alert">{deleteError}</p>}
             <div className="flex flex-wrap justify-center gap-3">
-              <button type="button" onClick={() => setShowDeleteModal(false)} className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed">
+              <button ref={deleteCancelRef} type="button" disabled={deleteStatus === 'deleting'} onClick={() => setShowDeleteModal(false)} className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed">
                 {t('common.cancel')}
               </button>
               <button
@@ -315,8 +323,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
                 {deleteStatus === 'deleting' ? t('profile.deleting') : t('profile.deleteAction')}
               </button>
             </div>
-          </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );

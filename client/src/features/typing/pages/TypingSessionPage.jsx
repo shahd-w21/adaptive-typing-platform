@@ -1,3 +1,4 @@
+// Existing typing lifecycle and recorder; shared confirmations only control presentation.
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../../context/preferences.js';
@@ -9,8 +10,9 @@ import { KeyboardGuide } from '../components/KeyboardGuide.jsx';
 import { OfficialResult } from '../../result/OfficialResult.jsx';
 import { AppearanceSelector } from '../../../components/controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../../../components/controls/LanguageSelector.jsx';
-import { PlayIcon, PauseIcon, RotateCcwIcon, ArrowLeftIcon, AlertCircleIcon } from '../../../components/ui/Icons.jsx';
+import { PlayIcon, PauseIcon, RotateCcwIcon, ArrowLeftIcon } from '../../../components/ui/Icons.jsx';
 import { submitSession } from '../../../api/sessions.js';
+import { ConfirmDialog } from '../../../components/ConfirmDialog.jsx';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { queryKeys } from '../../../lib/queryKeys.js';
 
@@ -388,72 +390,23 @@ export function TypingSessionPage({
         )}
       </div>
 
-      {/* Exit Confirmation Dialog */}
-      {showExitConfirm && (
-        <div
-          className="fixed inset-0 bg-overlay flex items-center justify-center z-100"
-        >
-          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-105 text-center">
-            <div className="text-warning-accent mb-3">
-              <AlertCircleIcon size={36} />
-            </div>
-            <h3 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
-              Exit Practice?
-            </h3>
-            <p className="text-[14px] text-muted mb-6">
-              {t('typing.abandonWarning')}
-            </p>
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowExitConfirm(false)}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={onExit}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
-              >
-                {t('common.exit')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Restart Confirmation Dialog */}
-      {showRestartConfirm && (
-        <div
-          className="fixed inset-0 bg-overlay flex items-center justify-center z-100"
-        >
-          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-105 text-center">
-            <h3 className="font-display rtl:font-arabic leading-[34px] font-bold text-[18px] mb-2">
-              Restart Session?
-            </h3>
-            <p className="text-[14px] text-muted mb-6">
-              {t('typing.restartWarning')}
-            </p>
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowRestartConfirm(false)}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleRestart}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none"
-              >
-                {t('common.restart')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showExitConfirm}
+        title={t('interfaceStates.exitTitle')}
+        description={t('typing.abandonWarning')}
+        confirmLabel={t('common.exit')}
+        onCancel={() => setShowExitConfirm(false)}
+        onConfirm={onExit}
+        destructive
+      />
+      <ConfirmDialog
+        open={showRestartConfirm}
+        title={t('interfaceStates.restartTitle')}
+        description={t('typing.restartWarning')}
+        confirmLabel={t('common.restart')}
+        onCancel={() => setShowRestartConfirm(false)}
+        onConfirm={handleRestart}
+      />
     </div>
   );
 }

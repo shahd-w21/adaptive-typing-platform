@@ -1,12 +1,14 @@
+// Present device requirements only; this component never creates or changes assignments.
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { MonitorIcon, KeyboardIcon, ArrowLeftIcon } from '../ui/Icons.jsx';
 
-export function DeviceGuidance({ onBack }) {
+/** The page owner decides whether Back dismisses guidance or leaves an active attempt. */
+export function DeviceGuidance({ onBack, backLabel }) {
   const { t, isRTL } = useTranslation();
 
   return (
     <div
-      className="flex flex-col items-center justify-center py-8 px-5 max-w-135 my-10 mx-auto text-center"
+      className="mx-auto flex min-w-0 max-w-135 flex-col items-center justify-center px-1 py-6 text-center wrap-anywhere sm:px-5"
     >
       <div
         className="w-18 h-18 rounded-3xl bg-warning-soft text-warning-text flex items-center justify-center mb-5 shadow-card"
@@ -47,7 +49,7 @@ export function DeviceGuidance({ onBack }) {
         <ArrowLeftIcon size={18} className={[
                                    isRTL ? 'rotate-180' : 'transform-none',
                                  ].filter(Boolean).join(' ')} />
-        <span>{t('typingGuidance.backToDashboard')}</span>
+        <span>{backLabel ?? t('typingGuidance.backToDashboard')}</span>
       </button>
     </div>
   );

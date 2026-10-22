@@ -1,4 +1,22 @@
 {
+  "navigation": {
+    "adminSections": "Administration sections",
+    "userDirectory": "User directory, scroll horizontally to see all columns",
+    "skipToContent": "Skip to main content",
+    "public": "Public navigation",
+    "student": "Student navigation",
+    "admin": "Administration navigation",
+    "homeLabel": "TypeFlow home"
+  },
+  "interfaceStates": {
+    "emptyTitle": "Nothing here yet",
+    "emptyDescription": "New items will appear here when they are available.",
+    "errorDescription": "We could not complete this request. Please try again.",
+    "confirmTitle": "Confirm this action?",
+    "confirmDescription": "Review this action before continuing.",
+    "exitTitle": "Exit practice?",
+    "restartTitle": "Restart session?"
+  },
   "apiErrors": {
     "INVALID_REQUEST": "Check the request fields and try again.",
     "INVALID_CREDENTIALS": "The email or password is incorrect.",

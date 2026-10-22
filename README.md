@@ -93,6 +93,7 @@ Pull the latest changes, run `npm install` if dependency manifests changed, appl
 | `npm run lint` | Check JavaScript/React code style and common errors |
 | `npm test` | Run unit tests |
 | `npm run test:integration` | Run database/API checks against the separate test database |
+| `npm run test:ui --workspace=client` | Run FE-03 browser/accessibility checks with installed Chrome; see [browser evidence](docs/testing.md#fe-03-shared-interface-browser-checks) |
 | `npm run build` | Generate Prisma client, build frontend, check server entry syntax |
 | `npm run db:migrate` | Apply committed development migrations |
 | `npm run db:generate` | Generate the Prisma JavaScript client after install/schema changes |

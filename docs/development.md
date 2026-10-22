@@ -106,6 +106,27 @@ The owner's 19 October 2026 appearance update selects a shared Mint palette for 
 
 Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
 
+### FE-03 shared interface handoff
+
+FE-03 keeps the existing FE-01 view names, `onNavigate(view)`, `onLogout` and `user` props. `AdminShell` reuses the authenticated shell with Admin-only destinations; profile and logout remain available at both desktop and mobile widths. Existing Admin section controls stay in `AdminView`, wrap on phones, and retain the same actions. Role guards and server checks remain authoritative.
+
+Public and authenticated layouts expose `#main-content` for skip navigation and route focus. Shared native dialogs make the background inert, cycle Tab/Shift+Tab, support Escape/backdrop dismissal when allowed, and restore the opener. If navigation removes the opener, the destination main region receives focus. Appearance/language menus use menu-button/radio semantics with arrow, Home/End, Escape and Tab behavior; their position is constrained to the viewport. `index.css` remains the only styling entry point.
+
+Additive component props for page-owner/reviewer review:
+
+| Component | Props and ownership |
+| --- | --- |
+| `Loading` | `label` or `labelKey`, optional `compact`; announces status without fake progress |
+| `EmptyState` | Localized `title`, `description`, optional paired `actionLabel`/`onAction` |
+| `ErrorMessage` | `error.code` maps to safe interface copy; optional localized `title`/`message`, `onRetry`, `retrying`; never pass raw server text as UI copy |
+| `ConfirmDialog` | Controlled `open`, `onCancel`, `onConfirm`; localized title/description/button labels, `pending`, `error`, `destructive`; page closes after success and retains error/retry state after failure |
+| `Dialog` | Internal modal boundary in `components/ui/Dialog.jsx`; label or labelled-by ID, optional description ID/initial-focus ref, controlled `open`/`onClose`, `dismissible` |
+| `DeviceGuidance` | `onBack`, optional localized `backLabel`; presentation only, no assignment or session effects |
+
+Typing launch now checks the live viewport before either a real assignment request or a sample attempt is created. Resizing an existing attempt shows guidance while retaining its mounted typing page and existing pause/resume rules; Escape on that guidance cannot abandon the attempt. The explicit Back action retains the existing exit behavior. Existing authentication, profile, forum and typing dialogs adopt the shared boundary; screen contents and recording/scoring logic are preserved. Certificate cards only receive reflow fixes.
+
+Data boundaries remain explicit: authentication, session restoration, profile/preferences, dashboard and adaptive-practice start/submit use the real API. Forum, certificate list, Admin management/analytics and sample review/tests remain development fixtures; Admin access probing uses the real API. Shared states/dialogs do not fetch or persist data. FE-03 browser tests intercept all API calls with disposable presentation fixtures and do not use a live database. The suite is restored; previously deleted results remain absent. See [test evidence and remaining review](testing.md#fe-03-shared-interface-browser-checks).
+
 ## GitHub CI
 
 [The CI workflow](../.github/workflows/ci.yml) uses Ubuntu 24.04 and the Node.js version in `.nvmrc`. It installs all workspaces from the root lockfile, generates Prisma, runs lint, unit tests and PostgreSQL integration tests, then builds the client and checks server entry syntax. It supplies an ephemeral `typeflow_test` database and CI-only configuration; integration tests inject a mail sink. Failed steps stop later checks.

@@ -228,7 +228,7 @@
     min-height: 100vh;
     background-color: var(--tf-color-bg-page);
     color: var(--tf-color-text-primary);
-    overflow-x: hidden;
+    /* Reflow belongs to layouts; do not hide overflowing or unreachable actions. */
   }
 
   :focus-visible {
@@ -253,6 +253,25 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* Shared skip navigation stays visible above headers when reached by keyboard. */
+.skip-link {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  z-index: 200;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tf-color-border-control);
+  border-radius: 12px;
+  background: var(--tf-color-bg-surface);
+  color: var(--tf-color-action-link);
+  transform: translateY(calc(-100% - 1rem));
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 @keyframes caret-blink {
