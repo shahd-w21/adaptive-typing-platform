@@ -101,11 +101,12 @@ function SessionError() {
 
 function AuthRoute({ mode }) {
   const { status, user, signIn, signUp } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
   if (status === 'loading') {
-    return <main className="flex min-h-screen items-center justify-center bg-page p-6"><Loading labelKey="auth.sessionLoading" /></main>;
+    return <main className="flex min-h-screen items-center justify-center bg-page p-6"><Loading label={t('auth.sessionLoading')} /></main>;
   }
   if (status === 'authenticated') return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
 
