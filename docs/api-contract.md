@@ -129,6 +129,19 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 
 Outside the base path: proposed `GET /health/live` and `GET /health/ready`. Placement, review and both test types share `/sessions`; mode selects behaviour. No Google-login endpoint.
 
+## FE-08 forum development fixture boundary
+
+The forum routes, shared runtime schemas and public reading policy remain **Contract to agree**. FE-08 does not implement or call `/forum/*`, expose public reading, or approve a moderation policy. The existing authenticated `/forum` screen uses an explicitly labelled in-memory adapter only in Vite development. Production returns `FEATURE_UNAVAILABLE`; there is no API-error-to-fixture fallback. All reading, creation, replies, accepted answers and reports are fixtures. Changes disappear on leaving the screen or reloading.
+
+The following feature-local shapes support UI review only; backend/DTO owners must agree them before real integration:
+
+- List: `items`, `page`, `totalPages`, `totalItems`, `permissions.canCreateThread`. Visible summaries include `id`, `status`, authored `title`/`author`, category code, `replyCount` and nullable `acceptedReplyId`. Draft fixture list inputs are `page`, `search`, `category` (`all` or a category code) and `answerStatus` (`all`, `accepted`, `unaccepted`). Search matches visible discussion titles/body text case-insensitively, with outer query whitespace ignored; it does not search replies or rewrite authored text. Combined criteria apply before pagination; filtered matches/counts exclude non-visible posts. Unfiltered browsing retains structural placeholders. These are fixture conventions pending real API agreement.
+- Detail: the visible summary plus authored `body`, a page of `replies`, reply `page`/`totalPages`, and explicit `permissions.canReply`, `canAcceptAnswer`, `canReport`. Visible replies contain `id`, `status`, authored `author`/`body` and `permissions.canReport`. `acceptedReplyId` describes the entire thread, including other pages.
+- Visibility: `visible`, `hidden`, `unavailable`. Non-visible records contain structural identity/status only, with no authored text or author identity. The renderer independently suppresses authored fields/actions on any non-visible or unknown status. Real ordinary responses must enforce omission on the server; UI suppression is not access control.
+- Writes: create takes `title`, `body`, category; reply takes `threadId`, `body`; accept takes `threadId`, `replyId`; report takes `threadId`, `postId`, `reason`. Each fixture operation carries a `requestId`, retained for unchanged explicit retries. Create returns `threadId`; reply returns `threadId`/reply `page`; accept/report acknowledge `threadId`. The UI refreshes DTOs after acknowledgement rather than inventing counts, acceptance or visibility.
+
+Fixture-only input bounds are title 180 characters, discussion/reply 5000, report reason 1000; categories are `technique`, `adaptive`, `hardware`, `general`. These are draft UI constraints, not approved server limits. Fixture owner/permission checks and replay receipts demonstrate the flows; the real server must independently enforce authentication, ownership, revocation, CSRF, validation, atomic single-answer replacement and idempotent writes. Reporting acknowledges a concern without hiding content in the browser. Permission flags are explicit UI hints; absent flags disable controls, and no Admin moderation controls are added by FE-08.
+
 ## Presentation-preference draft
 
 Required behaviour is recorded in [decision 0002](decisions.md#0002); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
