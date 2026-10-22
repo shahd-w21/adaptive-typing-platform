@@ -285,7 +285,6 @@ function AuthenticatedLayout({
     '/tests',
     '/achievements',
     '/certificates',
-    '/forum',
     '/admin',
   ];
   const usesFixtureData = fixtureRoutes.includes(location.pathname);

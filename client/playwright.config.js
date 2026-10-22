@@ -1,4 +1,4 @@
-// FE-03 browser checks use installed Chrome and an isolated Vite test origin.
+// Dashboard, shared-interface and forum browser checks use Chrome and an isolated Vite origin.
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
