@@ -21,6 +21,6 @@ export function RequireAuth({ children }) {
   const location = useLocation();
   if (status === 'loading') return <SessionState />;
   if (status === 'error') return <SessionState error />;
-  if (status === 'anonymous') return <Navigate to="/register" replace state={{ from: location }} />;
+  if (status === 'anonymous') return <Navigate to="/register" replace state={{ from: location, reason: 'auth-required' }} />;
   return children ?? <Outlet />;
 }

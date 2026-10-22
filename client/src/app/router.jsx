@@ -106,6 +106,11 @@ function AuthRoute({ mode }) {
   return (
     <PublicLayout activeTab="landing">
       <LandingPage onStartLearning={() => navigate('/register')} onLogin={() => navigate('/login')} />
+      {location.state?.reason === 'auth-required' && (
+        <p className="mx-auto mb-4 max-w-xl rounded-control border border-warning-accent/40 bg-warning-soft px-4 py-3 text-center text-warning-text" role="status">
+          {t('auth.authRequired')}
+        </p>
+      )}
       {status === 'error' && <SessionError />}
       <AuthModal
         mode={mode}
