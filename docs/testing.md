@@ -1,6 +1,24 @@
 # Testing and acceptance
 
-**Status: verification plan; no application checks have been executed as part of documentation work.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+**Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+
+## FE-06 / FE-10 verification — 22 October 2026
+
+Implemented the existing dashboard and owned-practice boundaries; this is not acceptance of future courses or every typing mode.
+
+| Check | Evidence / result |
+| --- | --- |
+| Unit tests | 43 passed, including 11 new dashboard/controller checks: DTO validation, nullable/zero values, double start, frozen retries, dropped-response recovery, reload, failed abandonment and late account/logout responses |
+| Real API integration | 7 passed against guarded `typeflow_test`; the new test uses real cookie authentication, server assignment/scoring, deliberately drops a committed response, recovers without resubmitting, and verifies dashboard history/XP/streak |
+| Browser checks | 36 passed in Chrome 155.0.8059.85: 12 new dashboard/session checks plus the 24 existing shared UI checks |
+| Dashboard states | New/returning accounts, loading, no history, permission denial, server error/retry, isolated path failure and stale-data warning after refresh failure |
+| Presentation | English/Arabic and Light/Dark dashboard reflow/accessibility; existing System resolver checks; real-assignment fixture survives theme/locale/large-text/viewport changes with its recorded input intact |
+| Browser data source | Explicit intercepted HTTP fixtures; no developer database writes. The real scoring/authentication loop is the separate PostgreSQL integration test, not a mocked browser claim |
+| Static/build checks | Root lint and production build passed; the existing JavaScript bundle-size warning remains |
+
+Defects found and resolved: keyboard-inaccessible horizontal history table; malformed path-error prop; premature redirect before reload recovery; lost pointer after failed recovery; external font timeouts; cold-run assertion timeouts. Browser tests isolate external fonts and exercise fallback fonts; production font delivery is unchanged. The final run uses condition-based waits, a 60-second test limit and 15-second assertion limit. No fixed sleeps were added.
+
+**Handoff / still pending:** Dev 4 dashboard review, Dev 1 lifecycle review, human Arabic wording approval, live browser cookie/CORS and screen-reader acceptance, and visual review with delivered web fonts. Course resume contracts, placement/review/test APIs, translated reason codes and FE-16 reward notifications remain future work. The backend has no idempotent start contract; a lost start response may leave an orphan assignment, which is explained without an automatic retry. Unfinished typing events are intentionally not persisted across reload.
 
 ## Test layers
 
@@ -74,6 +92,8 @@ Coverage includes list loading/error/retry and empty state; list/reply paginatio
 Defects corrected during FE-08 include lost keyboard focus after an accepted-answer/report control disappears, retained generic fixture notices on an unavailable production forum, ambiguous browser-test selectors, an incomplete authentication test DTO and an incorrect test expectation about the existing anonymous redirect (`/register`). The final run has no failing checks. The existing production bundle-size warning above 500 kB remains.
 
 **Search/filter follow-up, 22 October 2026:** root lint, client production build and all 45 browser tests pass (21 forum and 24 shared-interface checks). Added checks cover combined search/category/accepted-answer criteria before pagination, page reset, Clear filters, no-match recovery, off-page matches, exclusion of hidden/deleted text from filtered matches/counts, failed search retry, rapid query replacement, and Arabic criteria retained across detail navigation and appearance/locale changes. The complete English/Arabic Light/Dark viewport/accessibility matrix still passes, including 200% text reflow and the active typing-state regression. English desktop and Arabic mobile list screenshots were visually inspected; all 61 forum translation leaf keys/placeholders match, and `git diff --check` passes. Search/filter flows use development fixtures; the production API gate and existing bundle-size warning remain. Backend/database checks were not rerun for this frontend-only follow-up.
+
+**FE-06 / FE-08 merge verification, 22 October 2026:** root lint, all 43 unit tests and the full build passed. The combined browser configuration discovers all 57 dashboard, forum and shared-interface tests. The parallel run passed 50 and failed 7; rerunning the 7 failures with `npm run test:ui --workspace=client -- --last-failed --workers=1 --timeout=180000` passed 5. Across both runs, 55 checks passed. Two existing shared confirmation-dialog checks (English Light/Dark, `shared-ui.spec.js`) remain failing around the transient disabled Cancel state / Escape behavior. The test and dialog implementation were unchanged by this merge; investigation remains open, and the combined browser suite is not fully green. The existing bundle-size warning remains. No database integration checks were rerun for this merge.
 
 Owner Dev 5 and reviewer Dev 4 must still demonstrate the behavior together and review Arabic copy. Forum DTO/shared schemas, public reading policy, real server authorization/moderation and persistence remain unimplemented team gates; these fixture checks do not establish SYS-39/40 end-to-end acceptance. Database integration, remote CI, manual screen-reader/forced-colour checks and other browsers are outside this local frontend verification.
 

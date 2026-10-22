@@ -1,0 +1,326 @@
+/** Browser UI/failure fixtures only; the real API loop is tested separately in PostgreSQL. */
+import { test, expect } from '../support/browser.js';
+import AxeBuilder from '@axe-core/playwright';
+import { studentUser } from '../../src/mocks/users.js';
+import {
+  dashboardResponse,
+  newStudentDashboardResponse,
+  pathResponse,
+} from '../../src/mocks/dashboard.js';
+import { sessionAssignment, sessionResult } from '../../src/mocks/sessions.js';
+
+/** Intercept every request: presentation tests never write to a developer's database. */
+async function setup(
+  page,
+  {
+    locale = 'en',
+    theme = 'light',
+    fresh = false,
+    dashboardStatus = 200,
+    pathStatus = 200,
+    pointer = false,
+    recovered = false,
+    dropSubmit = false,
+    delayDashboard = false,
+  } = {},
+) {
+  const account = structuredClone(studentUser);
+  account.preferences = { themePreference: theme, uiLocale: locale };
+  let summary = structuredClone(
+    fresh ? newStudentDashboardResponse : dashboardResponse,
+  );
+  let saved = recovered;
+  let starts = 0;
+  let submits = 0;
+  let currentDashboardStatus = dashboardStatus;
+  const bodies = [];
+  let releaseDashboard;
+  const dashboardGate = new Promise((resolve) => {
+    releaseDashboard = resolve;
+  });
+  if (!delayDashboard) {
+    releaseDashboard();
+  }
+  const assignment = {
+    ...sessionAssignment,
+    expiresAt: new Date(Date.now() + 3600000).toISOString(),
+  };
+  await page.addInitScript(
+    ({ pointer, ownerId, sessionId }) => {
+      if (pointer && !sessionStorage.getItem('typeflow.activeSession')) {
+        sessionStorage.setItem(
+          'typeflow.activeSession',
+          JSON.stringify({ ownerId, sessionId }),
+        );
+      }
+    },
+    { pointer, ownerId: account.id, sessionId: assignment.sessionId },
+  );
+  await page.route('**/api/v1/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname.replace('/api/v1', '');
+    if (path === '/auth/me') {
+      return route.fulfill({
+        json: { user: account, csrfToken: 'a'.repeat(64) },
+      });
+    }
+    if (path === '/users/me' && request.method() === 'PATCH') {
+      const patch = request.postDataJSON();
+      account.preferences = { ...account.preferences, ...patch.preferences };
+      return route.fulfill({ json: { user: account } });
+    }
+    if (path === '/dashboard') {
+      await dashboardGate;
+      return route.fulfill({
+        status: currentDashboardStatus,
+        json:
+          currentDashboardStatus === 200
+            ? summary
+            : {
+                error: {
+                  code:
+                    currentDashboardStatus === 403
+                      ? 'FORBIDDEN'
+                      : 'SERVICE_UNAVAILABLE',
+                },
+              },
+      });
+    }
+    if (path === '/path') {
+      return route.fulfill({
+        status: pathStatus,
+        json:
+          pathStatus === 200 ? pathResponse : { error: { code: 'FORBIDDEN' } },
+      });
+    }
+    if (path === '/sessions' && request.method() === 'POST') {
+      starts += 1;
+      return route.fulfill({ json: assignment });
+    }
+    if (path.endsWith('/submit')) {
+      submits += 1;
+      bodies.push(request.postDataJSON());
+      saved = true;
+      summary = {
+        ...dashboardResponse,
+        user: { ...dashboardResponse.user, xp: 777 },
+      };
+      return dropSubmit
+        ? route.abort('failed')
+        : route.fulfill({ json: sessionResult });
+    }
+    if (path === `/sessions/${assignment.sessionId}`) {
+      return route.fulfill({
+        json: saved ? sessionResult : { ...assignment, status: 'created' },
+      });
+    }
+    if (path.endsWith('/abandon')) {
+      return route.fulfill({ json: { status: 'abandoned' } });
+    }
+    return route.fulfill({
+      status: 503,
+      json: { error: { code: 'SERVICE_UNAVAILABLE' } },
+    });
+  });
+  return {
+    get starts() {
+      return starts;
+    },
+    get submits() {
+      return submits;
+    },
+    bodies,
+    succeed: () => {
+      currentDashboardStatus = 200;
+    },
+    fail: () => {
+      currentDashboardStatus = 503;
+    },
+    releaseDashboard,
+  };
+}
+
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`dashboard reflows and is accessible in ${locale}/${theme}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await setup(page, { locale, theme });
+      await page.goto('/dashboard');
+      await expect(page.getByRole('table')).toBeVisible();
+      await expect(page.getByRole('progressbar')).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute(
+        'dir',
+        locale === 'ar' ? 'rtl' : 'ltr',
+      );
+      const width = await page.evaluate(() => ({
+        visible: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth,
+      }));
+      expect(width.scroll).toBeLessThanOrEqual(width.visible + 1);
+      const axe = await new AxeBuilder({ page })
+        .include('#main-content')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+      expect(axe.violations).toEqual([]);
+    });
+  }
+}
+
+test('new account shows no history and an honest placement/practice distinction', async ({
+  page,
+}) => {
+  const api = await setup(page, { fresh: true });
+  await page.goto('/dashboard');
+  await expect(
+    page.getByText('This recommended mode is not available yet.', {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Start adaptive practice instead' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Course resume is not connected' }),
+  ).toBeDisabled();
+  expect(api.starts).toBe(0);
+});
+
+test('loading remains explicit until the dashboard response arrives', async ({
+  page,
+}) => {
+  const api = await setup(page, { delayDashboard: true });
+  await page.goto('/dashboard');
+  await expect(page.getByRole('status')).toContainText(
+    'Loading your dashboard',
+  );
+  await expect(page.getByRole('progressbar')).toHaveCount(0);
+  api.releaseDashboard();
+  await expect(page.getByRole('table')).toBeVisible();
+});
+
+test('server failure retries successfully and path permission failure remains isolated', async ({
+  page,
+}) => {
+  const api = await setup(page, { dashboardStatus: 503, pathStatus: 403 });
+  await page.goto('/dashboard');
+  await expect(
+    page.getByRole('button', { name: 'Retry', exact: true }),
+  ).toBeVisible();
+  api.succeed();
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('permission');
+  await expect(page.getByRole('progressbar')).toBeVisible();
+});
+
+test('dashboard permission denial does not offer a blind retry', async ({
+  page,
+}) => {
+  await setup(page, { dashboardStatus: 403 });
+  await page.goto('/dashboard');
+  await expect(page.getByRole('alert')).toContainText('permission');
+  await expect(
+    page.getByRole('button', { name: 'Retry', exact: true }),
+  ).toHaveCount(0);
+});
+
+test('reload recovers a saved result without start or submit', async ({
+  page,
+}) => {
+  const api = await setup(page, { pointer: true, recovered: true });
+  await page.goto('/typing');
+  await expect(
+    page.getByRole('button', { name: 'Return to dashboard' }),
+  ).toBeVisible();
+  expect(api.starts).toBe(0);
+  expect(api.submits).toBe(0);
+});
+
+test('unfinished reload explains lost progress; explicit restart allocates one attempt', async ({
+  page,
+}) => {
+  const api = await setup(page, { pointer: true });
+  await page.goto('/typing');
+  await expect(
+    page.getByText('Typing progress was not stored', { exact: false }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Abandon and start a new attempt' })
+    .click();
+  await expect(
+    page.getByRole('textbox', { name: 'Typing input stream' }),
+  ).toBeAttached();
+  expect(api.starts).toBe(1);
+});
+
+test('typing survives preference/viewport changes; lost submission recovers and refreshes dashboard', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const api = await setup(page, { dropSubmit: true });
+  await page.goto('/dashboard');
+  await page
+    .getByRole('button', { name: 'Start adaptive practice', exact: true })
+    .click();
+  const input = page.getByRole('textbox', { name: 'Typing input stream' });
+  await input.pressSequentially(sessionAssignment.text.slice(0, 3), {
+    delay: 20,
+  });
+  // Existing controls update presentation, not assignment identity/recorded events.
+  await page.getByRole('button', { name: /Large Text:/ }).click();
+  await page.getByRole('button', { name: 'Appearance: Light' }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('menuitemradio', { name: 'العربية' }).click();
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await page.setViewportSize({ width: 900, height: 800 });
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  // Switch back using the existing localized preference menu, not a remount.
+  await page.getByRole('button', { name: /اللغة:/ }).click();
+  await page.getByRole('menuitemradio', { name: 'English' }).click();
+  await input.focus();
+  await input.pressSequentially(sessionAssignment.text.slice(3), { delay: 20 });
+  await expect(
+    page.getByRole('button', { name: 'Retry', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await page.getByRole('button', { name: 'Return to dashboard' }).click();
+  await expect(page.getByText('777 XP', { exact: true })).toBeVisible();
+  expect(api.starts).toBe(1);
+  expect(api.submits).toBe(1);
+  expect(
+    api.bodies[0].events
+      .filter((event) => event.type === 'insert')
+      .map((event) => event.char)
+      .join(''),
+  ).toBe(sessionAssignment.text);
+  expect(Object.keys(api.bodies[0]).sort()).toEqual(['events', 'finishTimeMs']);
+});
+
+test('a summary refresh failure retains previous data after an official result', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const api = await setup(page);
+  await page.goto('/dashboard');
+  await page
+    .getByRole('button', { name: 'Start adaptive practice', exact: true })
+    .click();
+  await page
+    .getByRole('textbox', { name: 'Typing input stream' })
+    .pressSequentially(sessionAssignment.text);
+  await expect(
+    page.getByRole('button', { name: 'Return to dashboard' }),
+  ).toBeVisible();
+  api.fail();
+  await page.getByRole('button', { name: 'Return to dashboard' }).click();
+  await expect(
+    page.getByText('Showing previously loaded data. Refresh failed.'),
+  ).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.getByRole('progressbar')).toBeVisible();
+});

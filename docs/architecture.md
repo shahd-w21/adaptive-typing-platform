@@ -653,13 +653,13 @@ Start practice
 
 | Step | What happens | Where it happens |
 | --- | --- | --- |
-| 1. Launch real mode | Request an assignment, not a locally invented exercise. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → launchTyping({ serverPractice: true }); [api/sessions.js](../client/src/api/sessions.js): startPracticeSession() |
+| 1. Launch real mode | Request an assignment, not a locally invented exercise. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → launchTyping({ serverPractice: true }) → useTypingSession().controller.startPractice(); [api/sessions.js](../client/src/api/sessions.js): startPracticeSession() |
 | 2. Validate access/input | Require authenticated Student, CSRF and practice request shape. | [sessions/routes.js](../server/src/modules/sessions/routes.js): sessionRoutes(), POST handler; [shared/session.js](../packages/shared/src/session.js): startSessionSchema |
 | 3. Read policy/evidence | Load prototype settings; briefly lock user and read initialized eligible keys. | [sessions/service.js](../server/src/modules/sessions/service.js): start(); [stats/service.js](../server/src/modules/stats/service.js): ensureKeyProgress(); [db/transaction.js](../server/src/db/transaction.js): transaction() |
 | 4. Produce text | Weight available keys and generate fallback outside the read transaction. | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): keyWeight(), generatePracticeText() |
 | 5. Capture assignment | Save owner, exact text, rules/target/timezone, settings reference and expiry. | Sessions service: start() → database.typingSession.create() |
 | 6. Check response | Validate assignment DTO before the page uses it. | [api/client.js](../client/src/api/client.js): request(); [shared/session.js](../packages/shared/src/session.js): sessionAssignmentSchema |
-| 7. Enter typing | Store ID/text in active-session React state and navigate to /typing. | [router.jsx](../client/src/app/router.jsx): launchTyping(), AuthenticatedLayout(); [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): TypingSessionPage() |
+| 7. Enter typing | Keep the full assignment in the owner-scoped controller; the router navigates to /typing. | [router.jsx](../client/src/app/router.jsx): launchTyping(), AuthenticatedLayout(); [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): TypingSessionPage() |
 
 **Current limits:**
 
@@ -667,7 +667,8 @@ Start practice
 - Missing settings/unlocked content returns CONTENT_NOT_READY, not an empty exercise.
 - No LLM/cache orchestrator is called by current start().
 - Router source='server' means API-backed; assignment source='fallback' describes text generation.
-- The router retains only part of the assignment DTO. Reload recovery and full expiry/rule handling remain integration work.
+- [useTypingSession.js](../client/src/features/typing/hooks/useTypingSession.js) owns one controller above routes. [sessionController.js](../client/src/features/typing/sessionController.js): startPractice() prevents duplicate pending starts; restart() confirms abandonment before replacement.
+- Reload stores only owner/session IDs in tab storage. recover() retrieves real owned status; [SessionRecovery.jsx](../client/src/features/typing/components/SessionRecovery.jsx) explains lost typing progress. Completed results recover directly; unfinished attempts require explicit abandon/restart.
 - Planned lesson/placement/review/test modes must reuse this lifecycle with reviewed mode rules.
 
 ### 6.7 While the student types — current
@@ -727,7 +728,7 @@ Captured events
 
 | Event | What happens | Where it happens |
 | --- | --- | --- |
-| Confirmed submission | Mark this owner's dashboard/path/progress/reward queries stale. | [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): handleComplete() invalidation loop |
+| Confirmed submission or recovered result | Cache the owned result and refresh dashboard/path/progress/rewards/history plus the shell's identity summary. | [useTypingSession.js](../client/src/features/typing/hooks/useTypingSession.js): onResult callback; [sessionController.js](../client/src/features/typing/sessionController.js): acceptResult() |
 | Confirmed profile save | Refresh affected dashboard/reward summaries. | [ProfileView.jsx](../client/src/features/profile/ProfileView.jsx): saveProfile() |
 | Active stale query | TanStack normally refetches it; subscribers render updated data. | Existing useDashboard(), useLearningPath(), useProgress(), useGamification() hooks |
 | Cancel owner reads | AbortSignal reaches Fetch; cancelled query data cannot populate its cache. | Query functions in [client/src/api](../client/src/api); [api/client.js](../client/src/api/client.js): request() |
@@ -744,7 +745,9 @@ Captured events
 
 **Where support exists:** [api/sessions.js](../client/src/api/sessions.js), fetchSession()/submitSession(); [sessions/service.js](../server/src/modules/sessions/service.js), get()/submit().
 
-**Still pending:** complete retry/reload UX, account-switch race acceptance and deduplicated reward notifications. request() never automatically retries writes. Future notifications must deduplicate saved reward event IDs.
+**Current retry/reload boundary:** [useSubmitSession.js](../client/src/features/typing/hooks/useSubmitSession.js) delegates to sessionController.submit()/retry(). The first payload is copied once; explicit retry retrieves owned status before resending the identical body. Recovered results refresh owner summaries without new reward notifications. Late responses are invalidated on logout/account change. request() never automatically retries writes.
+
+**Still pending:** human/browser acceptance recorded in testing, backend start idempotency, and future FE-16 notification UI. Notifications must consume the controller's deduplicated newRewards, not replay saved rewards.
 
 ### 6.10 Adaptive decisions, future courses and LLMs
 
@@ -849,7 +852,7 @@ Do not invent function names or mounted endpoints for reserved files. Future int
 
 **Current limitation:** the retention timer is process-local. It does not guarantee work while the host sleeps or provide durable cross-instance scheduling.
 
-**Persistence limit:** query cache, active typing state and guest preferences are different from saved learning results. Full reload recovery must be designed explicitly.
+**Persistence limit:** query cache, active typing state and guest preferences are different from saved learning results. Reload recovery checks the stored owner/session pointer against the API; raw typing events are not persisted, so unfinished typing progress cannot resume.
 
 Use [development](development.md#database-workflow) for database commands and [testing](testing.md) for acceptance evidence. Test execution must use the guarded dedicated test database.
 

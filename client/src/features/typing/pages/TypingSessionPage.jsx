@@ -1,33 +1,40 @@
 // Existing typing lifecycle and recorder; shared confirmations only control presentation.
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../../context/preferences.js';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { KeystrokeRecorder } from '../engine/keystrokeRecorder.js';
-import { computeLiveMetrics, computeOfficialResults } from '../engine/liveMetrics.js';
+import {
+  computeLiveMetrics,
+  computeOfficialResults,
+} from '../engine/liveMetrics.js';
 import { TypingStage } from '../components/TypingStage.jsx';
 import { KeyboardGuide } from '../components/KeyboardGuide.jsx';
 import { OfficialResult } from '../../result/OfficialResult.jsx';
 import { AppearanceSelector } from '../../../components/controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../../../components/controls/LanguageSelector.jsx';
-import { PlayIcon, PauseIcon, RotateCcwIcon, ArrowLeftIcon } from '../../../components/ui/Icons.jsx';
-import { submitSession } from '../../../api/sessions.js';
+import {
+  PlayIcon,
+  PauseIcon,
+  RotateCcwIcon,
+  ArrowLeftIcon,
+} from '../../../components/ui/Icons.jsx';
+import { useSubmitSession } from '../hooks/useSubmitSession.js';
+import { ErrorMessage } from '../../../components/ErrorMessage.jsx';
 import { ConfirmDialog } from '../../../components/ConfirmDialog.jsx';
-import { useAuth } from '../../../hooks/useAuth.js';
-import { queryKeys } from '../../../lib/queryKeys.js';
 
 export function TypingSessionPage({
   sessionId = 'session-101',
   mode = 'Adaptive Practice',
   assignedText = 'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
   isFixture = true,
+  controller,
   onRetrySession,
   isActive = true,
   onExit,
 }) {
-  const { csrfToken, user } = useAuth();
-  const queryClient = useQueryClient();
-  const { largeText, setLargeText, reducedPressure, setReducedPressure } = usePreferences();
+  const submission = useSubmitSession(controller);
+  const { largeText, setLargeText, reducedPressure, setReducedPressure } =
+    usePreferences();
   const { t, isRTL } = useTranslation();
 
   // Engine state
@@ -35,10 +42,23 @@ export function TypingSessionPage({
   const [totalInserts, setTotalInserts] = useState(0);
   const [correctInserts, setCorrectInserts] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [officialResult, setOfficialResult] = useState(null);
-  const [submissionError, setSubmissionError] = useState('');
+  const isSubmitting = !isFixture && submission.isSubmitting;
+  const [fixtureCompleted, setFixtureCompleted] = useState(false);
+  const isCompleted = isFixture
+    ? fixtureCompleted
+    : submission.status === 'completed';
+  const [fixtureResult, setFixtureResult] = useState(null);
+  const officialResult = isFixture
+    ? fixtureResult
+    : submission.result
+      ? {
+          ...submission.result.metrics,
+          durationMs: submission.result.metrics.activeDurationMs,
+          xpEarned: submission.result.xpEarned,
+          streakDays: submission.result.streak,
+        }
+      : null;
+  const inputLocked = !isFixture && submission.inputLocked;
 
   // Dialog states
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -60,7 +80,13 @@ export function TypingSessionPage({
   }, [sessionId]);
 
   useEffect(() => {
-    if (!isActive && buffer.length > 0 && !isPaused && !isCompleted) {
+    if (
+      !isActive &&
+      buffer.length > 0 &&
+      !isPaused &&
+      !isCompleted &&
+      !inputLocked
+    ) {
       recorderRef.current?.recordPause();
       autoPausedRef.current = true;
       // Pause the recorder when navigation hides the active session.
@@ -71,11 +97,17 @@ export function TypingSessionPage({
       autoPausedRef.current = false;
       setIsPaused(false);
     }
-  }, [isActive, buffer.length, isPaused, isCompleted]);
+  }, [isActive, buffer.length, isPaused, isCompleted, inputLocked]);
 
   // Active elapsed timer
   useEffect(() => {
-    if (buffer.length > 0 && !isPaused && !isCompleted && isActive) {
+    if (
+      buffer.length > 0 &&
+      !isPaused &&
+      !isCompleted &&
+      !inputLocked &&
+      isActive
+    ) {
       timerIntervalRef.current = setInterval(() => {
         if (recorderRef.current) {
           setElapsedMs(recorderRef.current.getElapsedMs());
@@ -87,20 +119,22 @@ export function TypingSessionPage({
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [buffer.length, isPaused, isCompleted, isActive]);
+  }, [buffer.length, isPaused, isCompleted, inputLocked, isActive]);
 
   // Handle Printable Character Input
   const handleCharInput = (char) => {
-    if (isCompleted || isPaused || !isActive || isSubmitting) return;
+    if (isCompleted || isPaused || !isActive || isSubmitting || inputLocked)
+      return;
 
     const currentPos = buffer.length;
-    if (currentPos>= assignedText.length) return;
+    if (currentPos >= assignedText.length) return;
 
     const expectedChar = assignedText[currentPos];
     const isCorrect = char === expectedChar;
 
     // Record monotonic event
     recorderRef.current?.recordInsert(char);
+    if (!isFixture) controller.setPhase('typing');
 
     const newBuffer = buffer + char;
     setBuffer(newBuffer);
@@ -110,14 +144,26 @@ export function TypingSessionPage({
     }
 
     // Check completion condition
-    if (newBuffer.length>= assignedText.length) {
-      handleComplete(newBuffer, totalInserts + 1, correctInserts + (isCorrect ? 1 : 0));
+    if (newBuffer.length >= assignedText.length) {
+      handleComplete(
+        newBuffer,
+        totalInserts + 1,
+        correctInserts + (isCorrect ? 1 : 0),
+      );
     }
   };
 
   // Handle End-of-Buffer Backspace
   const handleBackspace = () => {
-    if (buffer.length === 0 || isCompleted || isPaused || !isActive || isSubmitting) return;
+    if (
+      buffer.length === 0 ||
+      isCompleted ||
+      isPaused ||
+      !isActive ||
+      isSubmitting ||
+      inputLocked
+    )
+      return;
 
     recorderRef.current?.recordBackspace();
     setBuffer((prev) => prev.slice(0, -1));
@@ -125,61 +171,63 @@ export function TypingSessionPage({
 
   // Toggle Pause (valid pause intervals are excluded from duration)
   const togglePause = () => {
-    if (isCompleted) return;
+    if (isCompleted || inputLocked) return;
     if (isPaused) {
       recorderRef.current?.recordResume();
       setIsPaused(false);
+      if (!isFixture) controller.setPhase('typing');
     } else {
       recorderRef.current?.recordPause();
       setIsPaused(true);
+      if (!isFixture) controller.setPhase('paused');
     }
   };
 
-  // Session Submission & Official Scoring
-  const handleComplete = async (finalBuffer, finalTotalInserts, finalCorrectInserts) => {
-    setIsSubmitting(true);
-    setSubmissionError('');
+  /** Freeze only wire events/timing; official scoring always comes from the API. */
+  const handleComplete = async (
+    finalBuffer,
+    finalTotalInserts,
+    finalCorrectInserts,
+  ) => {
     if (isFixture) {
-      const result = computeOfficialResults({ totalInserts: finalTotalInserts, correctInserts: finalCorrectInserts,
-        buffer: finalBuffer, assignedText, activeDurationMs: recorderRef.current?.getElapsedMs() ?? 0 });
-      setOfficialResult({ ...result, sample: true });
-      setIsCompleted(true);
-      setIsSubmitting(false);
+      const result = computeOfficialResults({
+        totalInserts: finalTotalInserts,
+        correctInserts: finalCorrectInserts,
+        buffer: finalBuffer,
+        assignedText,
+        activeDurationMs: recorderRef.current?.getElapsedMs() ?? 0,
+      });
+      setFixtureResult({ ...result, sample: true });
+      setFixtureCompleted(true);
       return;
     }
-    try {
-      const payload = recorderRef.current.getSubmissionPayload(sessionId);
-      const result = await submitSession(sessionId, { events: payload.events, finishTimeMs: payload.finishTime }, csrfToken);
-      for (const queryKey of [queryKeys.dashboard, queryKeys.path, queryKeys.progress, queryKeys.gamification]) {
-        // Refresh saved summaries for this owner; presentation/typing state
-        // stays local and must not be reset by cache invalidation.
-        if (user) void queryClient.invalidateQueries({ queryKey: queryKey(user.id) });
-      }
-      setOfficialResult({ ...result.metrics, durationMs: result.metrics.activeDurationMs,
-        xpEarned: result.xpEarned, streakDays: result.streak });
-      setIsCompleted(true);
-    } catch (error) {
-      setSubmissionError(error.message || t('typing.submitFailed'));
-    } finally {
-      setIsSubmitting(false);
-    }
+    const payload = recorderRef.current.getSubmissionPayload(sessionId);
+    await submission.submit({
+      events: payload.events,
+      finishTimeMs: payload.finishTime,
+    });
   };
 
   // Restart attempt
   const handleRestart = () => {
+    if (!isFixture) {
+      setShowRestartConfirm(false);
+      void onRetrySession();
+      return;
+    }
     recorderRef.current?.reset();
     setBuffer('');
     setTotalInserts(0);
     setCorrectInserts(0);
     setElapsedMs(0);
     setIsPaused(false);
-    setIsCompleted(false);
-    setSubmissionError('');
+    setFixtureCompleted(false);
     setShowRestartConfirm(false);
   };
 
   // Next expected key for keyboard guide
-  const nextChar = buffer.length < assignedText.length ? assignedText[buffer.length] : '';
+  const nextChar =
+    buffer.length < assignedText.length ? assignedText[buffer.length] : '';
 
   // Live Provisional Metrics
   const live = useMemo(() => {
@@ -194,43 +242,52 @@ export function TypingSessionPage({
   // Render Official Result on completion
   if (isCompleted && officialResult) {
     return (
-      <OfficialResult
-        result={officialResult}
-        isOfficial={!officialResult.sample}
-        xpEarned={officialResult.xpEarned}
-        streakDays={officialResult.streakDays}
-        onContinue={onExit}
-        onRetry={isFixture ? handleRestart : onRetrySession}
-      />
+      <>
+        {!isFixture && submission.error && (
+          <ErrorMessage error={submission.error} />
+        )}
+        <OfficialResult
+          result={officialResult}
+          isOfficial={!officialResult.sample}
+          xpEarned={officialResult.xpEarned}
+          streakDays={officialResult.streakDays}
+          onContinue={onExit}
+          reason={t('sessionFlow.savedResultReason')}
+          busy={['starting', 'submitting'].includes(submission.status)}
+          onRetry={isFixture ? handleRestart : onRetrySession}
+        />
+      </>
     );
   }
 
-  const progressPercent = Math.min(100, Math.round((buffer.length / assignedText.length) * 100));
+  const progressPercent = Math.min(
+    100,
+    Math.round((buffer.length / assignedText.length) * 100),
+  );
 
   return (
     <div className="min-h-screen bg-page">
       {/* Study Shell Top Bar */}
-      <div
-        className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-b-border-subtle bg-surface px-4 py-3 sm:px-6"
-      >
+      <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-b-border-subtle bg-surface px-4 py-3 sm:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => {
-              if (buffer.length> 0) setShowExitConfirm(true);
+              if (buffer.length > 0) setShowExitConfirm(true);
               else onExit();
             }}
             className="bg-transparent border-0 cursor-pointer flex items-center gap-1.5 text-[14px] font-bold text-muted"
           >
-            <ArrowLeftIcon size={18} className={[
-                                       isRTL ? 'rotate-180' : 'transform-none',
-                                     ].filter(Boolean).join(' ')} />
+            <ArrowLeftIcon
+              size={18}
+              className={[isRTL ? 'rotate-180' : 'transform-none']
+                .filter(Boolean)
+                .join(' ')}
+            />
             <span>{t('common.exit')}</span>
           </button>
 
-          <span
-            className="py-1 px-2.5 rounded-full bg-learning-soft text-learning-strong text-[12px] font-bold"
-          >
+          <span className="py-1 px-2.5 rounded-full bg-learning-soft text-learning-strong text-[12px] font-bold">
             {mode}
           </span>
         </div>
@@ -242,9 +299,13 @@ export function TypingSessionPage({
             type="button"
             onClick={() => setLargeText(!largeText)}
             className={[
-              "bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink",
-              largeText ? 'font-extrabold bg-subtle' : 'font-medium bg-transparent',
-            ].filter(Boolean).join(' ')}
+              'bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink',
+              largeText
+                ? 'font-extrabold bg-subtle'
+                : 'font-medium bg-transparent',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             Large Text: {largeText ? 'ON' : 'OFF'}
           </button>
@@ -254,9 +315,13 @@ export function TypingSessionPage({
             type="button"
             onClick={() => setReducedPressure(!reducedPressure)}
             className={[
-              "bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink",
-              reducedPressure ? 'font-extrabold bg-subtle' : 'font-medium bg-transparent',
-            ].filter(Boolean).join(' ')}
+              'bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink',
+              reducedPressure
+                ? 'font-extrabold bg-subtle'
+                : 'font-medium bg-transparent',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             Reduced Pressure: {reducedPressure ? 'ON' : 'OFF'}
           </button>
@@ -275,7 +340,8 @@ export function TypingSessionPage({
               Home Row & Upper Reach Drill
             </h1>
             <p className="text-[14px] text-muted">
-              Type naturally. Correct mistakes with Backspace or keep typing forward.
+              Type naturally. Correct mistakes with Backspace or keep typing
+              forward.
             </p>
           </div>
 
@@ -288,7 +354,9 @@ export function TypingSessionPage({
                 </div>
                 <div className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! flex gap-3 text-[18px] font-extrabold">
                   <span>{live.formattedGrossWpm} WPM</span>
-                  <span className="text-success-text">{live.formattedRawAccuracy}</span>
+                  <span className="text-success-text">
+                    {live.formattedRawAccuracy}
+                  </span>
                 </div>
               </div>
             </div>
@@ -302,7 +370,8 @@ export function TypingSessionPage({
         {/* Progress Bar */}
         <div className="h-1.5 bg-border-subtle rounded-[3px] mb-5 overflow-hidden">
           <div
-            className="h-full bg-learning-accent [transition:width_100ms_ease-out]" style={{ width: `${progressPercent}%` }}
+            className="h-full bg-learning-accent [transition:width_100ms_ease-out]"
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
 
@@ -312,15 +381,21 @@ export function TypingSessionPage({
           buffer={buffer}
           onCharInput={handleCharInput}
           onBackspace={handleBackspace}
-          isActive={isActive && !isCompleted && !isSubmitting}
+          isActive={isActive && !isCompleted && !isSubmitting && !inputLocked}
           isPaused={isPaused}
         />
 
-        {submissionError && (
-          <div className="mt-4 flex items-center gap-3 rounded-card border border-error-text/30 bg-error-soft p-4 text-error-text" role="alert">
-            <p className="flex-1">{submissionError}</p>
-            <button type="button" onClick={handleComplete} className="font-bold underline">{t('common.retry')}</button>
-          </div>
+        {!isFixture && submission.error && (
+          <ErrorMessage
+            error={submission.error}
+            onRetry={submission.canRetry ? submission.retry : undefined}
+            retrying={isSubmitting}
+          />
+        )}
+        {!isFixture && ['expired', 'abandoned'].includes(submission.status) && (
+          <p role="alert" className="mt-4 text-error-text">
+            {t(`sessionFlow.${submission.status}`)}
+          </p>
         )}
 
         {/* Controls Bar */}
@@ -346,18 +421,21 @@ export function TypingSessionPage({
           </div>
 
           <div className="text-[13px] text-muted">
-            {buffer.length === 0 ? t('typing.startPrompt') : `${buffer.length} / ${assignedText.length} characters`}
+            {buffer.length === 0
+              ? t('typing.startPrompt')
+              : `${buffer.length} / ${assignedText.length} characters`}
           </div>
         </div>
 
         {/* Physical QWERTY Keyboard Guide */}
-        <KeyboardGuide nextChar={nextChar} masteredKeys={new Set(['f', 'j', 'd', 'k', 'a', 's', 'l', ';'])} />
+        <KeyboardGuide
+          nextChar={nextChar}
+          masteredKeys={new Set(['f', 'j', 'd', 'k', 'a', 's', 'l', ';'])}
+        />
 
         {/* Pause Overlay */}
         {isPaused && (
-          <div
-            className="absolute inset-0 bg-overlay [backdrop-filter:blur(3px)] rounded-card flex flex-col items-center justify-center z-50"
-          >
+          <div className="absolute inset-0 bg-overlay [backdrop-filter:blur(3px)] rounded-card flex flex-col items-center justify-center z-50">
             <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center max-w-90">
               <div className="mb-4 text-learning-strong">
                 <PauseIcon size={36} />
@@ -382,10 +460,10 @@ export function TypingSessionPage({
 
         {/* Submitting Loading Overlay */}
         {isSubmitting && (
-          <div
-            className="absolute inset-0 bg-overlay rounded-card flex flex-col items-center justify-center z-60 text-on-inverse"
-          >
-            <div className="text-[18px] font-bold">{t('typing.submitting')}</div>
+          <div className="absolute inset-0 bg-overlay rounded-card flex flex-col items-center justify-center z-60 text-on-inverse">
+            <div className="text-[18px] font-bold">
+              {t('typing.submitting')}
+            </div>
           </div>
         )}
       </div>

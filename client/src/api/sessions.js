@@ -12,4 +12,6 @@ export const abandonSession = (sessionId, csrfToken) => request(`/sessions/${enc
   method: 'POST', csrfToken, body: JSON.stringify({}),
 });
 
-export const fetchSession = sessionId => request(`/sessions/${encodeURIComponent(sessionId)}`);
+// Reads may be cancelled during logout/recovery; writes are never auto-retried.
+export const fetchSession = (sessionId, { signal } = {}) =>
+  request(`/sessions/${encodeURIComponent(sessionId)}`, { signal });

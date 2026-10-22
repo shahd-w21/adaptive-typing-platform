@@ -13,3 +13,4 @@ export * from './session.js';
 export * from './metrics.js';
 export * from './courses.js';
 export * from './enrollments.js';
+export * from './dashboard.js';
