@@ -253,11 +253,13 @@ Use Prisma for ordinary access and parameterised SQL where it makes complex repo
 `npm run db:seed` creates an active, email-verified Admin in the loopback `typeflow_dev` database when `NODE_ENV=development`:
 
 - Email: `admin@typeflow.local`
-- Password: `TypeFlow!7-9zVRoBNtw4lUzRPG`
+- Password: `TypeFlow!`
 
 These are public, synthetic local-development credentials. No verification email is needed. Repeating the seed preserves existing accounts, including their password, role, activation and verification state; an existing account with this email is never silently promoted or reset. If that account's password was changed, use its current password or the normal reset flow. Test content seeding omits this account, and production/remote targets are rejected. Production Admin provisioning remains a separate release procedure.
 
-Verified on 22 October 2026: two `npm run db:seed` runs preserved every field of the existing local Admin, and the real authentication service accepted these credentials. All 32 unit tests, lint, seed-file syntax and diff checks passed; the added guard test rejects production/test modes and remote or unintended databases before database access.
+Existing accounts created with the previous seed password keep that password; rerunning `db:seed` does not change it. The short synthetic password above is for local seeding only; registration and password-reset requirements remain unchanged.
+
+Verified on 22 October 2026 before the seed password change: two `npm run db:seed` runs preserved every field of the existing local Admin, and the real authentication service accepted the previous seed credentials. All 32 unit tests, lint, seed-file syntax and diff checks passed; the added guard test rejects production/test modes and remote or unintended databases before database access.
 
 ## Troubleshooting
 

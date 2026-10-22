@@ -8,7 +8,7 @@ import { seedStarter } from '../src/modules/settings/starter.js';
 // Public, synthetic development credentials; never provision this account in production.
 export const developmentAdmin = Object.freeze({
   email: 'admin@typeflow.local',
-  password: 'TypeFlow!7-9zVRoBNtw4lUzRPG',
+  password: 'TypeFlow!',
 });
 
 /**

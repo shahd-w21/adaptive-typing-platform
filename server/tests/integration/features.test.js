@@ -12,6 +12,8 @@ import { purgeKeystrokeLogs } from '../../src/jobs/purgeKeystrokeLogs.js';
 import { createSessionService } from '../../src/modules/sessions/service.js';
 import { once } from 'node:events';
 import { request as frontendRequest } from '../../../client/src/api/client.js';
+import { dashboardResponseSchema, pathResponseSchema } from '@typeflow/shared';
+import { createSessionController } from '../../../client/src/features/typing/sessionController.js';
 
 const config = { JWT_SECRET: 'test-only-migration-signing-secret-longer-than-32', NODE_ENV: 'test', CLIENT_URL: 'http://localhost:5173' };
 const password = 'StrongPass123';
@@ -45,6 +47,68 @@ async function fixture(run) {
   }
 }
 const emailToken = mail => new URL(mail.text.match(/https?:\/\/\S+/)[0]).searchParams.get('token');
+
+// Exercise the actual controller/transport against test PostgreSQL. Simulate a
+// dropped response only AFTER the real server commits, never replace scoring.
+test('FE-06/FE-10 real dashboard refresh and lost-response recovery preserve one result', async () =>
+  fixture(async ({ app, user, advance }) => {
+    const person = await user();
+    const server = app.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const base = `http://127.0.0.1:${server.address().port}`;
+    let cookie = '';
+    const fetchImpl = async (url, options) => {
+      const headers = new Headers(options.headers);
+      headers.set('Origin', config.CLIENT_URL);
+      if (cookie) {
+        headers.set('Cookie', cookie);
+      }
+      const response = await fetch(`${base}${new URL(url).pathname}`, { ...options, headers });
+      const received = response.headers.getSetCookie()[0];
+      if (received) {
+        cookie = received.split(';')[0];
+      }
+      return response;
+    };
+    const call = (path, options) => frontendRequest(path, { ...options, fetchImpl });
+    try {
+      const session = await call('/auth/login', { method: 'POST', body: { email: person.email, password } });
+      const readDashboard = () => call('/dashboard', { responseSchema: dashboardResponseSchema });
+      assert.equal((await readDashboard()).recentSessions.length, 0);
+      await call('/path', { responseSchema: pathResponseSchema });
+      let submits = 0;
+      const controller = createSessionController({
+        ownerId: person.id,
+        csrfToken: session.csrfToken,
+        api: {
+          startPracticeSession: csrfToken => call('/sessions', { method: 'POST', csrfToken, body: { mode: 'practice' } }),
+          fetchSession: id => call(`/sessions/${id}`),
+          submitSession: async (id, body, csrfToken) => {
+            submits += 1;
+            await call(`/sessions/${id}/submit`, { method: 'POST', csrfToken, body });
+            throw Object.assign(new Error('Simulated dropped response'), { retryable: true });
+          },
+        },
+      });
+      await controller.startPractice();
+      const assignment = controller.getSnapshot().assignment;
+      const events = [...assignment.text].map((char, seq) => ({ seq, type: 'insert', char, t: seq * 600 }));
+      const finishTimeMs = events.at(-1).t;
+      advance(finishTimeMs + 1000);
+      await controller.submit({ events, finishTimeMs });
+      assert.equal(controller.getSnapshot().status, 'retry');
+      await controller.retry();
+      assert.equal(controller.getSnapshot().status, 'completed');
+      assert.equal(submits, 1);
+      const dashboard = await readDashboard();
+      assert.equal(dashboard.recentSessions.length, 1);
+      assert.equal(dashboard.recentSessions[0].id, assignment.sessionId);
+      assert.equal(dashboard.user.xp, controller.getSnapshot().result.xp);
+      assert.equal(dashboard.streak, controller.getSnapshot().result.streak);
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
+  }));
 
 // FE-02 acceptance exercises the browser transport against real API handlers
 // and the dedicated test database. The fixture removes its accounts afterward;

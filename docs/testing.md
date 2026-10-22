@@ -1,6 +1,24 @@
 # Testing and acceptance
 
-**Status: verification plan; no application checks have been executed as part of documentation work.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+**Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+
+## FE-06 / FE-10 verification — 22 October 2026
+
+Implemented the existing dashboard and owned-practice boundaries; this is not acceptance of future courses or every typing mode.
+
+| Check | Evidence / result |
+| --- | --- |
+| Unit tests | 43 passed, including 11 new dashboard/controller checks: DTO validation, nullable/zero values, double start, frozen retries, dropped-response recovery, reload, failed abandonment and late account/logout responses |
+| Real API integration | 7 passed against guarded `typeflow_test`; the new test uses real cookie authentication, server assignment/scoring, deliberately drops a committed response, recovers without resubmitting, and verifies dashboard history/XP/streak |
+| Browser checks | 36 passed in Chrome 155.0.8059.85: 12 new dashboard/session checks plus the 24 existing shared UI checks |
+| Dashboard states | New/returning accounts, loading, no history, permission denial, server error/retry, isolated path failure and stale-data warning after refresh failure |
+| Presentation | English/Arabic and Light/Dark dashboard reflow/accessibility; existing System resolver checks; real-assignment fixture survives theme/locale/large-text/viewport changes with its recorded input intact |
+| Browser data source | Explicit intercepted HTTP fixtures; no developer database writes. The real scoring/authentication loop is the separate PostgreSQL integration test, not a mocked browser claim |
+| Static/build checks | Root lint and production build passed; the existing JavaScript bundle-size warning remains |
+
+Defects found and resolved: keyboard-inaccessible horizontal history table; malformed path-error prop; premature redirect before reload recovery; lost pointer after failed recovery; external font timeouts; cold-run assertion timeouts. Browser tests isolate external fonts and exercise fallback fonts; production font delivery is unchanged. The final run uses condition-based waits, a 60-second test limit and 15-second assertion limit. No fixed sleeps were added.
+
+**Handoff / still pending:** Dev 4 dashboard review, Dev 1 lifecycle review, human Arabic wording approval, live browser cookie/CORS and screen-reader acceptance, and visual review with delivered web fonts. Course resume contracts, placement/review/test APIs, translated reason codes and FE-16 reward notifications remain future work. The backend has no idempotent start contract; a lost start response may leave an orphan assignment, which is explained without an automatic retry. Unfinished typing events are intentionally not persisted across reload.
 
 ## Test layers
 
