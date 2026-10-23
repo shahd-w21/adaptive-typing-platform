@@ -315,6 +315,12 @@ test('paste, drop, IME, repeats, and non-ASCII keys never enter the submission',
 
   const input = page.getByRole('textbox', { name: 'Typing input stream' });
   const stage = input.locator('..');
+  await input.evaluate((element) => {
+    element.blur();
+    window.dispatchEvent(new Event('blur'));
+    window.dispatchEvent(new Event('focus'));
+  });
+  await expect(input).toBeFocused();
   await stage.evaluate((element) => {
     element.dispatchEvent(
       new ClipboardEvent('paste', {
