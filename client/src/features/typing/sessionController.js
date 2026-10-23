@@ -9,6 +9,7 @@ export const SESSION_POINTER_KEY = 'typeflow.activeSession';
 const initialState = () => ({
   assignment: null,
   result: null,
+  resultRecovered: false,
   status: 'idle',
   error: null,
   canRetry: false,
@@ -107,6 +108,7 @@ export function createSessionController({
     frozenPayload = null;
     publish({
       result,
+      resultRecovered: recovered,
       status: 'completed',
       error: null,
       canRetry: false,

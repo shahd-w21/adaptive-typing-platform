@@ -21,8 +21,10 @@ async function setup(
     pointer = false,
     recovered = false,
     dropSubmit = false,
+    rejectSubmit = false,
     delayDashboard = false,
     assignedText = sessionAssignment.text,
+    resultDto = sessionResult,
   } = {},
 ) {
   const account = structuredClone(studentUser);
@@ -102,6 +104,12 @@ async function setup(
     if (path.endsWith('/submit')) {
       submits += 1;
       bodies.push(request.postDataJSON());
+      if (rejectSubmit) {
+        return route.fulfill({
+          status: 422,
+          json: { error: { code: 'INVALID_SUBMISSION' } },
+        });
+      }
       saved = true;
       summary = {
         ...dashboardResponse,
@@ -109,11 +117,11 @@ async function setup(
       };
       return dropSubmit
         ? route.abort('failed')
-        : route.fulfill({ json: sessionResult });
+        : route.fulfill({ json: resultDto });
     }
     if (path === `/sessions/${assignment.sessionId}`) {
       return route.fulfill({
-        json: saved ? sessionResult : { ...assignment, status: 'created' },
+        json: saved ? resultDto : { ...assignment, status: 'created' },
       });
     }
     if (path.endsWith('/abandon')) {
@@ -237,9 +245,50 @@ test('reload recovers a saved result without start or submit', async ({
   await expect(
     page.getByRole('button', { name: 'Return to dashboard' }),
   ).toBeVisible();
+  await expect(page.getByText('Fetched saved result')).toBeVisible();
   expect(api.starts).toBe(0);
   expect(api.submits).toBe(0);
 });
+
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`saved result is responsive and accessible in ${locale}/${theme}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 740 });
+      await setup(page, {
+        locale,
+        theme,
+        pointer: true,
+        recovered: true,
+      });
+      await page.goto('/typing');
+
+      await expect(
+        page.getByRole('heading', {
+          name: locale === 'ar' ? 'اكتملت الجلسة' : 'Session completed',
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(
+          locale === 'ar' ? 'تم جلب النتيجة المحفوظة' : 'Fetched saved result',
+        ),
+      ).toBeVisible();
+
+      const width = await page.evaluate(() => ({
+        visible: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth,
+      }));
+      expect(width.scroll).toBeLessThanOrEqual(width.visible + 1);
+
+      const axe = await new AxeBuilder({ page })
+        .include('#main-content')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+      expect(axe.violations).toEqual([]);
+    });
+  }
+}
 
 test('unfinished reload explains lost progress; explicit restart allocates one attempt', async ({
   page,
@@ -287,9 +336,18 @@ test('typing survives preference/viewport changes; lost submission recovers and 
   await input.focus();
   await input.pressSequentially(sessionAssignment.text.slice(3), { delay: 20 });
   await expect(
-    page.getByRole('button', { name: 'Retry', exact: true }),
+    page.getByRole('button', {
+      name: 'Check result and retry save',
+      exact: true,
+    }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(
+    page.getByText(/couldn't confirm whether the server saved/),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Check result and retry save', exact: true })
+    .click();
+  await expect(page.getByText('Fetched saved result')).toBeVisible();
   await page.getByRole('button', { name: 'Return to dashboard' }).click();
   await expect(page.getByText('777 XP', { exact: true })).toBeVisible();
   expect(api.starts).toBe(1);
@@ -301,6 +359,86 @@ test('typing survives preference/viewport changes; lost submission recovers and 
       .join(''),
   ).toBe(sessionAssignment.text);
   expect(Object.keys(api.bodies[0]).sort()).toEqual(['events', 'finishTimeMs']);
+});
+
+test('rejected submission explains no result was saved and offers no blind retry', async ({
+  page,
+}) => {
+  await setup(page, {
+    assignedText: 'asdf',
+    rejectSubmit: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await page
+    .getByRole('button', { name: 'Start adaptive practice', exact: true })
+    .click();
+  const input = page.getByRole('textbox', { name: 'Typing input stream' });
+  await input.pressSequentially('asdf');
+
+  await expect(page.getByRole('alert'))
+    .toContainText('The server rejected this attempt, so no result was saved.');
+  await expect(
+    page.getByRole('button', {
+      name: 'Check result and retry save',
+      exact: true,
+    }),
+  ).toHaveCount(0);
+});
+
+test('official result uses server metrics after a corrected error and omits absent effects', async ({
+  page,
+}) => {
+  const resultDto = structuredClone(sessionResult);
+  resultDto.metrics = {
+    ...resultDto.metrics,
+    grossWpm: 12,
+    netWpm: 10,
+    rawAccuracy: 50,
+    finalAccuracy: 100,
+  };
+  resultDto.rewards = [];
+  resultDto.xpEarned = 0;
+  resultDto.problemKeys = [
+    { key: 'a', errors: 1, attempts: 2, avgMs: null },
+  ];
+
+  const api = await setup(page, {
+    assignedText: 'ab',
+    resultDto,
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await page
+    .getByRole('button', { name: 'Start adaptive practice', exact: true })
+    .click();
+  const input = page.getByRole('textbox', { name: 'Typing input stream' });
+  await input.press('x');
+  await input.press('Backspace');
+  await input.press('a');
+  await input.press('b');
+
+  await expect(page.getByRole('heading', { name: 'Session completed' }))
+    .toBeVisible();
+  await expect(page.getByText('10', { exact: true })).toBeVisible();
+  await expect(page.getByText('12', { exact: true })).toBeVisible();
+  await expect(page.getByText('50%', { exact: true })).toBeVisible();
+  await expect(page.getByText('100%', { exact: true })).toBeVisible();
+  await expect(page.getByText('Key Performance & Evidence')).toBeVisible();
+  await expect(page.getByText('1 errors across 2 attempts')).toBeVisible();
+  await expect(page.getByText('+0 XP earned')).toHaveCount(0);
+  await expect(page.getByText(/latest recommendation/)).toHaveCount(0);
+
+  const submitted = api.bodies[0];
+  expect(submitted.events.map((event) => event.type)).toEqual([
+    'insert',
+    'backspace',
+    'insert',
+    'insert',
+  ]);
+  expect(submitted.events[0].char).toBe('x');
+  expect(submitted.events[2].char).toBe('a');
+  expect(submitted.events[3].char).toBe('b');
 });
 
 test('paste, drop, IME, repeats, and non-ASCII keys never enter the submission', async ({

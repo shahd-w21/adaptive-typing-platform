@@ -49,16 +49,7 @@ export function TypingSessionPage({
     ? fixtureCompleted
     : submission.status === 'completed';
   const [fixtureResult, setFixtureResult] = useState(null);
-  const officialResult = isFixture
-    ? fixtureResult
-    : submission.result
-      ? {
-          ...submission.result.metrics,
-          durationMs: submission.result.metrics.activeDurationMs,
-          xpEarned: submission.result.xpEarned,
-          streakDays: submission.result.streak,
-        }
-      : null;
+  const officialResult = isFixture ? fixtureResult : submission.result;
   const inputLocked = !isFixture && submission.inputLocked;
 
   // Dialog states
@@ -256,10 +247,8 @@ export function TypingSessionPage({
         <OfficialResult
           result={officialResult}
           isOfficial={!officialResult.sample}
-          xpEarned={officialResult.xpEarned}
-          streakDays={officialResult.streakDays}
+          isRecovered={submission.resultWasRecovered}
           onContinue={onExit}
-          reason={t('sessionFlow.savedResultReason')}
           busy={['starting', 'submitting'].includes(submission.status)}
           onRetry={isFixture ? handleRestart : onRetrySession}
         />
@@ -399,8 +388,21 @@ export function TypingSessionPage({
         {!isFixture && submission.error && (
           <ErrorMessage
             error={submission.error}
+            title={
+              submission.canRetry
+                ? t('typing.saveUnconfirmedTitle')
+                : undefined
+            }
+            message={
+              submission.canRetry
+                ? t('typing.saveRetry')
+                : submission.error.code === 'INVALID_SUBMISSION'
+                  ? t('typing.submitRejected')
+                  : undefined
+            }
             onRetry={submission.canRetry ? submission.retry : undefined}
             retrying={isSubmitting}
+            retryLabel={t('typing.retrySave')}
           />
         )}
         {!isFixture && ['expired', 'abandoned'].includes(submission.status) && (
