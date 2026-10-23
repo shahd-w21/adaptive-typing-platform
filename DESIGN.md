@@ -616,6 +616,10 @@ Wide layout sketch; visual placement follows logical start in each language:
 [Learning expectations]              [Final action + footer]
 ```
 
+**Starter implementation, 23 October 2026:** `client/src/features/auth/LandingPage.jsx` now provides the two-column hero, static English/LTR keyboard example, three-step practice explanation, labelled course concept, account actions and certificate-verification link. `AuthPages.jsx` preserves the existing router export. Shared tokens/fonts and the existing header remain in use; English and Arabic copy live in the dictionaries. No public course API, student data or new session flow is introduced. Course owners must replace the labelled concept only after published metadata and navigation are available. Arabic copy still needs a teammate wording review before final release.
+
+The expanded starter also includes focused-practice guidance, native keyboard-accessible FAQ disclosures, and a full-width footer with product context, section links, account actions and certificate verification. Footer links use existing routes; contact, legal and social destinations remain absent until real destinations are supplied.
+
 **Navigation boundary:** anonymous Start learning follows the agreed registration/onboarding flow; an authenticated Student gets Continue learning through the real owned destination; an Admin gets the appropriate admin destination. Pending identity must not display a fabricated student or guess their course resume target. Auth redirects, route registration and public certificate data stay with their feature owners; agree component props before changing shared header/auth/router files.
 
 The proposed team split is landing design/implementation by the project owner, with Dev 1 retaining auth/navigation integration and Dev 5 coordinating the shared header/certificate verification. The [FE-24 plan](docs/project-plan.md) remains the allocation reference; this brief does not reassign its tasks or authorize implementation.

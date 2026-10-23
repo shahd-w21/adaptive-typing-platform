@@ -386,3 +386,59 @@ for (const theme of ['light', 'dark']) {
     await expectReflow(page);
   });
 }
+// Starter landing uses anonymous HTTP fixtures; these checks never create an account.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`starter landing works in ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.goto('/');
+      const main = page.locator('#main-content');
+      await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+        locale === 'ar' ? 'تعلّم لوحة المفاتيح. وطوّر دقّتك.' : 'Learn the keyboard. Build accuracy.',
+      );
+      await expect(main.locator('.landing-passage')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-keyboard')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-course-status')).toContainText(
+        locale === 'ar' ? 'ليست قائمة دورات' : 'not a live course listing',
+      );
+
+      const firstQuestion = main.locator('.landing-faq summary').first();
+      await firstQuestion.focus();
+      await page.keyboard.press('Enter');
+      await expect(main.locator('.landing-faq details').first()).toHaveAttribute('open', '');
+      await expect(main.locator('.landing-faq details').first().locator('p')).toBeVisible();
+      await expect(main.locator('footer nav')).toHaveCount(2);
+
+      // Real section navigation moves keyboard focus without a scripted scroll animation.
+      await main.locator('.landing-hero a[href="#how-it-works"]').click();
+      await expect(page.locator('#how-it-works')).toBeFocused();
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('desktop-landing.png'), fullPage: true });
+
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      for (const width of [320, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expectReflow(page);
+        await expect(main.getByRole('heading', { level: 1 })).toBeVisible();
+      }
+      await page.setViewportSize({ width: 320, height: 900 });
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('mobile-landing.png'), fullPage: true });
+
+      await main.locator('.landing-hero').getByRole('button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+      await main.locator('.landing-closing').getByRole('button').last().click();
+      await expect(page).toHaveURL(/\/login$/);
+      await page.keyboard.press('Escape');
+      await main.locator('footer a[href="/verify-certificate"]').click();
+      await expect(page).toHaveURL(/\/verify-certificate$/);
+    });
+  }
+}
