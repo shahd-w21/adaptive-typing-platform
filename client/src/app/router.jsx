@@ -296,7 +296,9 @@ function AuthenticatedLayout({
     '/admin',
   ];
   const usesFixtureData = fixtureRoutes.includes(location.pathname);
-  const showDeviceGuidance = isTypingRoute && viewportWidth < 1024;
+  // Saved results are non-typing views and remain available on mobile.
+  const showDeviceGuidance =
+    isTypingRoute && viewportWidth < 1024 && !session.result;
   const Shell = user?.role === 'admin' ? AdminShell : StudentShell;
   /** Preserve an uncertain/failed attempt until abandonment is confirmed. */
   const exitSession = async () => {

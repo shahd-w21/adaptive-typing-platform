@@ -12,6 +12,7 @@ export function useSubmitSession(controller) {
     submit: controller.submit,
     retry: controller.retry,
     isSubmitting: state.status === 'submitting',
+    resultWasRecovered: state.resultRecovered,
     inputLocked: !['ready', 'typing', 'paused'].includes(state.status),
   };
 }
