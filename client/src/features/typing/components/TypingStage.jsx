@@ -20,6 +20,17 @@ export function TypingStage({
     }
   }, [isActive, isPaused]);
 
+  useEffect(() => {
+    const restoreTypingFocus = () => {
+      if (isActive && !isPaused) {
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('focus', restoreTypingFocus);
+    return () => window.removeEventListener('focus', restoreTypingFocus);
+  }, [isActive, isPaused]);
+
   // Handle keyboard events directly
   const handleKeyDown = (e) => {
     if (!isActive || isPaused) return;
