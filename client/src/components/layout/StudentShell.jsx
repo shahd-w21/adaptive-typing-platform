@@ -10,6 +10,7 @@ import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
 import { useGamification } from '../../features/gamification/hooks/useGamification.js';
 import { Dialog } from '../ui/Dialog.jsx';
+import { BrandLogo } from '../ui/BrandLogo.jsx';
 import {
   KeyboardIcon,
   FlameIcon,
@@ -108,14 +109,7 @@ export function StudentShell({
       >
         {/* Brand */}
         <button type="button" className="flex h-[var(--header-height)] items-center gap-2.5 border-0 border-b border-b-border-subtle bg-transparent px-5 text-start" onClick={() => onNavigate(role === 'admin' ? 'admin' : 'dashboard')}>
-          <span className="flex size-9 items-center justify-center rounded-[10px] bg-learning-accent text-learning-foreground shadow-primary" aria-hidden="true">
-            <KeyboardIcon size={20} />
-          </span>
-          <span
-            className="font-display rtl:font-arabic text-[20px] font-extrabold text-ink tracking-[-0.5px]"
-          >
-            TypeFlow
-          </span>
+          <BrandLogo />
         </button>
 
         {/* Nav Links */}
@@ -194,7 +188,7 @@ export function StudentShell({
         className="m-0 me-auto h-dvh w-[min(20rem,90vw)] p-4"
       >
         <div className="mb-4 flex items-center justify-between">
-          <span className="font-display text-lg font-bold">TypeFlow</span>
+          <BrandLogo />
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(false)}

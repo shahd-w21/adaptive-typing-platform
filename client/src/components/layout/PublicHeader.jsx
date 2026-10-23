@@ -9,7 +9,8 @@ import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
-import { KeyboardIcon, MenuIcon, XIcon } from '../ui/Icons.jsx';
+import { MenuIcon, XIcon } from '../ui/Icons.jsx';
+import { BrandLogo } from '../ui/BrandLogo.jsx';
 
 /** Preserve FE-01 view callbacks while providing a keyboard-accessible mobile menu. */
 export function PublicHeader({ activeTab, onNavigate }) {
@@ -68,10 +69,7 @@ export function PublicHeader({ activeTab, onNavigate }) {
       <header className="site-header sticky top-0 z-50 flex min-h-[var(--header-height)] flex-wrap items-center justify-between gap-2 border-b border-border-subtle bg-surface/90 px-3 py-2 backdrop-blur-xl md:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3 lg:gap-6">
           <button type="button" onClick={() => navigate('landing')} aria-label={t('navigation.homeLabel')} className="flex min-h-11 items-center gap-2 rounded-control text-ink">
-            <span className="flex size-9 items-center justify-center rounded-[10px] bg-learning-accent text-learning-foreground shadow-primary">
-              <KeyboardIcon size={22} />
-            </span>
-            <span className="font-display text-xl font-extrabold" lang="en" dir="ltr">TypeFlow</span>
+            <BrandLogo />
           </button>
           <nav aria-label={t('navigation.public')} className="hidden items-center gap-2 md:flex">{renderLinks()}</nav>
         </div>
