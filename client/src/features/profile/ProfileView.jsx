@@ -281,7 +281,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
         <button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text h-10.5 text-[14px]"
+          className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text h-10.5 text-[14px]"
         >
           {t('profile.deleteAccount')}
         </button>
@@ -318,7 +318,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
                 type="button"
                   onClick={removeAccount}
                   disabled={!deletePassword || deleteStatus === 'deleting'}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
               >
                 {deleteStatus === 'deleting' ? t('profile.deleting') : t('profile.deleteAction')}
               </button>

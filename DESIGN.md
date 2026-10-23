@@ -104,7 +104,7 @@ edclub's homepage CSS defines a warm hero, generous spacing, bold sans-serif hea
 
 **Theme: calm, encouraging keyboard learning.** Light mode uses warm off-white, white study surfaces, navy text and navy primary actions. Blue identifies learning selection and focus; green marks success, amber indicates attention and gold supports earned rewards. Colourful illustration belongs on landing, course paths and achievements; the typing stage stays quiet.
 
-Keep the working TypeFlow name. Propose an original keycap/flow-arrow symbol with an Open Sans wordmark; final branding remains open. Illustrations use simple rounded keyboard keys, hands, letters and milestones. Use rounded vector icons at 20/24px with 2px strokes. Finished screens use original TypeFlow assets rather than competitor logos, mascots or copied screenshots.
+Keep the TypeFlow name. The owner selected the [first TF logo concept](docs/assets/branding/typeflow-logo-concept-v1.png) on 23 October 2026: a flowing white TF symbol on a blue keycap with a navy TypeFlow wordmark. The raised-key and outlined-key alternatives are not selected. Shared navigation uses the original artwork through `BrandLogo.jsx`, with a light wordmark in Dark mode and unchanged blue/white symbol; the tab uses a matching simplified SVG mark. Illustrations use simple rounded keyboard keys, hands, letters and milestones. Use rounded vector icons at 20/24px with 2px strokes. Finished screens use original TypeFlow assets rather than competitor logos, mascots or copied screenshots.
 
 Light and Dark remain required. Dark uses a deep-navy canvas, layered slate/navy surfaces and soft-white text. Its primary actions use a light neutral fill with navy text to remain distinct from the surrounding navy; selected learning states use light blue. This Dark adaptation is proposed for TypeFlow, not claimed to be edclub's live dark theme. Keep status roles consistent and avoid automatic colour inversion. Use inverse tokens for selected marketing sections without turning the whole page into alternating colour blocks.
 
@@ -122,7 +122,7 @@ The memorable element is an original **passage-to-keyboard learning illustration
 
 **Colour hierarchy:** warm neutrals and navy provide most of the screen. Primary actions use the action tokens; blue identifies learning selection, links and focus; green communicates success; amber/red communicate warning/error; gold supports earned rewards. The reference's purple, magenta and mint-green values remain historical source evidence, not additional TypeFlow action themes. Do not copy every reference accent into the interface.
 
-**Typography decision for review:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
+**Typography direction selected for implementation, 23 October 2026:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
 
 Before approving a composition, remove any decoration that could belong unchanged on an unrelated SaaS homepage. Keep structure that helps a learner understand the next activity, their evidence or the keyboard.
 
@@ -356,6 +356,8 @@ Normal dashboard/admin surfaces use flat borders; use open sections and dividers
 The listed card/popover shadow colours describe Light mode. In Dark mode use minimal black shadow plus the semantic border/surface layers; retain the node lip's mode binding. Certificate PDFs keep their independent print-friendly styling; changing website appearance does not regenerate or invert them.
 
 ### 5.4 Motion
+
+Foundation implementation, 23 October 2026: shared timings/easing, immediate keyboard and typing feedback, static information surfaces and runtime reduced-motion handling are applied. Existing menus/dialogs remain immediate with their native focus behaviour. The optional overlay/milestone effects below are recipes for later feature work, not claims that every effect is implemented. Verification is recorded in [testing](docs/testing.md#typography-and-shared-foundations--23-october-2026).
 
 Motion must explain an action or state change. Decide frequency and purpose before choosing an effect. Repeated typing, keyboard navigation, shortcut-triggered actions and live metric updates are immediate. Normal focus/selected/pressed feedback must still be visible.
 
@@ -614,6 +616,10 @@ Wide layout sketch; visual placement follows logical start in each language:
 [Learning expectations]              [Final action + footer]
 ```
 
+**Starter implementation, 23 October 2026:** `client/src/features/auth/LandingPage.jsx` now provides the two-column hero, static English/LTR keyboard example, three-step practice explanation, labelled course concept, account actions and certificate-verification link. `AuthPages.jsx` preserves the existing router export. Shared tokens/fonts and the existing header remain in use; English and Arabic copy live in the dictionaries. No public course API, student data or new session flow is introduced. Course owners must replace the labelled concept only after published metadata and navigation are available. Arabic copy still needs a teammate wording review before final release.
+
+The expanded starter also includes focused-practice guidance, native keyboard-accessible FAQ disclosures, and a full-width footer with product context, section links, account actions and certificate verification. Footer links use existing routes; contact, legal and social destinations remain absent until real destinations are supplied.
+
 **Navigation boundary:** anonymous Start learning follows the agreed registration/onboarding flow; an authenticated Student gets Continue learning through the real owned destination; an Admin gets the appropriate admin destination. Pending identity must not display a fabricated student or guess their course resume target. Auth redirects, route registration and public certificate data stay with their feature owners; agree component props before changing shared header/auth/router files.
 
 The proposed team split is landing design/implementation by the project owner, with Dev 1 retaining auth/navigation integration and Dev 5 coordinating the shared header/certificate verification. The [FE-24 plan](docs/project-plan.md) remains the allocation reference; this brief does not reassign its tasks or authorize implementation.
@@ -642,6 +648,8 @@ The proposed team split is landing design/implementation by the project owner, w
 | Unavailable/future | Explicit “Not available yet” or labelled development fixture in review builds | No success-shaped empty array, guessed value or active unsupported action |
 | Error / offline | Brief problem, preserved safe input and a relevant Retry/return action | Unconfirmed session saves follow the identical-retry flow in section 8.3 |
 | Permission / expired login | Safe explanation and the correct login/return path | Do not reveal another account's data or let a visual guard replace server authorization |
+
+**Account dialog implementation:** login/register reuse the existing routed modal and native `Dialog` focus/scroll boundary. The branded header, start-aligned introduction, full-width fields/action, password visibility control, inline validation, verification notice and separated account-switch action use shared tokens in both themes. Email/password entry stays LTR within Arabic UI. Paste and password-manager autocomplete remain available; mobile dialogs scroll within the viewport.
 
 Forms have visible labels, field-level messages and an error summary for multiple failed fields. After a failed submission, focus the summary or the first relevant error. Preserve entered non-secret values; allow password managers and paste in authentication fields. The paste restriction applies to the scored typing surface only. Destructive actions name the object and consequence; users can cancel without losing unrelated work. Course editors provide button/keyboard alternatives to dragging lessons.
 

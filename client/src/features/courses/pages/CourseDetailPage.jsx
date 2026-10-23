@@ -261,7 +261,7 @@ export function CourseDetailPage() {
                 return (
                   <div
                     key={unit.id}
-                    className="overflow-hidden rounded-card border border-border-subtle bg-page transition-all"
+                    className="overflow-hidden rounded-card border border-border-subtle bg-page transition-colors"
                   >
                     <button
                       type="button"

@@ -121,7 +121,7 @@ export function LearningPath({ onStartExercise }) {
                         disabled={isLocked || isMastered}
                         onClick={() => onStartExercise(node)}
                         className={[
-                          "rounded-full flex items-center justify-center shrink-0 [transition:translate_var(--motion-fast)]",
+                          "rounded-full flex items-center justify-center shrink-0",
                           isRec ? 'w-17 h-17 border-0' : 'w-14 h-14 border-2 border-border-control',
                           isRec ? "bg-learning-accent" : isMastered ? "bg-success-soft" : isLocked ? "bg-disabled-bg" : "bg-surface",
                           isRec ? "text-learning-foreground" : isMastered ? "text-success-text" : isLocked ? "text-disabled-text" : "text-ink",
