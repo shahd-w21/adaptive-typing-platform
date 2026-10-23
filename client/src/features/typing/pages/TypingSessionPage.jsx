@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { usePreferences } from '../../../context/preferences.js';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { KeystrokeRecorder } from '../engine/keystrokeRecorder.js';
+import { toSessionPayload } from '../engine/sessionPayload.js';
 import {
   computeLiveMetrics,
   computeOfficialResults,
@@ -201,11 +202,10 @@ export function TypingSessionPage({
       setFixtureCompleted(true);
       return;
     }
-    const payload = recorderRef.current.getSubmissionPayload(sessionId);
-    await submission.submit({
-      events: payload.events,
-      finishTimeMs: payload.finishTime,
-    });
+   const payload = toSessionPayload(
+  recorderRef.current.getSubmissionPayload(sessionId),
+);
+await submission.submit(payload);
   };
 
   // Restart attempt

@@ -4,6 +4,18 @@
  */
 import { submissionSchema } from '@typeflow/shared';
 
+/** Keep only the fields the shared event schema accepts. */
+function projectEvent(event) {
+  if (event === null || typeof event !== 'object') {
+    return event;
+  }
+  const wireEvent = { seq: event.seq, type: event.type, t: event.t };
+  if (event.type === 'insert') {
+    wireEvent.char = event.char;
+  }
+  return wireEvent;
+}
+
 /**
  * Project recorder data to the agreed wire body and validate it before sending.
  *
@@ -25,7 +37,9 @@ export function toSessionPayload(recording) {
     : recording.finishTime;
 
   return submissionSchema.parse({
-    events: recording.events,
+    events: Array.isArray(recording.events)
+      ? recording.events.map(projectEvent)
+      : recording.events,
     finishTimeMs,
   });
 }
