@@ -22,6 +22,7 @@ async function setup(
     recovered = false,
     dropSubmit = false,
     delayDashboard = false,
+    assignedText = sessionAssignment.text,
   } = {},
 ) {
   const account = structuredClone(studentUser);
@@ -43,6 +44,7 @@ async function setup(
   }
   const assignment = {
     ...sessionAssignment,
+    text: assignedText,
     expiresAt: new Date(Date.now() + 3600000).toISOString(),
   };
   await page.addInitScript(
@@ -299,6 +301,87 @@ test('typing survives preference/viewport changes; lost submission recovers and 
       .join(''),
   ).toBe(sessionAssignment.text);
   expect(Object.keys(api.bodies[0]).sort()).toEqual(['events', 'finishTimeMs']);
+});
+
+test('paste, drop, IME, repeats, and non-ASCII keys never enter the submission', async ({
+  page,
+}) => {
+  const api = await setup(page, { assignedText: 'A' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await page
+    .getByRole('button', { name: 'Start adaptive practice', exact: true })
+    .click();
+
+  const input = page.getByRole('textbox', { name: 'Typing input stream' });
+  const stage = input.locator('..');
+  await stage.evaluate((element) => {
+    element.dispatchEvent(
+      new ClipboardEvent('paste', {
+        bubbles: true,
+        clipboardData: new DataTransfer(),
+      }),
+    );
+    element.dispatchEvent(
+      new DragEvent('drop', { bubbles: true, dataTransfer: new DataTransfer() }),
+    );
+  });
+  await input.evaluate((element) => {
+    element.dispatchEvent(
+      new CompositionEvent('compositionstart', {
+        bubbles: true,
+        data: 'a',
+      }),
+    );
+    element.dispatchEvent(
+      new InputEvent('beforeinput', {
+        bubbles: true,
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'paste',
+      }),
+    );
+    element.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'a',
+        repeat: true,
+      }),
+    );
+    const compositionKey = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'a',
+    });
+    Object.defineProperty(compositionKey, 'isComposing', { value: true });
+    element.dispatchEvent(compositionKey);
+    element.dispatchEvent(
+      new CompositionEvent('compositionend', {
+        bubbles: true,
+        data: 'a',
+      }),
+    );
+    element.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'ش',
+      }),
+    );
+  });
+
+  await expect(stage.locator('span.text-success-text')).toHaveCount(0);
+  await input.pressSequentially('A');
+  await expect(page.getByRole('button', { name: 'Return to dashboard' }))
+    .toBeVisible();
+  expect(api.bodies).toHaveLength(1);
+  expect(api.bodies[0].events).toHaveLength(1);
+  expect(api.bodies[0].events[0]).toMatchObject({
+    seq: 0,
+    type: 'insert',
+    char: 'A',
+  });
 });
 
 test('a summary refresh failure retains previous data after an official result', async ({

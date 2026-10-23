@@ -2,11 +2,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { usePreferences } from '../../../context/preferences.js';
 import { useTranslation } from '../../../i18n/useTranslation.js';
-import { KeystrokeRecorder } from '../engine/keystrokeRecorder.js';
+import { useTypingRecorder } from '../hooks/useTypingRecorder.js';
 import { toSessionPayload } from '../engine/sessionPayload.js';
 import {
   computeLiveMetrics,
-  computeOfficialResults,
+  computeFixtureResults,
 } from '../engine/liveMetrics.js';
 import { TypingStage } from '../components/TypingStage.jsx';
 import { KeyboardGuide } from '../components/KeyboardGuide.jsx';
@@ -34,14 +34,14 @@ export function TypingSessionPage({
   onExit,
 }) {
   const submission = useSubmitSession(controller);
+  const typing = useTypingRecorder();
+  const { recordPause, recordResume, getElapsedMs } = typing;
   const { largeText, setLargeText, reducedPressure, setReducedPressure } =
     usePreferences();
   const { t, isRTL } = useTranslation();
 
   // Engine state
-  const [buffer, setBuffer] = useState('');
-  const [totalInserts, setTotalInserts] = useState(0);
-  const [correctInserts, setCorrectInserts] = useState(0);
+  const { buffer, totalInserts, correctInserts } = typing;
   const [isPaused, setIsPaused] = useState(false);
   const isSubmitting = !isFixture && submission.isSubmitting;
   const [fixtureCompleted, setFixtureCompleted] = useState(false);
@@ -65,20 +65,16 @@ export function TypingSessionPage({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
-  // Monotonic recorder ref
-  const recorderRef = useRef(null);
   const autoPausedRef = useRef(false);
   const timerIntervalRef = useRef(null);
   const [elapsedMs, setElapsedMs] = useState(0);
 
-  // Initialise recorder once per session
+  // The router keys this page by session ID; cleanup leaves no timer running.
   useEffect(() => {
-    recorderRef.current = new KeystrokeRecorder();
-    autoPausedRef.current = false;
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
     if (
@@ -88,17 +84,25 @@ export function TypingSessionPage({
       !isCompleted &&
       !inputLocked
     ) {
-      recorderRef.current?.recordPause();
+      recordPause();
       autoPausedRef.current = true;
       // Pause the recorder when navigation hides the active session.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPaused(true);
     } else if (isActive && autoPausedRef.current && isPaused) {
-      recorderRef.current?.recordResume();
+      recordResume();
       autoPausedRef.current = false;
       setIsPaused(false);
     }
-  }, [isActive, buffer.length, isPaused, isCompleted, inputLocked]);
+  }, [
+    isActive,
+    buffer.length,
+    isPaused,
+    isCompleted,
+    inputLocked,
+    recordPause,
+    recordResume,
+  ]);
 
   // Active elapsed timer
   useEffect(() => {
@@ -110,9 +114,7 @@ export function TypingSessionPage({
       isActive
     ) {
       timerIntervalRef.current = setInterval(() => {
-        if (recorderRef.current) {
-          setElapsedMs(recorderRef.current.getElapsedMs());
-        }
+        setElapsedMs(getElapsedMs());
       }, 200);
     } else {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
@@ -120,7 +122,14 @@ export function TypingSessionPage({
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [buffer.length, isPaused, isCompleted, inputLocked, isActive]);
+  }, [
+    buffer.length,
+    isPaused,
+    isCompleted,
+    inputLocked,
+    isActive,
+    getElapsedMs,
+  ]);
 
   // Handle Printable Character Input
   const handleCharInput = (char) => {
@@ -134,15 +143,10 @@ export function TypingSessionPage({
     const isCorrect = char === expectedChar;
 
     // Record monotonic event
-    recorderRef.current?.recordInsert(char);
+    typing.recordInsert(char, assignedText);
     if (!isFixture) controller.setPhase('typing');
 
     const newBuffer = buffer + char;
-    setBuffer(newBuffer);
-    setTotalInserts((prev) => prev + 1);
-    if (isCorrect) {
-      setCorrectInserts((prev) => prev + 1);
-    }
 
     // Check completion condition
     if (newBuffer.length >= assignedText.length) {
@@ -166,19 +170,18 @@ export function TypingSessionPage({
     )
       return;
 
-    recorderRef.current?.recordBackspace();
-    setBuffer((prev) => prev.slice(0, -1));
+    typing.recordBackspace();
   };
 
   // Toggle Pause (valid pause intervals are excluded from duration)
   const togglePause = () => {
     if (isCompleted || inputLocked) return;
     if (isPaused) {
-      recorderRef.current?.recordResume();
+      typing.recordResume();
       setIsPaused(false);
       if (!isFixture) controller.setPhase('typing');
     } else {
-      recorderRef.current?.recordPause();
+      typing.recordPause();
       setIsPaused(true);
       if (!isFixture) controller.setPhase('paused');
     }
@@ -191,21 +194,21 @@ export function TypingSessionPage({
     finalCorrectInserts,
   ) => {
     if (isFixture) {
-      const result = computeOfficialResults({
+      const result = computeFixtureResults({
         totalInserts: finalTotalInserts,
         correctInserts: finalCorrectInserts,
         buffer: finalBuffer,
         assignedText,
-        activeDurationMs: recorderRef.current?.getElapsedMs() ?? 0,
+        activeDurationMs: typing.getElapsedMs(),
       });
       setFixtureResult({ ...result, sample: true });
       setFixtureCompleted(true);
       return;
     }
-   const payload = toSessionPayload(
-  recorderRef.current.getSubmissionPayload(sessionId),
-);
-await submission.submit(payload);
+    const payload = toSessionPayload(
+      typing.getSubmissionPayload(sessionId),
+    );
+    await submission.submit(payload);
   };
 
   // Restart attempt
@@ -215,10 +218,7 @@ await submission.submit(payload);
       void onRetrySession();
       return;
     }
-    recorderRef.current?.reset();
-    setBuffer('');
-    setTotalInserts(0);
-    setCorrectInserts(0);
+    typing.reset();
     setElapsedMs(0);
     setIsPaused(false);
     setFixtureCompleted(false);
@@ -235,9 +235,16 @@ await submission.submit(payload);
       totalInserts,
       correctInserts,
       bufferLength: buffer.length,
+      finalCorrect: buffer
+        .split('')
+        .reduce(
+          (count, char, index) =>
+            count + Number(char === assignedText[index]),
+          0,
+        ),
       activeDurationMs: elapsedMs,
     });
-  }, [totalInserts, correctInserts, buffer.length, elapsedMs]);
+  }, [totalInserts, correctInserts, buffer, assignedText, elapsedMs]);
 
   // Render Official Result on completion
   if (isCompleted && officialResult) {
@@ -353,9 +360,13 @@ await submission.submit(payload);
                   {t('typing.liveProvisional')}
                 </div>
                 <div className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! flex gap-3 text-[18px] font-extrabold">
-                  <span>{live.formattedGrossWpm} WPM</span>
+                  <span>
+                    {live.formattedGrossWpm === null
+                      ? t('dashboard.unavailable')
+                      : `${live.formattedGrossWpm} WPM`}
+                  </span>
                   <span className="text-success-text">
-                    {live.formattedRawAccuracy}
+                    {live.formattedRawAccuracy ?? t('dashboard.unavailable')}
                   </span>
                 </div>
               </div>

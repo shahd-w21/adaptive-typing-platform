@@ -11,6 +11,7 @@ export function TypingStage({
 }) {
   const { largeText } = usePreferences();
   const inputRef = useRef(null);
+  const isComposingRef = useRef(false);
 
   // Keep focus in the typing surface while active
   useEffect(() => {
@@ -22,6 +23,11 @@ export function TypingStage({
   // Handle keyboard events directly
   const handleKeyDown = (e) => {
     if (!isActive || isPaused) return;
+
+    if (isComposingRef.current || e.isComposing) {
+      e.preventDefault();
+      return;
+    }
 
     // Suppress auto-repeat keys
     if (e.repeat) {
@@ -41,9 +47,19 @@ export function TypingStage({
       return;
     }
 
-    // Single printable character (including space)
+    // Practice content and the wire schema accept printable English ASCII only.
+    if (!/^[ -~]$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+
+    // Single printable character (including space and Shift-produced symbols)
     e.preventDefault();
     onCharInput(e.key);
+  };
+
+  const preventBulkInput = (event) => {
+    event.preventDefault();
   };
 
   const bufferLen = buffer.length;
@@ -52,6 +68,8 @@ export function TypingStage({
     <div
       className="[transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! relative min-h-55 p-9 cursor-text bg-surface rounded-card shadow-card border-2 border-border-control outline-none flex flex-col justify-center"
       onClick={() => inputRef.current?.focus()}
+      onPaste={preventBulkInput}
+      onDrop={preventBulkInput}
     >
       {/* Hidden capture input */}
       <input
@@ -63,8 +81,15 @@ export function TypingStage({
         autoCorrect="off"
         spellCheck="false"
         onKeyDown={handleKeyDown}
-        onPaste={(e) => e.preventDefault()}
-        onDrop={(e) => e.preventDefault()}
+        onBeforeInput={preventBulkInput}
+        onPaste={preventBulkInput}
+        onDrop={preventBulkInput}
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+        }}
+        onCompositionEnd={() => {
+          isComposingRef.current = false;
+        }}
         className="absolute opacity-0 pointer-events-none w-[1px] h-[1px]"
       />
 
