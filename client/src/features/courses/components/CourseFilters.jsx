@@ -138,7 +138,7 @@ export function CourseFilters({
               key={opt.id}
               type="button"
               onClick={() => onLevelChange(opt.id)}
-              className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-all ${
+              className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-colors ${
                 isActive
                   ? 'bg-learning-accent text-learning-foreground shadow-sm'
                   : 'bg-page text-muted hover:bg-subtle hover:text-ink border border-border-subtle'

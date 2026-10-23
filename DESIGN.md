@@ -122,7 +122,7 @@ The memorable element is an original **passage-to-keyboard learning illustration
 
 **Colour hierarchy:** warm neutrals and navy provide most of the screen. Primary actions use the action tokens; blue identifies learning selection, links and focus; green communicates success; amber/red communicate warning/error; gold supports earned rewards. The reference's purple, magenta and mint-green values remain historical source evidence, not additional TypeFlow action themes. Do not copy every reference accent into the interface.
 
-**Typography decision for review:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
+**Typography direction selected for implementation, 23 October 2026:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
 
 Before approving a composition, remove any decoration that could belong unchanged on an unrelated SaaS homepage. Keep structure that helps a learner understand the next activity, their evidence or the keyboard.
 
@@ -356,6 +356,8 @@ Normal dashboard/admin surfaces use flat borders; use open sections and dividers
 The listed card/popover shadow colours describe Light mode. In Dark mode use minimal black shadow plus the semantic border/surface layers; retain the node lip's mode binding. Certificate PDFs keep their independent print-friendly styling; changing website appearance does not regenerate or invert them.
 
 ### 5.4 Motion
+
+Foundation implementation, 23 October 2026: shared timings/easing, immediate keyboard and typing feedback, static information surfaces and runtime reduced-motion handling are applied. Existing menus/dialogs remain immediate with their native focus behaviour. The optional overlay/milestone effects below are recipes for later feature work, not claims that every effect is implemented. Verification is recorded in [testing](docs/testing.md#typography-and-shared-foundations--23-october-2026).
 
 Motion must explain an action or state change. Decide frequency and purpose before choosing an effect. Repeated typing, keyboard navigation, shortcut-triggered actions and live metric updates are immediate. Normal focus/selected/pressed feedback must still be visible.
 

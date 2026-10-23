@@ -169,7 +169,7 @@ export function MyCoursesPage() {
               key={tab.id}
               type="button"
               onClick={() => setFilterTab(tab.id)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
                 filterTab === tab.id
                   ? 'bg-learning-accent text-learning-foreground shadow-sm'
                   : 'bg-page text-muted border border-border-subtle hover:bg-subtle hover:text-ink'
@@ -222,7 +222,7 @@ export function MyCoursesPage() {
             return (
               <article
                 key={enr.id}
-                className="flex flex-col justify-between rounded-card border border-border-subtle bg-surface p-6 shadow-card hover:border-learning-accent/40 transition-all"
+                className="flex flex-col justify-between rounded-card border border-border-subtle bg-surface p-6 shadow-card hover:border-learning-accent/40 transition-colors"
               >
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-2">

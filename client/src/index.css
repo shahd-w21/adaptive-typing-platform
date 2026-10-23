@@ -142,7 +142,7 @@
 :root {
   /* Typography Families */
   --tf-font-display: 'Open Sans', Arial, sans-serif;
-  --tf-font-body: 'Lato', Arial, sans-serif;
+  --tf-font-body: 'Open Sans', Arial, sans-serif;
   --tf-font-mono: 'IBM Plex Mono', Consolas, Courier New, monospace;
   --tf-font-arabic: 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
 
@@ -152,12 +152,21 @@
   --content-max: 1200px;
   --study-max: 960px;
 
-  /* Motion */
-  --motion-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
-  --motion-standard: 180ms cubic-bezier(0.2, 0, 0, 1);
+  /* Named timings keep existing controls consistent without a motion library. */
+  --motion-duration-fast: 120ms;
+  --motion-duration-standard: 180ms;
+  --motion-duration-panel: 240ms;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --motion-fast: var(--motion-duration-fast) ease;
+  --motion-standard: var(--motion-duration-standard) var(--motion-ease-out);
+  --motion-panel: var(--motion-duration-panel) var(--motion-ease-drawer);
 }
 
 @theme inline {
+  --default-transition-duration: var(--motion-duration-fast);
+  --default-transition-timing-function: ease;
   --color-page: var(--tf-color-bg-page);
   --color-surface: var(--tf-color-bg-surface);
   --color-subtle: var(--tf-color-bg-subtle);
@@ -214,16 +223,17 @@
     line-height: 1.625; /* 26px line-height on 16px font */
     color: var(--tf-color-text-primary);
     background-color: var(--tf-color-bg-page);
+    font-variant-numeric: tabular-nums;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color var(--motion-standard), color var(--motion-standard);
     min-height: 100%;
   }
 
   [dir="rtl"] {
     font-family: var(--tf-font-arabic), var(--tf-font-body);
     line-height: 1.65;
+    letter-spacing: 0;
   }
 
   body {
@@ -248,12 +258,10 @@
     font-family: var(--tf-font-arabic);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* Native controls retain visible feedback without changing their bounds. */
+  button, a, input, select, textarea {
+    transition: background-color var(--motion-fast),
+      border-color var(--motion-fast), color var(--motion-fast);
   }
 }
 
@@ -276,11 +284,6 @@
   transform: translateY(0);
 }
 
-@keyframes caret-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 /* Public landing inherits the shared navy actions and blue learning accents. */
 .landing-hero {
   position: relative;
@@ -291,10 +294,7 @@
   overflow: hidden;
   border: 1px solid var(--tf-color-border-subtle);
   border-radius: 32px;
-  background:
-    radial-gradient(ellipse at 88% 16%, color-mix(in srgb, var(--tf-color-learning-accent) 16%, transparent), transparent 38%),
-    radial-gradient(ellipse at 4% 100%, color-mix(in srgb, var(--tf-color-success-accent) 9%, transparent), transparent 34%),
-    var(--tf-color-bg-surface);
+  background: var(--tf-color-bg-surface);
   box-shadow: var(--tf-shadow-card);
   text-align: start;
 }
@@ -353,13 +353,6 @@
   min-height: 208px;
   padding: 28px;
   border-radius: 22px;
-  transition: transform var(--motion-standard), box-shadow var(--motion-standard), border-color var(--motion-standard);
-}
-
-.landing-features > div:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--tf-color-learning-accent) 36%, var(--tf-color-border-subtle));
-  box-shadow: var(--tf-shadow-popover);
 }
 
 .landing-features > div > div:first-child {
@@ -381,14 +374,13 @@
 }
 
 .site-header {
-  background: color-mix(in srgb, var(--tf-color-bg-surface) 92%, transparent);
-  backdrop-filter: blur(16px);
+  background: var(--tf-color-bg-surface);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--tf-color-border-subtle) 72%, transparent);
 }
 
-/* Shared surface polish: keep borders and subtle depth legible in both themes. */
-.bg-surface.rounded-card {
-  background-image: linear-gradient(145deg, color-mix(in srgb, var(--tf-color-learning-soft) 24%, transparent), transparent 52%);
+/* Bordered information surfaces stay flat; overlays retain their own depth. */
+.bg-surface.rounded-card.border {
+  box-shadow: none;
 }
 
 input:not([type="checkbox"]):not([type="radio"]),
@@ -456,12 +448,30 @@ textarea {
 
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .landing-features > div {
-    transition: none;
-  }
+/* Keyboard feedback is immediate, including controls with utility transitions.
+   This does not intercept input or introduce provider/session state. */
+:where(button, a, input, select, textarea):focus-visible {
+  transition-duration: 0s !important;
+}
 
-  .landing-features > div:hover {
-    transform: none;
+/* Pointer-specific decoration is deliberately absent: controls do not lift,
+   scale or change position on hover, press, touch or keyboard activation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
   }
+}
+
+/* Apply after utilities so long Arabic headings keep their natural shaping. */
+:where([lang="ar"]) :where(h1, h2, h3, h4, h5, h6, button, label) {
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
+/* English exercise glyphs retain fixed advances and never form ligatures. */
+.font-mono {
+  font-variant-ligatures: none;
 }

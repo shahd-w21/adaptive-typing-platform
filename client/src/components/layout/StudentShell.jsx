@@ -182,7 +182,7 @@ export function StudentShell({
         </header>
 
         {/* Page Content */}
-        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-360 flex-1 px-4 py-7 sm:px-6 sm:py-9 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight [&_.shadow-card]:transition-[box-shadow,border-color,transform] [&_.shadow-card]:duration-200 [&_.shadow-card:hover]:-translate-y-0.5 [&_.shadow-card:hover]:border-learning-accent/35 [&_.shadow-card:hover]:shadow-popover">
+        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-360 flex-1 px-4 py-7 sm:px-6 sm:py-9 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight">
           {children}
         </main>
       </div>

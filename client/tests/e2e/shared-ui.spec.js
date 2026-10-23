@@ -184,6 +184,14 @@ test('typing assignment and entered characters survive theme, RTL and viewport c
   const text = await passage.textContent();
   const correctCount = await passage.locator('span.text-success-text').count();
   expect(correctCount).toBe(3);
+
+  // Motion preferences may change mid-attempt without replacing the input or passage.
+  const caret = passage.locator('span.relative').last();
+  expect(await caret.evaluate(element => getComputedStyle(element, '::before').animationName)).toBe('none');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(passage).toHaveText(text);
+  expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.getByRole('button', { name: 'Appearance: Light' }).click();
   await page.getByRole('menuitemradio', { name: 'Dark' }).click();
   await page.getByRole('button', { name: 'Language: English' }).click();
@@ -343,3 +351,38 @@ test('existing profile and forum dialogs contain focus and restore their opener'
   await page.keyboard.press('Escape');
   await expect(discussionButton).toBeFocused();
 });
+
+// Shared foundations are exercised through the actual page, with API fixtures above.
+for (const theme of ['light', 'dark']) {
+  test(`typography and motion foundations preserve control geometry in ${theme}`, async ({ page }) => {
+    await mockApi(page, { theme });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    const hero = page.locator('.landing-hero');
+    await expect(hero).toBeVisible();
+    const action = hero.getByRole('button').first();
+    const bounds = await action.boundingBox();
+
+    // Hover and press may change colour, but cannot move the target under the pointer.
+    await action.hover();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.down();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.move(0, 0);
+    await page.mouse.up();
+
+    // Keyboard feedback is instant even when pointer colour feedback has a duration.
+    await action.focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(action).toBeFocused();
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await page.locator('html').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Open Sans');
+
+    // Changing the OS preference while mounted also disables decorative animation.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await hero.evaluate(element => getComputedStyle(element).backgroundImage)).toBe('none');
+    await expectReflow(page);
+  });
+}
