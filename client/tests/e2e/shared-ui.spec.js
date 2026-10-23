@@ -147,6 +147,62 @@ test('account menus navigate by keyboard, with the same admin actions on mobile'
   await expect(page).toHaveURL(/\/admin$/);
 });
 
+test('timed and certified assessments remain unavailable instead of starting practice fixtures', async ({ page }) => {
+  await mockApi(page, { role: 'student' });
+  let sessionStarts = 0;
+  page.on('request', request => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/sessions')) {
+      sessionStarts += 1;
+    }
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/tests');
+  await expect(page.getByText('Unavailable: selecting a duration', { exact: false }))
+    .toBeVisible();
+  await expect(page.getByText('Unavailable: certified-test duration', { exact: false }))
+    .toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start 3-Minute Test' }))
+    .toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Begin Certified Test' }))
+    .toBeDisabled();
+
+  await page.getByRole('button', { name: '5 Minutes' }).click();
+  await expect(page.getByRole('button', { name: '5 Minutes' }))
+    .toHaveAttribute('aria-pressed', 'true');
+  expect(sessionStarts).toBe(0);
+});
+
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`unavailable tests page is accessible and responsive in ${locale}/${theme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 740 });
+      await mockApi(page, { role: 'student', locale, theme });
+      await page.goto('/tests');
+
+      await expect(page.locator('html')).toHaveAttribute(
+        'dir',
+        locale === 'ar' ? 'rtl' : 'ltr',
+      );
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      const durationLabels = locale === 'ar'
+        ? ['1 دقيقة', '3 دقائق', '5 دقائق']
+        : ['1 Minute', '3 Minutes', '5 Minutes'];
+
+      for (const label of durationLabels) {
+        await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible();
+      }
+
+      const dimensions = await page.evaluate(() => ({
+        visible: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.visible + 1);
+      await expectAccessible(page, '#main-content');
+    });
+  }
+}
+
 test('public keyboard navigation reaches every destination and returns focus from authentication', async ({ page }) => {
   await mockApi(page);
   await page.setViewportSize({ width: 320, height: 740 });

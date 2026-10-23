@@ -613,24 +613,7 @@ function AppRoutes() {
               />
               <Route
                 path="/tests"
-                element={
-                  <TestsView
-                    onStartTimed={(minutes) =>
-                      launchTyping({
-                        mode: `Sample Timed Test (${minutes}m)`,
-                        assignedText:
-                          'Touch typing requires muscle memory and disciplined finger placement. Keep your eyes on the screen and trust your hands.',
-                      })
-                    }
-                    onStartCertified={() =>
-                      launchTyping({
-                        mode: 'Sample Certified Test',
-                        assignedText:
-                          'Touch typing requires muscle memory and disciplined finger placement. Keep your eyes on the screen and trust your hands.',
-                      })
-                    }
-                  />
-                }
+                element={<TestsView />}
               />
               <Route path="/progress" element={<ProgressView />} />
               <Route path="/achievements" element={<AchievementsView />} />
