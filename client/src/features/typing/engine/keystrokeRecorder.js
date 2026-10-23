@@ -6,12 +6,17 @@
 
 export class KeystrokeRecorder {
   constructor(options = {}) {
+    if (options.now !== undefined && typeof options.now !== 'function') {
+      throw new TypeError('The recorder clock must be a function.');
+    }
+
     this.events = [];
     this.sequence = 0;
     this.startTime = null; // Set on first printable insert (t = 0)
     this.activePauses = []; // Valid pause intervals
     this.currentPauseStart = null;
     this.onEvent = options.onEvent || (() => {});
+    this.now = options.now || (() => performance.now());
   }
 
   reset() {
@@ -24,11 +29,34 @@ export class KeystrokeRecorder {
 
   getElapsedMs() {
     if (this.startTime === null) return 0;
-    return Math.max(0, performance.now() - this.startTime);
+
+    const now = this.now();
+    const completedPauseDuration = this.activePauses.reduce(
+      (duration, pause) => duration + pause.duration,
+      0,
+    );
+    const currentPauseDuration =
+      this.currentPauseStart === null
+        ? 0
+        : Math.max(0, now - this.currentPauseStart);
+
+    return Math.max(
+      0,
+      now -
+        this.startTime -
+        completedPauseDuration -
+        currentPauseDuration,
+    );
+  }
+
+  /** Keep wire timestamps nonnegative and ordered even at equal clock ticks. */
+  getEventTime(now) {
+    const elapsed = Math.max(0, Math.round(now - this.startTime));
+    return Math.max(this.events.at(-1)?.t ?? 0, elapsed);
   }
 
   recordInsert(char) {
-    const now = performance.now();
+    const now = this.now();
     if (this.startTime === null) {
       this.startTime = now;
     }
@@ -36,7 +64,7 @@ export class KeystrokeRecorder {
     const event = {
       seq: this.sequence++,
       type: 'insert',
-      t: Math.round(now - this.startTime),
+      t: this.getEventTime(now),
       char,
     };
 
@@ -48,11 +76,11 @@ export class KeystrokeRecorder {
   recordBackspace() {
     if (this.startTime === null) return null; // Cannot backspace before start
 
-    const now = performance.now();
+    const now = this.now();
     const event = {
       seq: this.sequence++,
       type: 'backspace',
-      t: Math.round(now - this.startTime),
+      t: this.getEventTime(now),
     };
 
     this.events.push(event);
@@ -63,13 +91,13 @@ export class KeystrokeRecorder {
   recordPause() {
     if (this.startTime === null || this.currentPauseStart !== null) return null;
 
-    const now = performance.now();
+    const now = this.now();
     this.currentPauseStart = now;
 
     const event = {
       seq: this.sequence++,
       type: 'pause',
-      t: Math.round(now - this.startTime),
+      t: this.getEventTime(now),
     };
 
     this.events.push(event);
@@ -80,18 +108,19 @@ export class KeystrokeRecorder {
   recordResume() {
     if (this.startTime === null || this.currentPauseStart === null) return null;
 
-    const now = performance.now();
+    const now = this.now();
+    const duration = Math.max(0, now - this.currentPauseStart);
     this.activePauses.push({
       start: this.currentPauseStart,
       end: now,
-      duration: now - this.currentPauseStart,
+      duration,
     });
     this.currentPauseStart = null;
 
     const event = {
       seq: this.sequence++,
       type: 'resume',
-      t: Math.round(now - this.startTime),
+      t: this.getEventTime(now),
     };
 
     this.events.push(event);
@@ -104,6 +133,7 @@ export class KeystrokeRecorder {
       sessionId,
       events: [...this.events],
       finishTime: this.events.at(-1)?.t ?? 0,
-      clientEventCount: this.events.length, };
+      clientEventCount: this.events.length,
+    };
   }
 }
