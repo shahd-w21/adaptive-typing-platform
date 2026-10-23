@@ -6,22 +6,33 @@ import {
   courseCatalogResponseSchema,
   enrollmentSummarySchema,
   myEnrollmentsResponseSchema,
+  coursePathResponseSchema,
+  lessonNodeSchema,
+  unitPathSchema,
+  courseSessionContextSchema,
 } from '@typeflow/shared';
 import {
   mockCourses,
   mockStudentEnrollments,
+  mockCoursePathFoundations,
+  mockCoursePathNovice,
+  mockCoursePathSparse,
+  mockCoursePathUnmetPrerequisites,
 } from '../../../client/src/mocks/courses.js';
 import {
   fetchCourses,
   fetchCourseById,
   fetchMyEnrollments,
   enrollCourse,
+  fetchCoursePath,
   setCourseReviewScenario,
+  setCoursePathScenario,
   resetCourseFixtureState,
 } from '../../../client/src/api/courses.js';
 import { queryKeys } from '../../../client/src/lib/queryKeys.js';
 import en from '../../../client/src/i18n/dictionaries/en.json' with { type: 'json' };
 import ar from '../../../client/src/i18n/dictionaries/ar.json' with { type: 'json' };
+
 
 test('course DTO schemas validate mock catalog and details', () => {
   // Catalog schema validation
@@ -142,3 +153,105 @@ test('translation dictionaries contain matching English and Arabic courses keys'
   assert.ok(en.nav.courses && ar.nav.courses, 'nav.courses must exist in both locales');
   assert.ok(en.nav.myCourses && ar.nav.myCourses, 'nav.myCourses must exist in both locales');
 });
+
+test('course path DTO schemas validate default, novice, and sparse evidence paths', () => {
+  const foundationsParsed = coursePathResponseSchema.safeParse(mockCoursePathFoundations);
+  assert.equal(foundationsParsed.success, true, 'Foundations path must match coursePathResponseSchema');
+
+  const noviceParsed = coursePathResponseSchema.safeParse(mockCoursePathNovice);
+  assert.equal(noviceParsed.success, true, 'Novice path must match coursePathResponseSchema');
+
+  const sparseParsed = coursePathResponseSchema.safeParse(mockCoursePathSparse);
+  assert.equal(sparseParsed.success, true, 'Sparse evidence path must match coursePathResponseSchema');
+
+  const unmetParsed = coursePathResponseSchema.safeParse(mockCoursePathUnmetPrerequisites);
+  assert.equal(unmetParsed.success, true, 'Unmet prerequisites path must match coursePathResponseSchema');
+
+  for (const unit of mockCoursePathFoundations.units) {
+    const unitParsed = unitPathSchema.safeParse(unit);
+    assert.equal(unitParsed.success, true, `Unit ${unit.id} must match unitPathSchema`);
+  }
+});
+
+test('lesson nodes represent locked, available, in-progress, completed, and placement-exempt states with reason text (SYS-58-61)', () => {
+  const allLessons = mockCoursePathFoundations.units.flatMap((u) => u.lessons);
+
+  // 1. Verify existence of all 5 required progression states
+  const statuses = new Set(allLessons.map((l) => l.status));
+  assert.ok(statuses.has('completed'), 'Path must contain completed nodes');
+  assert.ok(statuses.has('in-progress'), 'Path must contain in-progress nodes');
+  assert.ok(statuses.has('available'), 'Path must contain available nodes');
+  assert.ok(statuses.has('locked'), 'Path must contain locked nodes');
+  assert.ok(statuses.has('placement-exempt'), 'Path must contain placement-exempt nodes');
+
+  // 2. Validate lesson node schema and reason text
+  for (const lesson of allLessons) {
+    const parsed = lessonNodeSchema.safeParse(lesson);
+    assert.equal(parsed.success, true, `Lesson ${lesson.id} must match lessonNodeSchema`);
+    assert.ok(typeof lesson.reason === 'string' && lesson.reason.length > 0, `Lesson ${lesson.id} must have accessible reason text`);
+  }
+
+  // 3. Placement exempt must not award unearned course completion (SYS-60, SYS-61)
+  const exemptNode = allLessons.find((l) => l.status === 'placement-exempt');
+  assert.ok(exemptNode, 'Placement exempt node must exist in fixture');
+  assert.equal(exemptNode.status, 'placement-exempt');
+  assert.notEqual(exemptNode.status, 'completed', 'Placement exemption remains distinct from completed lesson');
+});
+
+test('course query keys isolate coursePath by owner and courseId', () => {
+  const key = queryKeys.coursePath('student-layla', 'c-foundations-01');
+  assert.deepEqual(key, ['owner', 'student-layla', 'course-path', 'c-foundations-01']);
+
+  assert.throws(() => queryKeys.coursePath('student-layla', ''), /A course ID is required/);
+});
+
+test('fetchCoursePath returns structured path and handles novice, sparse, and error scenarios', async () => {
+  resetCourseFixtureState();
+
+  // 1. Default scenario
+  const defaultPath = await fetchCoursePath('c-foundations-01');
+  assert.equal(defaultPath.isFixture, true);
+  assert.equal(defaultPath.path.courseId, 'c-foundations-01');
+  assert.equal(defaultPath.path.progressPercent, 50);
+  assert.ok(defaultPath.path.nextAction);
+
+  // 2. Novice scenario
+  setCoursePathScenario('novice');
+  const novicePath = await fetchCoursePath('c-foundations-01');
+  assert.equal(novicePath.path.progressPercent, 0);
+  assert.equal(novicePath.path.nextAction.lessonId, 'l-foundations-101');
+  assert.equal(novicePath.path.units[0].lessons[0].status, 'available');
+
+  // 3. Sparse evidence scenario
+  setCoursePathScenario('sparse');
+  const sparsePath = await fetchCoursePath('c-foundations-01');
+  assert.equal(sparsePath.path.progressPercent, 12);
+  assert.equal(sparsePath.path.nextAction.lessonId, 'l-foundations-103');
+
+  // 4. Path error scenario
+  setCoursePathScenario('path_error');
+  await assert.rejects(fetchCoursePath('c-foundations-01'), {
+    status: 500,
+    code: 'SERVICE_UNAVAILABLE',
+  });
+
+  // Reset back
+  resetCourseFixtureState();
+});
+
+test('course session context validates owned enrollment and lesson boundaries', () => {
+  const validContext = {
+    courseId: 'c-foundations-01',
+    courseVersionId: 'cv-foundations-v1',
+    enrollmentId: 'enr-layla-foundations',
+    lessonId: 'l-foundations-301',
+    mode: 'practice',
+  };
+
+  const parsed = courseSessionContextSchema.safeParse(validContext);
+  assert.equal(parsed.success, true);
+
+  // Missing enrollment or lesson must fail
+  assert.equal(courseSessionContextSchema.safeParse({ courseId: 'c-foundations-01' }).success, false);
+});
+

@@ -40,6 +40,8 @@ import { ProfileView } from '../features/profile/ProfileView.jsx';
 import { CourseLibraryPage } from '../features/courses/pages/CourseLibraryPage.jsx';
 import { CourseDetailPage } from '../features/courses/pages/CourseDetailPage.jsx';
 import { MyCoursesPage } from '../features/courses/pages/MyCoursesPage.jsx';
+import { CoursePathPage } from '../features/courses/pages/CoursePathPage.jsx';
+
 import { useAuth } from '../hooks/useAuth.js';
 import { useTranslation } from '../i18n/useTranslation.js';
 import { useTypingSession } from '../features/typing/hooks/useTypingSession.js';
@@ -436,9 +438,12 @@ function AppRoutes() {
     assignment || session.result
       ? {
           sessionId: assignment?.sessionId ?? session.result.sessionId,
-          mode: 'Adaptive Practice',
+          mode: assignment?.mode ?? 'Adaptive Practice',
           assignedText: assignment?.text ?? '',
           source: 'server',
+          courseId: assignment?.courseId ?? fixtureSession?.courseId,
+          lessonId: assignment?.lessonId ?? fixtureSession?.lessonId,
+          enrollmentId: assignment?.enrollmentId ?? fixtureSession?.enrollmentId,
         }
       : fixtureSession?.ownerId === user?.id
         ? fixtureSession
@@ -480,9 +485,13 @@ function AppRoutes() {
         config.assignedText ||
         'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
       source: 'development-fixture',
+      courseId: config.courseId,
+      lessonId: config.lessonId,
+      enrollmentId: config.enrollmentId,
     });
     navigate('/typing');
   };
+
 
   /** Local logout always clears private state, even if server revocation fails. */
   const handleLogout = async () => {
@@ -645,6 +654,27 @@ function AppRoutes() {
               <Route path="/forum" element={<ForumView />} />
               <Route path="/courses" element={<CourseLibraryPage />} />
               <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+              <Route
+                path="/courses/:courseId/path"
+                element={
+                  <CoursePathPage
+                    onStartLesson={(lesson, context) =>
+                      launchTyping({
+                        mode: lesson.title,
+                        courseId: context.courseId,
+                        lessonId: lesson.id,
+                        enrollmentId: context.enrollmentId,
+                        type: lesson.type,
+                      })
+                    }
+                    activeSession={activeSessionConfig}
+                    onAbandonActiveSession={() => {
+                      session.controller.clear();
+                      setFixtureSession(null);
+                    }}
+                  />
+                }
+              />
               <Route path="/my-courses" element={<MyCoursesPage />} />
               <Route path="/typing" element={null} />
             </Route>

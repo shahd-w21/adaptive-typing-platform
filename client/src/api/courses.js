@@ -2,14 +2,19 @@ import { request, ApiError } from './client.js';
 import {
   mockCourses,
   mockStudentEnrollments,
+  mockCoursePathFoundations,
+  mockCoursePathNovice,
+  mockCoursePathSparse,
+  mockCoursePathUnmetPrerequisites,
 } from '../mocks/courses.js';
 
 /**
  * In-memory state for development fixtures to allow interactive testing of
- * enrollments and review scenarios without persisting to backend database.
+ * enrollments, course paths and review scenarios without persisting to backend database.
  */
 let localEnrollments = [...mockStudentEnrollments];
 let activeReviewScenario = 'default'; // 'default' | 'empty_catalog' | 'error_enroll' | 'conflict_enroll' | 'empty_enrollments'
+let activeCoursePathScenario = 'default'; // 'default' | 'novice' | 'sparse' | 'unmet_prerequisites' | 'path_error' | 'start_error'
 
 /** Set an active review scenario for manual test verification */
 export function setCourseReviewScenario(scenario) {
@@ -20,10 +25,20 @@ export function getCourseReviewScenario() {
   return activeReviewScenario;
 }
 
+export function setCoursePathScenario(scenario) {
+  activeCoursePathScenario = scenario;
+}
+
+export function getCoursePathScenario() {
+  return activeCoursePathScenario;
+}
+
 export function resetCourseFixtureState() {
   localEnrollments = [...mockStudentEnrollments];
   activeReviewScenario = 'default';
+  activeCoursePathScenario = 'default';
 }
+
 
 /**
  * Fetch published courses catalog with optional client/server filtering.
@@ -200,10 +215,55 @@ export async function enrollCourse(courseId, { csrfToken } = {}) {
             type: course.units[0].lessons[0].type,
           }
         : undefined,
-      resumeLink: '/learning-path',
+      resumeLink: `/courses/${course.id}/path`,
     };
 
     localEnrollments.push(newEnrollment);
     return { enrollment: newEnrollment, isFixture: true };
   }
 }
+
+/**
+ * Fetch ordered units, lessons and progress for an enrolled course path.
+ *
+ * @param {string} courseId Course identifier
+ * @param {object} [options]
+ * @param {string} [options.ownerId] Student owner ID
+ * @returns {Promise<{ path: object, isFixture: boolean }>}
+ */
+export async function fetchCoursePath(courseId) {
+  try {
+    const data = await request(
+      `/courses/${encodeURIComponent(courseId)}/path`,
+      { available: false },
+    );
+    return { path: data, isFixture: false };
+  } catch {
+    if (activeCoursePathScenario === 'path_error') {
+      throw new ApiError('Failed to load course learning path from server.', {
+        status: 500,
+        code: 'SERVICE_UNAVAILABLE',
+      });
+    }
+
+    if (activeCoursePathScenario === 'novice') {
+      return { path: mockCoursePathNovice, isFixture: true };
+    }
+
+    if (activeCoursePathScenario === 'sparse') {
+      return { path: mockCoursePathSparse, isFixture: true };
+    }
+
+    if (activeCoursePathScenario === 'unmet_prerequisites') {
+      return { path: mockCoursePathUnmetPrerequisites, isFixture: true };
+    }
+
+    // Default scenario: if courseId is c-speed-02, return speed path with unmet prereqs; else foundations
+    if (courseId === 'c-speed-02') {
+      return { path: mockCoursePathUnmetPrerequisites, isFixture: true };
+    }
+
+    return { path: mockCoursePathFoundations, isFixture: true };
+  }
+}
+

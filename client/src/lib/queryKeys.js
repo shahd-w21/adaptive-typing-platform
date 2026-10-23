@@ -62,4 +62,11 @@ export const queryKeys = {
   },
   // Student owned enrollments
   myCourses: resource('my-courses'),
+  // Student course path for an enrolled course
+  coursePath: (ownerId, courseId) => {
+    if (typeof courseId !== 'string' || !courseId.trim()) {
+      throw new TypeError('A course ID is required');
+    }
+    return [...owner(ownerId), 'course-path', courseId];
+  },
 };
