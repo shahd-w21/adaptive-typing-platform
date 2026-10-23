@@ -326,6 +326,12 @@
     "loading": "Loading your dashboard..."
   },
   "auth": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHelp": "Use at least 8 characters, including an English letter and a number.",
+    "passwordRequired": "Enter your password.",
+    "invalidEmail": "Enter a valid email address.",
+    "verificationNote": "After signing up, check your email to verify your account before logging in.",
     "emailLabel": "Email Address",
     "passwordLabel": "Password",
     "confirmPasswordLabel": "Confirm Password",

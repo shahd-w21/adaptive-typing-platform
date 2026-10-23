@@ -442,3 +442,61 @@ for (const locale of ['en', 'ar']) {
     });
   }
 }
+
+// Account presentation checks use intercepted responses, never real account writes.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`account design supports ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.route('**/api/v1/auth/login', route => route.fulfill({
+        status: 401,
+        json: { error: { code: 'INVALID_CREDENTIALS' } },
+      }));
+      await page.route('**/api/v1/auth/register', route => route.fulfill({
+        status: 201,
+        json: { message: 'Account created. Check your email.' },
+      }));
+      await page.goto('/login');
+      const dialog = page.getByRole('dialog');
+      const email = page.locator('#auth-email');
+      const password = page.locator('#auth-password');
+      await expect(email).toBeFocused();
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'text');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'password');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('alert')).toContainText(
+        locale === 'en' ? 'Email or password is incorrect.' : 'البريد الإلكتروني أو كلمة المرور',
+      );
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('login-desktop.png') });
+
+      await dialog.locator('.auth-switch button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(password).toHaveValue('');
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      const confirmation = page.locator('#auth-confirm-password');
+      await confirmation.fill('Example456');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(confirmation).toHaveAttribute('aria-invalid', 'true');
+      await expect(confirmation).toBeFocused();
+      await confirmation.fill('Example123');
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-desktop.png') });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width: 320, height: 640 });
+      await expectReflow(page);
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-mobile.png') });
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('status')).toBeVisible();
+      await expect(password).toHaveValue('');
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+    });
+  }
+}

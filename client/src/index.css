@@ -941,3 +941,192 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* Authentication shares the landing's typography and palette; native Dialog
+   retains focus containment, Escape dismissal and a scrollable small-screen layout. */
+.auth-dialog {
+  position: relative;
+  margin: auto;
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border-radius: 24px;
+}
+
+.auth-dialog-brand {
+  padding: 28px 36px;
+  padding-inline-end: 72px;
+  background: var(--tf-color-learning-soft);
+  border-block-end: 1px solid var(--tf-color-border-subtle);
+}
+
+.auth-dialog-body {
+  padding: 32px 36px 24px;
+}
+
+.auth-introduction h2 {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.auth-introduction p {
+  margin-block-start: 12px;
+  color: var(--tf-color-text-secondary);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.auth-form {
+  display: grid;
+  gap: 22px;
+  margin-block-start: 28px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.auth-field label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.auth-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid var(--tf-color-border-control);
+  border-radius: 10px;
+  font-family: var(--tf-font-body);
+  font-size: 16px;
+  transition: border-color var(--motion-fast);
+}
+
+.auth-field input[aria-invalid="true"] {
+  border-color: var(--tf-color-error-text);
+}
+
+.auth-field input:focus-visible {
+  border-color: var(--tf-color-focus-ring);
+}
+
+.auth-password-toggle {
+  min-height: 44px;
+  color: var(--tf-color-action-link);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-field-help,
+.auth-verification-note {
+  color: var(--tf-color-text-secondary);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.auth-field-error {
+  color: var(--tf-color-error-text);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.auth-feedback {
+  padding: 12px 16px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  color: var(--tf-color-action-foreground);
+  background: var(--tf-color-action-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--motion-fast);
+}
+
+.auth-submit:hover {
+  background: var(--tf-color-action-hover);
+}
+
+.auth-submit:disabled {
+  color: var(--tf-color-disabled-text);
+  background: var(--tf-color-disabled-bg);
+  cursor: wait;
+}
+
+.auth-verification-note {
+  margin-block-start: 16px;
+}
+
+.auth-switch {
+  margin-block-start: 24px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--tf-color-border-subtle);
+  text-align: center;
+}
+
+.auth-switch button {
+  min-height: 44px;
+  color: var(--tf-color-action-link);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch button:hover,
+.auth-password-toggle:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-close {
+  position: absolute;
+  inset-block-start: 20px;
+  inset-inline-end: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--tf-color-text-primary);
+  cursor: pointer;
+}
+
+.auth-close:hover {
+  background: var(--tf-color-bg-surface);
+}
+
+@media (max-width: 520px) {
+  .auth-dialog-brand {
+    padding-block: 22px;
+    padding-inline-start: 24px;
+  }
+
+  .auth-dialog-body {
+    padding: 24px;
+  }
+
+  .auth-introduction h2 {
+    font-size: 24px;
+  }
+}

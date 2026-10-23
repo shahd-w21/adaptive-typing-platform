@@ -5,11 +5,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema } from '@typeflow/shared';
 import { useTranslation } from '../../i18n/useTranslation.js';
-import { ShieldIcon } from '../../components/ui/Icons.jsx';
+import { BrandLogo } from '../../components/ui/BrandLogo.jsx';
+import { ShieldIcon, XIcon } from '../../components/ui/Icons.jsx';
 
 // Preserve the router's existing import while keeping marketing separate from forms.
 export { LandingPage } from './LandingPage.jsx';
 
+/** Map server failures to safe, translated messages without exposing response details. */
 function authMessageFor(error, t) {
   const messages = {
     INVALID_CREDENTIALS: 'invalidCredentials',
@@ -22,113 +24,193 @@ function authMessageFor(error, t) {
   return t(`auth.${messages[error?.code] || 'requestFailed'}`);
 }
 
+/** Branded account form; Dialog owns focus/scroll and the route owner performs authentication. */
 export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
   const { t } = useTranslation();
   const isRegister = mode === 'register';
   const [notice, setNotice] = useState('');
-  const registrationSchema = registerSchema.refine(values => values.password === values.confirmPassword, {
-    path: ['confirmPassword'],
-    message: t('auth.passwordMismatch'),
-  });
-  const { register, handleSubmit, setError, reset, formState: { errors, isSubmitting } } = useForm({
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const registrationSchema = registerSchema.refine(
+    values => values.password === values.confirmPassword,
+    {
+      path: ['confirmPassword'],
+      message: t('auth.passwordMismatch'),
+    },
+  );
+  const {
+    register,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(isRegister ? registrationSchema : loginSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
+  /** Keep the existing request shape and verification notice; never store credentials. */
   const submit = handleSubmit(async values => {
     setNotice('');
     try {
-      await onSubmit(isRegister ? values : { email: values.email, password: values.password });
+      await onSubmit(isRegister ? values : {
+        email: values.email,
+        password: values.password,
+      });
       if (isRegister) {
         setNotice(t('auth.registerSuccess'));
         reset({ email: values.email, password: '', confirmPassword: '' });
+        setPasswordVisible(false);
       }
     } catch (error) {
       if (error?.code === 'INVALID_REQUEST' && error.details?.field) {
-        setError(error.details.field, { type: 'server', message: authMessageFor(error, t) });
+        setError(error.details.field, {
+          type: 'server',
+          message: authMessageFor(error, t),
+        });
       } else {
-        setError('root.server', { type: 'server', message: authMessageFor(error, t) });
+        setError('root.server', {
+          type: 'server',
+          message: authMessageFor(error, t),
+        });
       }
     }
   });
 
-  return (
-    <Dialog open onClose={onClose} labelledBy="auth-dialog-title" className="m-auto w-[calc(100%_-_2rem)] max-w-105 rounded-dialog p-6 sm:p-8">
-      <div className="relative">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-learning-soft text-learning-strong" aria-hidden="true">
-          <ShieldIcon size={23} />
-        </div>
-        <h2 id="auth-dialog-title" className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold mb-2 text-center">
-          {isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
-        </h2>
-        <p className="text-muted text-[14px] text-center mb-6">
-          {isRegister ? t('auth.registerDescription') : t('auth.loginDescription')}
-        </p>
+  /** Clear notices and secret inputs when switching between the existing account routes. */
+  function switchMode() {
+    setNotice('');
+    setPasswordVisible(false);
+    reset();
+    onModeChange(isRegister ? 'login' : 'register');
+  }
 
-        <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-          <div>
-            <label htmlFor="auth-email" className="block text-[14px] font-bold mb-1.5">
-              {t('auth.emailLabel')}
-            </label>
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      labelledBy="auth-dialog-title"
+      describedBy="auth-dialog-description"
+      className="auth-dialog"
+    >
+      <div className="auth-dialog-brand"><BrandLogo /></div>
+      <div className="auth-dialog-body">
+        <header className="auth-introduction">
+          <h2 id="auth-dialog-title">
+            {isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
+          </h2>
+          <p id="auth-dialog-description">
+            {isRegister ? t('auth.registerDescription') : t('auth.loginDescription')}
+          </p>
+        </header>
+
+        <form onSubmit={submit} className="auth-form" noValidate>
+          <div className="auth-field">
+            <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
             <input
               id="auth-email"
               type="email"
-              className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
+              dir="ltr"
               autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? 'auth-email-error' : undefined}
               {...register('email')}
               placeholder="name@example.com"
             />
-            {errors.email && <p id="auth-email-error" className="mt-1 text-[13px] text-error-text" role="alert">{errors.email.message}</p>}
+            {errors.email && (
+              <p id="auth-email-error" className="auth-field-error" role="alert">
+                {errors.email.type === 'server' ? errors.email.message : t('auth.invalidEmail')}
+              </p>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="auth-password" className="block text-[14px] font-bold mb-1.5">
-              {t('auth.passwordLabel')}
-            </label>
+          <div className="auth-field">
+            <div className="auth-field-heading">
+              <label htmlFor="auth-password">{t('auth.passwordLabel')}</label>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                aria-pressed={passwordVisible}
+                aria-controls={isRegister ? 'auth-password auth-confirm-password' : 'auth-password'}
+                onClick={() => setPasswordVisible(visible => !visible)}
+              >
+                {t(passwordVisible ? 'auth.hidePassword' : 'auth.showPassword')}
+              </button>
+            </div>
             <input
               id="auth-password"
-              type="password"
+              type={passwordVisible ? 'text' : 'password'}
+              dir="ltr"
               autoComplete={isRegister ? 'new-password' : 'current-password'}
-              className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
-              placeholder="••••••••"
               aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? 'auth-password-error' : undefined}
+              aria-describedby={[
+                isRegister && 'auth-password-help',
+                errors.password && 'auth-password-error',
+              ].filter(Boolean).join(' ') || undefined}
               {...register('password')}
             />
-            {errors.password && <p id="auth-password-error" className="mt-1 text-[13px] text-error-text" role="alert">{errors.password.message}</p>}
+            {isRegister && <p id="auth-password-help" className="auth-field-help">{t('auth.passwordHelp')}</p>}
+            {errors.password && (
+              <p id="auth-password-error" className="auth-field-error" role="alert">
+                {errors.password.type === 'server'
+                  ? errors.password.message
+                  : t(isRegister ? 'auth.passwordHelp' : 'auth.passwordRequired')}
+              </p>
+            )}
           </div>
 
           {isRegister && (
-            <div>
-              <label htmlFor="auth-confirm-password" className="block text-[14px] font-bold mb-1.5">{t('auth.confirmPasswordLabel')}</label>
-              <input id="auth-confirm-password" type="password" autoComplete="new-password" className="w-full h-12 px-4 text-ink bg-surface border-2 border-border-control rounded-control focus:outline-none focus:border-focus-ring" aria-invalid={Boolean(errors.confirmPassword)} aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined} {...register('confirmPassword')} />
-              {errors.confirmPassword && <p id="auth-confirm-password-error" className="mt-1 text-[13px] text-error-text" role="alert">{errors.confirmPassword.message}</p>}
+            <div className="auth-field">
+              <label htmlFor="auth-confirm-password">{t('auth.confirmPasswordLabel')}</label>
+              <input
+                id="auth-confirm-password"
+                type={passwordVisible ? 'text' : 'password'}
+                dir="ltr"
+                autoComplete="new-password"
+                aria-invalid={Boolean(errors.confirmPassword)}
+                aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
+                {...register('confirmPassword')}
+              />
+              {errors.confirmPassword && (
+                <p id="auth-confirm-password-error" className="auth-field-error" role="alert">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
           )}
 
-          {errors.root?.server && <p className="rounded-control border border-error-text/25 bg-error-soft px-4 py-3 text-[14px] text-error-text" role="alert">{errors.root.server.message}</p>}
-          {notice && <p className="rounded-control border border-success-accent/40 bg-success-soft px-4 py-3 text-[14px] text-success-text" role="status">{notice}</p>}
+          {errors.root?.server && (
+            <p className="auth-feedback bg-error-soft text-error-text" role="alert">
+              {errors.root.server.message}
+            </p>
+          )}
+          {notice && (
+            <p className="auth-feedback bg-success-soft text-success-text" role="status">{notice}</p>
+          )}
 
-          <button type="submit" disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary transition-colors hover:bg-action-hover disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-wait h-12 w-full mt-2">
-            <span>{isSubmitting ? t('common.loading') : isRegister ? t('auth.registerAction') : t('auth.loginAction')}</span>
+          <button type="submit" disabled={isSubmitting} className="auth-submit" aria-busy={isSubmitting}>
+            {isSubmitting
+              ? t('common.loading')
+              : t(isRegister ? 'auth.registerAction' : 'auth.loginAction')}
           </button>
         </form>
 
-        <div className="mt-5 text-center text-[14px] text-muted">
-          <button type="button" onClick={() => { setNotice(''); reset(); onModeChange(isRegister ? 'login' : 'register'); }} className="border-0 bg-transparent font-bold text-action-link">{isRegister ? t('auth.switchToLogin') : t('auth.switchToRegister')}</button>
+        {isRegister && <p className="auth-verification-note">{t('auth.verificationNote')}</p>}
+        <div className="auth-switch">
+          <button type="button" onClick={switchMode}>
+            {t(isRegister ? 'auth.switchToLogin' : 'auth.switchToRegister')}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t('common.close')}
-          className="absolute top-4 end-4 flex size-10 items-center justify-center rounded-full border-0 bg-transparent cursor-pointer text-[18px] text-muted transition-colors hover:bg-subtle hover:text-ink"
-        >
-          ✕
-        </button>
       </div>
+
+      <button type="button" onClick={onClose} aria-label={t('common.close')} className="auth-close">
+        <XIcon size={20} />
+      </button>
     </Dialog>
   );
 }

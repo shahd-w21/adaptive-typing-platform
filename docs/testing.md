@@ -162,3 +162,9 @@ Client build/lint and six targeted browser checks passed for the final native-im
 ### Expanded landing and footer
 
 Added focused-practice guidance, four native FAQ disclosures, and a full-width footer with product context, section links, account actions, certificate verification and copyright. Both dictionaries include the new copy. The FAQ opens with the keyboard; there are no added animations or requests. Build/lint passed and all four landing checks passed in English/Arabic and Light/Dark, including 320px/768px reflow, automated accessibility and existing account destinations. Desktop Light and mobile Arabic Dark screenshots were reviewed. The first run caught an ambiguous test selector after adding the second section link; it was scoped to the hero and rerun successfully. Arabic wording still needs team review; the existing bundle-size warning remains.
+
+## Login and registration design — 23 October 2026
+
+- Updated the existing routed `AuthModal` with a branded header, start-aligned copy, larger labelled fields, password visibility, registration guidance, verification notice and a separated account-switch action. Shared tokens cover both themes; email/password entry remains LTR in Arabic. No auth routes, schemas, request shapes or backend code changed.
+- Build and lint passed. Four account browser checks passed across English/Arabic and Light/Dark with intercepted API fixtures, covering invalid credentials, confirmation mismatch/focus, show/hide, mode switching, registration notice/reset, Escape, 320px reflow and automated dialog accessibility. No real accounts were created. Desktop login and mobile registration screenshots were reviewed using fallback fonts.
+- The existing public keyboard/focus test initially timed out on page loading; its isolated retry passed. Five targeted checks therefore passed across two runs, not the entire browser suite. Existing bundle-size warning remains; Arabic copy still needs team wording review.
