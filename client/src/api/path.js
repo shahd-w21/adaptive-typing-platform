@@ -1,2 +1,7 @@
-// Coming soon: Keyboard state, due reviews and next-action recommendations.
-// Placeholder only: no implementation, exports or runtime wiring.
+// Read the server's current keyboard/path state; never calculate unlocks here.
+import { request } from './client.js';
+import { pathResponseSchema } from '@typeflow/shared';
+
+// Optional AbortSignal lets the query owner cancel an in-flight read.
+export const fetchLearningPath = ({ signal } = {}) =>
+  request('/path', { signal, responseSchema: pathResponseSchema });

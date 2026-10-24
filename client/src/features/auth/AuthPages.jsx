@@ -1,180 +1,222 @@
+// Existing public screens; authentication modal delegates keyboard and focus behavior to Dialog.
 import { useState } from 'react';
+import { Dialog } from '../../components/ui/Dialog.jsx';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, registerSchema } from '@typeflow/shared';
 import { useTranslation } from '../../i18n/useTranslation.js';
-import { ArrowRightIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
+import { BrandLogo } from '../../components/ui/BrandLogo.jsx';
+import { ShieldIcon, XIcon } from '../../components/ui/Icons.jsx';
 
-export function LandingPage({ onStartLearning, onLogin }) {
-  const { isRTL } = useTranslation();
+// Preserve the router's existing import while keeping marketing separate from forms.
+export { LandingPage } from './LandingPage.jsx';
 
-  return (
-    <div className="pb-15">
-      {/* Hero Section */}
-      <section
-        className="py-16 px-5 text-center max-w-205 my-0 mx-auto"
-      >
-        <div
-          className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-learning-soft text-learning-strong text-[13px] font-bold mb-5"
-        >
-          <span>✨ ADAPTIVE ENGLISH TOUCH TYPING</span>
-        </div>
-
-        <h1 className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] mb-4.5">
-          Build speed. Keep accuracy.
-        </h1>
-
-        <p className="text-[18px] leading-[28px] font-normal text-muted mb-8 max-w-155 mx-auto">
-          Master English touch typing with real-time weakness detection, spaced review repetition, and unproctored performance certificates.
-        </p>
-
-        <div className="flex justify-center gap-4">
-          <button
-            type="button"
-            onClick={onStartLearning}
-            className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-13 py-0 px-8 text-[17px]"
-          >
-            <span>Start Learning Free</span>
-            <ArrowRightIcon size={18} className={[
-                                        isRTL ? 'rotate-180' : 'transform-none',
-                                      ].filter(Boolean).join(' ')} />
-          </button>
-
-          <button
-            type="button"
-            onClick={onLogin}
-            className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic font-bold text-ink bg-surface border-2 border-border-control rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_border-color_var(--motion-fast)] enabled:hover:bg-subtle enabled:hover:border-ink disabled:border-border-subtle disabled:text-disabled-text disabled:cursor-not-allowed h-13 py-0 px-6 text-[16px]"
-          >
-            <span>Sign In</span>
-          </button>
-        </div>
-      </section>
-
-      {/* Feature Cards Grid */}
-      <section
-        className="grid grid-cols-[repeat(auto-fit,_minmax(280px,_1fr))] gap-6 max-w-280 my-0 mx-auto py-0 px-5"
-      >
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <div className="text-[32px] mb-3">🎯</div>
-          <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-2">Adaptive Practice</h2>
-          <p className="text-muted text-[14px] leading-[22px]">
-            Measures your per-key latency and error rates on physical QWERTY keyboards, generating drills tailored specifically to your weak letter pairs.
-          </p>
-        </div>
-
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <div className="text-[32px] mb-3">🛡️</div>
-          <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-2">Strict Raw Accuracy Gate</h2>
-          <p className="text-muted text-[14px] leading-[22px]">
-            Progression requires a 95% raw accuracy gate. Backspacing corrections do not erase errors from official records, building genuine muscle memory.
-          </p>
-        </div>
-
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <div className="text-[32px] mb-3">📜</div>
-          <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-2">Verified Certificates</h2>
-          <p className="text-muted text-[14px] leading-[22px]">
-            Earn unproctored TypeFlow performance certificates with unique verification codes and downloadable PDF credentials.
-          </p>
-        </div>
-      </section>
-    </div>
-  );
+/** Map server failures to safe, translated messages without exposing response details. */
+function authMessageFor(error, t) {
+  const messages = {
+    INVALID_CREDENTIALS: 'invalidCredentials',
+    EMAIL_NOT_VERIFIED: 'emailNotVerified',
+    EMAIL_REGISTERED: 'emailRegistered',
+    RATE_LIMITED: 'rateLimited',
+    EMAIL_UNAVAILABLE: 'verifyUnavailable',
+    ACCOUNT_INACTIVE: 'accountInactive',
+  };
+  return t(`auth.${messages[error?.code] || 'requestFailed'}`);
 }
 
-export function AuthModal({ mode = 'login', onClose, onSuccess }) {
+/** Branded account form; Dialog owns focus/scroll and the route owner performs authentication. */
+export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
   const { t } = useTranslation();
-  const [isRegister, setIsRegister] = useState(mode === 'register');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const isRegister = mode === 'register';
+  const [notice, setNotice] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const registrationSchema = registerSchema.refine(
+    values => values.password === values.confirmPassword,
+    {
+      path: ['confirmPassword'],
+      message: t('auth.passwordMismatch'),
+    },
+  );
+  const {
+    register,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(isRegister ? registrationSchema : loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSuccess({ email, name: email.split('@')[0] || 'Learner', role: 'Student' });
-  };
+  /** Keep the existing request shape and verification notice; never store credentials. */
+  const submit = handleSubmit(async values => {
+    setNotice('');
+    try {
+      await onSubmit(isRegister ? values : {
+        email: values.email,
+        password: values.password,
+      });
+      if (isRegister) {
+        setNotice(t('auth.registerSuccess'));
+        reset({ email: values.email, password: '', confirmPassword: '' });
+        setPasswordVisible(false);
+      }
+    } catch (error) {
+      if (error?.code === 'INVALID_REQUEST' && error.details?.field) {
+        setError(error.details.field, {
+          type: 'server',
+          message: authMessageFor(error, t),
+        });
+      } else {
+        setError('root.server', {
+          type: 'server',
+          message: authMessageFor(error, t),
+        });
+      }
+    }
+  });
+
+  /** Clear notices and secret inputs when switching between the existing account routes. */
+  function switchMode() {
+    setNotice('');
+    setPasswordVisible(false);
+    reset();
+    onModeChange(isRegister ? 'login' : 'register');
+  }
 
   return (
-    <div
-      className="fixed inset-0 bg-overlay flex items-center justify-center z-100 p-4"
+    <Dialog
+      open
+      onClose={onClose}
+      labelledBy="auth-dialog-title"
+      describedBy="auth-dialog-description"
+      className="auth-dialog"
     >
-      <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] w-full max-w-105 relative">
-        <h2 className="font-display rtl:font-arabic text-[24px] leading-[34px] font-bold mb-2 text-center">
-          {isRegister ? 'Create Your Account' : 'Welcome Back'}
-        </h2>
-        <p className="text-muted text-[14px] text-center mb-6">
-          {isRegister ? 'Begin your journey to 80+ WPM touch typing' : 'Sign in to sync your progress across devices'}
-        </p>
+      <div className="auth-dialog-brand"><BrandLogo /></div>
+      <div className="auth-dialog-body">
+        <header className="auth-introduction">
+          <h2 id="auth-dialog-title">
+            {isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
+          </h2>
+          <p id="auth-dialog-description">
+            {isRegister ? t('auth.registerDescription') : t('auth.loginDescription')}
+          </p>
+        </header>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-[14px] font-bold mb-1.5">
-              {t('auth.emailLabel')}
-            </label>
+        <form onSubmit={submit} className="auth-form" noValidate>
+          <div className="auth-field">
+            <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
             <input
+              id="auth-email"
               type="email"
-              required
-              className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              dir="ltr"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? 'auth-email-error' : undefined}
+              {...register('email')}
               placeholder="name@example.com"
             />
+            {errors.email && (
+              <p id="auth-email-error" className="auth-field-error" role="alert">
+                {errors.email.type === 'server' ? errors.email.message : t('auth.invalidEmail')}
+              </p>
+            )}
           </div>
 
-          <div>
-            <label className="block text-[14px] font-bold mb-1.5">
-              {t('auth.passwordLabel')}
-            </label>
+          <div className="auth-field">
+            <div className="auth-field-heading">
+              <label htmlFor="auth-password">{t('auth.passwordLabel')}</label>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                aria-pressed={passwordVisible}
+                aria-controls={isRegister ? 'auth-password auth-confirm-password' : 'auth-password'}
+                onClick={() => setPasswordVisible(visible => !visible)}
+              >
+                {t(passwordVisible ? 'auth.hidePassword' : 'auth.showPassword')}
+              </button>
+            </div>
             <input
-              type="password"
-              required
-              className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              id="auth-password"
+              type={passwordVisible ? 'text' : 'password'}
+              dir="ltr"
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+              aria-invalid={Boolean(errors.password)}
+              aria-describedby={[
+                isRegister && 'auth-password-help',
+                errors.password && 'auth-password-error',
+              ].filter(Boolean).join(' ') || undefined}
+              {...register('password')}
             />
+            {isRegister && <p id="auth-password-help" className="auth-field-help">{t('auth.passwordHelp')}</p>}
+            {errors.password && (
+              <p id="auth-password-error" className="auth-field-error" role="alert">
+                {errors.password.type === 'server'
+                  ? errors.password.message
+                  : t(isRegister ? 'auth.passwordHelp' : 'auth.passwordRequired')}
+              </p>
+            )}
           </div>
 
-          <button type="submit" className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 w-full mt-2">
-            <span>{isRegister ? 'Register & Verify' : 'Sign In'}</span>
+          {isRegister && (
+            <div className="auth-field">
+              <label htmlFor="auth-confirm-password">{t('auth.confirmPasswordLabel')}</label>
+              <input
+                id="auth-confirm-password"
+                type={passwordVisible ? 'text' : 'password'}
+                dir="ltr"
+                autoComplete="new-password"
+                aria-invalid={Boolean(errors.confirmPassword)}
+                aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
+                {...register('confirmPassword')}
+              />
+              {errors.confirmPassword && (
+                <p id="auth-confirm-password-error" className="auth-field-error" role="alert">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+          )}
+
+          {errors.root?.server && (
+            <p className="auth-feedback bg-error-soft text-error-text" role="alert">
+              {errors.root.server.message}
+            </p>
+          )}
+          {notice && (
+            <p className="auth-feedback bg-success-soft text-success-text" role="status">{notice}</p>
+          )}
+
+          <button type="submit" disabled={isSubmitting} className="auth-submit" aria-busy={isSubmitting}>
+            {isSubmitting
+              ? t('common.loading')
+              : t(isRegister ? 'auth.registerAction' : 'auth.loginAction')}
           </button>
         </form>
 
-        <div className="mt-5 text-center text-[14px] text-muted">
-          {isRegister ? (
-            <span>
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegister(false)}
-                className="bg-transparent border-0 text-action-link font-bold cursor-pointer"
-              >
-                Sign In
-              </button>
-            </span>
-          ) : (
-            <span>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegister(true)}
-                className="bg-transparent border-0 text-action-link font-bold cursor-pointer"
-              >
-                Get Started
-              </button>
-            </span>
-          )}
+        {isRegister && <p className="auth-verification-note">{t('auth.verificationNote')}</p>}
+        <div className="auth-switch">
+          <button type="button" onClick={switchMode}>
+            {t(isRegister ? 'auth.switchToLogin' : 'auth.switchToRegister')}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 end-4 bg-transparent border-0 cursor-pointer text-[18px] text-muted"
-        >
-          ✕
-        </button>
       </div>
-    </div>
+
+      <button type="button" onClick={onClose} aria-label={t('common.close')} className="auth-close">
+        <XIcon size={20} />
+      </button>
+    </Dialog>
   );
 }
 
 export function PublicCertificateVerification({ onBack }) {
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [lookupResult, setLookupResult] = useState(null);
 
@@ -182,17 +224,7 @@ export function PublicCertificateVerification({ onBack }) {
     e.preventDefault();
     if (!code) return;
 
-    // Simulated verified certificate lookup
-    setLookupResult({
-      code: code.toUpperCase(),
-      name: 'Layla M.',
-      issueDate: 'October 14, 2026',
-      duration: '3 Minutes',
-      netWpm: 52,
-      rawAccuracy: '97.2%',
-      status: 'Valid',
-      isUnproctored: true,
-    });
+    setLookupResult({ unavailable: true });
   };
 
   return (
@@ -225,12 +257,12 @@ export function PublicCertificateVerification({ onBack }) {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
-          <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none py-0 px-6 shrink-0">
+          <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none py-0 px-6 shrink-0">
             Verify
           </button>
         </form>
 
-        {lookupResult && (
+        {lookupResult?.code && (
           <div
             className="p-6 rounded-card bg-subtle border-2 border-success-accent text-left"
           >
@@ -243,7 +275,7 @@ export function PublicCertificateVerification({ onBack }) {
               </span>
             </div>
 
-            <div className="grid grid-cols-[1fr_1fr] gap-3.5 text-[14px]">
+            <div className="grid grid-cols-1 gap-3.5 text-[14px] sm:grid-cols-2">
               <div>
                 <span className="text-muted block text-[12px]">Recipient</span>
                 <strong>{lookupResult.name}</strong>
@@ -267,6 +299,7 @@ export function PublicCertificateVerification({ onBack }) {
             </p>
           </div>
         )}
+        {lookupResult?.unavailable && <p className="rounded-control border border-warning-accent/40 bg-warning-soft p-4 text-start text-sm text-warning-text" role="status">{t('common.certificateUnavailable')}</p>}
       </div>
     </div>
   );

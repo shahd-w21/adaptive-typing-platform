@@ -1,8 +1,11 @@
+// Existing development-fixture admin sections; shared navigation reflows without removing actions.
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
+import { useAdminPing } from './hooks/useAdmin.js';
 
 export function AdminView() {
-  const { isRTL } = useTranslation();
+  const { isRTL, t } = useTranslation();
+  const adminPing = useAdminPing();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'settings' | 'moderation'
 
   // Mock platform analytics per SYS-44
@@ -24,7 +27,7 @@ export function AdminView() {
 
   return (
     <div className="max-w-270 my-0 mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex min-w-0 flex-col items-start justify-between gap-5 xl:flex-row">
         <div>
           <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Platform Administration
@@ -32,35 +35,41 @@ export function AdminView() {
           <p className="text-[16px] leading-[26px] font-normal text-muted">
             Supervise learning health, adaptive settings, content generation, and accounts.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" role={adminPing.isError ? 'alert' : 'status'}>
+            <span className={`size-2 rounded-full ${adminPing.isSuccess ? 'bg-success-accent' : adminPing.isError ? 'bg-error-text' : 'animate-pulse bg-warning-accent'}`} aria-hidden="true" />
+            {adminPing.isPending ? 'Checking server-side admin access…' : adminPing.isError ? 'Could not confirm admin access with the server.' : adminPing.data.message}
+            {adminPing.isError && <button type="button" onClick={() => adminPing.refetch()} className="font-bold underline">Retry</button>}
+          </div>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex gap-2">
+        <nav aria-label={t('navigation.adminSections')} className="flex max-w-full flex-wrap gap-2">
           {[
-            { id: 'overview', label: 'Analytics' },
-            { id: 'users', label: 'Users' },
-            { id: 'settings', label: 'Learning Settings' },
-            { id: 'moderation', label: 'Moderation' },
+            { id: 'overview', label: t('adminNav.overview') },
+            { id: 'users', label: t('adminNav.users') },
+            { id: 'settings', label: t('adminNav.settings') },
+            { id: 'moderation', label: t('adminNav.moderation') },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
+              aria-pressed={activeTab === tab.id}
               className={[
-                "py-1.5 px-3.5 rounded-full border border-border-subtle font-bold text-[13px] cursor-pointer",
+                "min-h-11 py-1.5 px-3.5 rounded-full border border-border-subtle font-bold text-[13px] cursor-pointer",
                 activeTab === tab.id ? 'bg-action-primary text-action-foreground' : 'bg-surface text-ink',
               ].filter(Boolean).join(' ')}
             >
               {tab.label}
             </button>
           ))}
-        </div>
+        </nav>
       </div>
 
       {activeTab === 'overview' && (
         <div className="flex flex-col gap-6">
           {/* Key Aggregates Grid */}
-          <div className="grid grid-cols-[repeat(auto-fit,_minmax(220px,_1fr))] gap-4">
+          <div className="grid grid-cols-[repeat(auto-fit,_minmax(min(100%,_220px),_1fr))] gap-4">
             <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
               <div className="text-[14px] leading-[22px] font-normal text-muted">Active Learners (24h)</div>
               <div className="font-display rtl:font-arabic text-[48px] leading-[60px] font-extrabold max-md:text-[34px] max-md:leading-[44px] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-learning-strong my-2 mx-0">
@@ -107,6 +116,7 @@ export function AdminView() {
         <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
           <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">User Directory</h2>
 
+          <div role="region" aria-label={t('navigation.userDirectory')} tabIndex={0} className="max-w-full overflow-x-auto rounded-control">
           <table className={[
                    "w-full border-collapse",
                    isRTL ? 'text-right' : 'text-left',
@@ -155,6 +165,7 @@ export function AdminView() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -190,7 +201,7 @@ export function AdminView() {
             <button
               type="button"
               onClick={() => alert('New immutable version activated: v1.3.0')}
-              className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none self-start mt-3"
+              className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none self-start mt-3"
             >
               Activate New Version
             </button>

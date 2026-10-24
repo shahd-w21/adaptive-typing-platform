@@ -1,0 +1,502 @@
+// FE-03 behavior checks use explicit HTTP fixtures; no account or scored session is created.
+import { test, expect } from '../support/browser.js';
+import AxeBuilder from '@axe-core/playwright';
+
+const student = {
+  id: '00000000-0000-4000-8000-000000000003',
+  email: 'fe03@example.test',
+  name: 'FE-03',
+  role: 'student',
+  timezone: 'Africa/Cairo',
+  targetWpm: 40,
+  dailyGoalMinutes: 15,
+  largeText: false,
+  reducedPressure: false,
+  xp: 120,
+  level: 1,
+  streak: 2,
+  preferences: {
+    themePreference: 'light',
+    uiLocale: 'en',
+  },
+};
+
+/** Intercept all API traffic so tests cannot write to a developer's database. */
+async function mockApi(page, { role, theme = 'light', locale = 'en' } = {}) {
+  const user = {
+    ...student,
+    role,
+    preferences: {
+      themePreference: theme,
+      uiLocale: locale,
+    },
+  };
+  await page.addInitScript(({ theme, locale }) => {
+    localStorage.setItem('typeflow_theme_pref', theme);
+    localStorage.setItem('typeflow_locale_pref', locale);
+  }, { theme, locale });
+
+  await page.route('**/api/v1/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) {
+      return route.fulfill({
+        status: role ? 200 : 401,
+        json: role
+          ? { user, csrfToken: 'a'.repeat(64) }
+          : { error: { code: 'UNAUTHENTICATED' } },
+      });
+    }
+    if (path.endsWith('/users/me') && route.request().method() === 'PATCH') {
+      const patch = route.request().postDataJSON();
+      user.preferences = {
+        ...user.preferences,
+        ...patch.preferences,
+      };
+      return route.fulfill({ json: { user } });
+    }
+    if (path.endsWith('/admin/ping')) {
+      return route.fulfill({ json: { message: 'Fixture access check' } });
+    }
+    return route.fulfill({
+      status: 503,
+      json: { error: { code: 'SERVICE_UNAVAILABLE' } },
+    });
+  });
+}
+
+/** Assert reflow instead of masking overflow with body overflow-x:hidden. */
+async function expectReflow(page) {
+  const dimensions = await page.evaluate(() => ({
+    width: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width + 1);
+}
+
+/** Restrict automated accessibility review to the FE-03 shared interface. */
+async function expectAccessible(page, selector) {
+  const results = await new AxeBuilder({ page })
+    .include(selector)
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  expect(results.violations).toEqual([]);
+}
+
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    for (const role of ['public', 'student', 'admin']) {
+      test(`${role} navigation reflows at 320px in ${locale}/${theme}`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: 320, height: 740 });
+        await mockApi(page, {
+          role: role === 'public' ? undefined : role,
+          theme,
+          locale,
+        });
+        await page.goto(role === 'public' ? '/' : role === 'admin' ? '/admin' : '/practice');
+        await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+        await expectReflow(page);
+
+        const trigger = page.getByRole('button', {
+          name: locale === 'ar' ? 'فتح قائمة التنقل' : 'Open navigation menu',
+        });
+        await trigger.focus();
+        await page.keyboard.press('Enter');
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await expectAccessible(page, 'dialog[open]');
+        await page.screenshot({ path: testInfo.outputPath('mobile-drawer.png') });
+
+        // Exercise forward/backward traversal while the background is inert.
+        for (let index = 0; index < 16; index += 1) {
+          await page.keyboard.press(index % 2 ? 'Shift+Tab' : 'Tab');
+          expect(await page.evaluate(() => Boolean(document.activeElement.closest('dialog[open]')))).toBe(true);
+        }
+        await page.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+        await expect(trigger).toBeFocused();
+        await expectReflow(page);
+        await expectAccessible(page, 'header');
+        await page.screenshot({
+          path: testInfo.outputPath('mobile-page.png'),
+          fullPage: true,
+        });
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await expectReflow(page);
+        await expectAccessible(page, role === 'public' ? 'header' : 'aside');
+      });
+    }
+  }
+}
+
+test('account menus navigate by keyboard, with the same admin actions on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await mockApi(page, { role: 'admin' });
+  await page.goto('/admin');
+  const desktopActions = await page.locator('aside nav button').allTextContents();
+  await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  expect(await page.locator('dialog nav button').allTextContents()).toEqual(desktopActions);
+  const profile = page.getByRole('dialog').getByRole('button', { name: 'Profile & Settings' });
+  await profile.focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.locator('#main-content')).toBeFocused();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.locator('aside nav').getByRole('button', { name: 'Admin Panel' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/admin$/);
+});
+
+test('public keyboard navigation reaches every destination and returns focus from authentication', async ({ page }) => {
+  await mockApi(page);
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
+  await page.getByRole('button', { name: 'Open navigation menu' }).focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('dialog').getByRole('button', { name: 'Verify Certificate' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/verify-certificate$/);
+  await expect(page.locator('#main-content')).toBeFocused();
+  await page.getByRole('button', { name: 'Log In', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByLabel('Email Address')).toBeFocused();
+  await expectAccessible(page, 'dialog[open]');
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(page.locator('#main-content')).toBeFocused();
+});
+
+test('typing assignment and entered characters survive theme, RTL and viewport changes', async ({ page }) => {
+  await mockApi(page, { role: 'student' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/review');
+  await page.getByRole('button', { name: 'Begin sample review' }).click();
+  await expect(page).toHaveURL(/\/typing$/);
+  const input = page.getByRole('textbox', { name: 'Typing input stream' });
+  await input.pressSequentially('trex');
+  const passage = input.locator('..').locator('.select-none');
+  const text = await passage.textContent();
+  const correctCount = await passage.locator('span.text-success-text').count();
+  expect(correctCount).toBe(3);
+
+  // Motion preferences may change mid-attempt without replacing the input or passage.
+  const caret = passage.locator('span.relative').last();
+  expect(await caret.evaluate(element => getComputedStyle(element, '::before').animationName)).toBe('none');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(passage).toHaveText(text);
+  expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.getByRole('button', { name: 'Appearance: Light' }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark' }).click();
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('menuitemradio', { name: 'العربية' }).click();
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(passage).toHaveText(text);
+  expect(await passage.evaluate(element => getComputedStyle(element).direction)).toBe('ltr');
+  await page.setViewportSize({ width: 320, height: 740 });
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(passage).toHaveText(text);
+  expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
+  await page.getByRole('button', { name: 'خروج', exact: true }).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'خروج', exact: true })).toBeFocused();
+  await expect(passage).toHaveText(text);
+});
+
+test('admin sections and table remain reachable at 320px and increased text size', async ({ page }) => {
+  await mockApi(page, { role: 'admin', theme: 'dark', locale: 'ar' });
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/admin');
+  await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+  const sections = page.getByRole('navigation', { name: 'أقسام الإدارة' });
+  for (const button of await sections.getByRole('button').all()) {
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expectReflow(page);
+  }
+  await sections.getByRole('button', { name: 'المستخدمون' }).click();
+  await expect(page.getByRole('region', { name: /دليل المستخدمين/ })).toBeVisible();
+});
+
+test('preference menus support arrows, Home/End, Escape and focus return', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await mockApi(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Appearance: Light' }).focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('menuitemradio', { name: 'Light' })).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'Appearance: Dark' })).toBeFocused();
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.keyboard.press('End');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await page.getByRole('button', { name: /اللغة/ }).click();
+  await expectReflow(page);
+  await page.keyboard.press('Home');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: /اللغة/ })).toBeFocused();
+});
+
+test('mobile guidance never creates an assignment', async ({ page }) => {
+  let assignments = 0;
+  page.on('request', request => {
+    if (request.method() === 'POST' && /\/sessions(?:\/start)?$/.test(new URL(request.url()).pathname)) {
+      assignments += 1;
+    }
+  });
+  await page.setViewportSize({ width: 320, height: 740 });
+  await mockApi(page, { role: 'student' });
+  await page.goto('/practice');
+  const start = page.getByRole('button', { name: 'Start practice' });
+  await start.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(assignments).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(start).toBeFocused();
+  await expect(page).toHaveURL(/\/practice$/);
+});
+
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`shared states and confirmation recovery in ${locale}/${theme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 740 });
+      await page.goto(`/tests/fixtures/shared-ui.html?locale=${locale}&theme=${theme}`);
+      await expect(page.locator('[role="status"]')).toBeVisible();
+      await expect(page.getByText('private-error-must-not-render')).toHaveCount(0);
+      const retry = page.getByRole('button', {
+        name: locale === 'ar' ? 'إعادة المحاولة' : 'Retry',
+      });
+      await expect(retry).toHaveCount(1);
+      await retry.click();
+      await expect(page.getByTestId('retries')).toHaveText('1');
+      await expectReflow(page);
+      await expectAccessible(page, 'main');
+
+      const opener = page.getByRole('button', { name: 'Open confirmation' });
+      await opener.click();
+      const cancel = page.getByRole('button', {
+        name: locale === 'ar' ? 'إلغاء' : 'Cancel',
+        exact: true,
+      });
+      await expect(cancel).toBeFocused();
+      await expectAccessible(page, 'dialog[open]');
+      await page.keyboard.press('Shift+Tab');
+      expect(await page.evaluate(() => document.activeElement.closest('dialog') !== null)).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(opener).toBeFocused();
+      await opener.click();
+
+      const confirm = page.getByRole('button', {
+        name: locale === 'ar' ? 'تأكيد' : 'Confirm',
+        exact: true,
+      });
+      await confirm.click();
+      await expect(cancel).toBeDisabled();
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('alertdialog')).toBeVisible();
+      await expect(page.getByRole('alertdialog').getByRole('alert')).toHaveCount(1);
+      await expect(page.getByText('private-error-must-not-render')).toHaveCount(0);
+      await confirm.click();
+      await expect(page.getByRole('alertdialog')).not.toBeVisible();
+      await expect(opener).toBeFocused();
+      await expect(page.getByTestId('confirmed')).toHaveText('true');
+    });
+  }
+}
+
+test('supporting pages and role denial retain 320px reflow', async ({ page, browser }) => {
+  console.log(`FE-03 browser: Chrome ${browser.version()}`);
+  await mockApi(page, { role: 'student' });
+  await page.setViewportSize({ width: 320, height: 740 });
+  for (const path of ['/dashboard', '/forum', '/certificates', '/profile', '/admin']) {
+    await page.goto(path);
+    await expect(page.locator('#main-content')).toBeVisible();
+    await expectReflow(page);
+  }
+  await expect(page.getByRole('alert')).toContainText('You do not have permission');
+  await expect(page.getByRole('button', { name: 'Admin Panel' })).toHaveCount(0);
+});
+
+test('existing profile and forum dialogs contain focus and restore their opener', async ({ page }) => {
+  await mockApi(page, { role: 'student' });
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/profile');
+  const deleteButton = page.getByRole('button', { name: 'Delete account', exact: true });
+  await deleteButton.click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+  await expectAccessible(page, 'dialog[open]');
+  await page.keyboard.press('Escape');
+  await expect(deleteButton).toBeFocused();
+  await page.goto('/forum');
+  const discussionButton = page.getByRole('button', { name: '+ New Discussion' });
+  await discussionButton.click();
+  await expectAccessible(page, 'dialog[open]');
+  await expectReflow(page);
+  await page.keyboard.press('Escape');
+  await expect(discussionButton).toBeFocused();
+});
+
+// Shared foundations are exercised through the actual page, with API fixtures above.
+for (const theme of ['light', 'dark']) {
+  test(`typography and motion foundations preserve control geometry in ${theme}`, async ({ page }) => {
+    await mockApi(page, { theme });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    const hero = page.locator('.landing-hero');
+    await expect(hero).toBeVisible();
+    const action = hero.getByRole('button').first();
+    const bounds = await action.boundingBox();
+
+    // Hover and press may change colour, but cannot move the target under the pointer.
+    await action.hover();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.down();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.move(0, 0);
+    await page.mouse.up();
+
+    // Keyboard feedback is instant even when pointer colour feedback has a duration.
+    await action.focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(action).toBeFocused();
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await page.locator('html').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Open Sans');
+
+    // Changing the OS preference while mounted also disables decorative animation.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await hero.evaluate(element => getComputedStyle(element).backgroundImage)).toBe('none');
+    await expectReflow(page);
+  });
+}
+// Starter landing uses anonymous HTTP fixtures; these checks never create an account.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`starter landing works in ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.goto('/');
+      const main = page.locator('#main-content');
+      await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+        locale === 'ar' ? 'تعلّم لوحة المفاتيح. وطوّر دقّتك.' : 'Learn the keyboard. Build accuracy.',
+      );
+      await expect(main.locator('.landing-passage')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-keyboard')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-course-status')).toContainText(
+        locale === 'ar' ? 'ليست قائمة دورات' : 'not a live course listing',
+      );
+
+      const firstQuestion = main.locator('.landing-faq summary').first();
+      await firstQuestion.focus();
+      await page.keyboard.press('Enter');
+      await expect(main.locator('.landing-faq details').first()).toHaveAttribute('open', '');
+      await expect(main.locator('.landing-faq details').first().locator('p')).toBeVisible();
+      await expect(main.locator('footer nav')).toHaveCount(2);
+
+      // Real section navigation moves keyboard focus without a scripted scroll animation.
+      await main.locator('.landing-hero a[href="#how-it-works"]').click();
+      await expect(page.locator('#how-it-works')).toBeFocused();
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('desktop-landing.png'), fullPage: true });
+
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      for (const width of [320, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expectReflow(page);
+        await expect(main.getByRole('heading', { level: 1 })).toBeVisible();
+      }
+      await page.setViewportSize({ width: 320, height: 900 });
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('mobile-landing.png'), fullPage: true });
+
+      await main.locator('.landing-hero').getByRole('button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+      await main.locator('.landing-closing').getByRole('button').last().click();
+      await expect(page).toHaveURL(/\/login$/);
+      await page.keyboard.press('Escape');
+      await main.locator('footer a[href="/verify-certificate"]').click();
+      await expect(page).toHaveURL(/\/verify-certificate$/);
+    });
+  }
+}
+
+// Account presentation checks use intercepted responses, never real account writes.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`account design supports ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.route('**/api/v1/auth/login', route => route.fulfill({
+        status: 401,
+        json: { error: { code: 'INVALID_CREDENTIALS' } },
+      }));
+      await page.route('**/api/v1/auth/register', route => route.fulfill({
+        status: 201,
+        json: { message: 'Account created. Check your email.' },
+      }));
+      await page.goto('/login');
+      const dialog = page.getByRole('dialog');
+      const email = page.locator('#auth-email');
+      const password = page.locator('#auth-password');
+      await expect(email).toBeFocused();
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'text');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'password');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('alert')).toContainText(
+        locale === 'en' ? 'Email or password is incorrect.' : 'البريد الإلكتروني أو كلمة المرور',
+      );
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('login-desktop.png') });
+
+      await dialog.locator('.auth-switch button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(password).toHaveValue('');
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      const confirmation = page.locator('#auth-confirm-password');
+      await confirmation.fill('Example456');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(confirmation).toHaveAttribute('aria-invalid', 'true');
+      await expect(confirmation).toBeFocused();
+      await confirmation.fill('Example123');
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-desktop.png') });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width: 320, height: 640 });
+      await expectReflow(page);
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-mobile.png') });
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('status')).toBeVisible();
+      await expect(password).toHaveValue('');
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+    });
+  }
+}

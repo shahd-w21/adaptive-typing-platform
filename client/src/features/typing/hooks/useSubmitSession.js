@@ -1,2 +1,17 @@
-// Coming soon: Stable submission payload, official result and identical retry recovery; deduplicate rewards.
-// Placeholder only: no implementation, exports or runtime wiring.
+/** Submission view of the controller; never creates a second session owner. */
+import { useSyncExternalStore } from 'react';
+
+/** Expose frozen submission/retry and official state to the existing typing page. */
+export function useSubmitSession(controller) {
+  const state = useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
+  );
+  return {
+    ...state,
+    submit: controller.submit,
+    retry: controller.retry,
+    isSubmitting: state.status === 'submitting',
+    inputLocked: !['ready', 'typing', 'paused'].includes(state.status),
+  };
+}

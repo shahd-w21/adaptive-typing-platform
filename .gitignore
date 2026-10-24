@@ -4,5 +4,7 @@ node_modules
 !.env.example
 dist/
 coverage/
+client/test-results/
+client/playwright-report/
 server/generated/
 *.log

@@ -10,6 +10,11 @@ import { seedStarter } from '../../src/modules/settings/starter.js';
 import { ensureKeyProgress, updateKeyProgress } from '../../src/modules/stats/service.js';
 import { purgeKeystrokeLogs } from '../../src/jobs/purgeKeystrokeLogs.js';
 import { createSessionService } from '../../src/modules/sessions/service.js';
+import { once } from 'node:events';
+import { request as frontendRequest } from '../../../client/src/api/client.js';
+import { toSessionPayload } from '../../../client/src/features/typing/engine/sessionPayload.js';
+import { dashboardResponseSchema, pathResponseSchema } from '@typeflow/shared';
+import { createSessionController } from '../../../client/src/features/typing/sessionController.js';
 
 const config = { JWT_SECRET: 'test-only-migration-signing-secret-longer-than-32', NODE_ENV: 'test', CLIENT_URL: 'http://localhost:5173' };
 const password = 'StrongPass123';
@@ -43,6 +48,191 @@ async function fixture(run) {
   }
 }
 const emailToken = mail => new URL(mail.text.match(/https?:\/\/\S+/)[0]).searchParams.get('token');
+
+// Exercise the actual controller/transport against test PostgreSQL. Simulate a
+// dropped response only AFTER the real server commits, never replace scoring.
+test('FE-06/FE-10 real dashboard refresh and lost-response recovery preserve one result', async () =>
+  fixture(async ({ app, user, advance }) => {
+    const person = await user();
+    const server = app.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const base = `http://127.0.0.1:${server.address().port}`;
+    let cookie = '';
+    const fetchImpl = async (url, options) => {
+      const headers = new Headers(options.headers);
+      headers.set('Origin', config.CLIENT_URL);
+      if (cookie) {
+        headers.set('Cookie', cookie);
+      }
+      const response = await fetch(`${base}${new URL(url).pathname}`, { ...options, headers });
+      const received = response.headers.getSetCookie()[0];
+      if (received) {
+        cookie = received.split(';')[0];
+      }
+      return response;
+    };
+    const call = (path, options) => frontendRequest(path, { ...options, fetchImpl });
+    try {
+      const session = await call('/auth/login', { method: 'POST', body: { email: person.email, password } });
+      const readDashboard = () => call('/dashboard', { responseSchema: dashboardResponseSchema });
+      assert.equal((await readDashboard()).recentSessions.length, 0);
+      await call('/path', { responseSchema: pathResponseSchema });
+      let submits = 0;
+      const controller = createSessionController({
+        ownerId: person.id,
+        csrfToken: session.csrfToken,
+        api: {
+          startPracticeSession: csrfToken => call('/sessions', { method: 'POST', csrfToken, body: { mode: 'practice' } }),
+          fetchSession: id => call(`/sessions/${id}`),
+          submitSession: async (id, body, csrfToken) => {
+            submits += 1;
+            await call(`/sessions/${id}/submit`, { method: 'POST', csrfToken, body });
+            throw Object.assign(new Error('Simulated dropped response'), { retryable: true });
+          },
+        },
+      });
+      await controller.startPractice();
+      const assignment = controller.getSnapshot().assignment;
+      const events = [...assignment.text].map((char, seq) => ({ seq, type: 'insert', char, t: seq * 600 }));
+      const finishTimeMs = events.at(-1).t;
+      advance(finishTimeMs + 1000);
+      await controller.submit({ events, finishTimeMs });
+      assert.equal(controller.getSnapshot().status, 'retry');
+      await controller.retry();
+      assert.equal(controller.getSnapshot().status, 'completed');
+      assert.equal(submits, 1);
+      const dashboard = await readDashboard();
+      assert.equal(dashboard.recentSessions.length, 1);
+      assert.equal(dashboard.recentSessions[0].id, assignment.sessionId);
+      assert.equal(dashboard.user.xp, controller.getSnapshot().result.xp);
+      assert.equal(dashboard.streak, controller.getSnapshot().result.streak);
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
+  }));
+
+// FE-02 acceptance exercises the browser transport against real API handlers
+// and the dedicated test database. The fixture removes its accounts afterward;
+// browser-specific CORS/rendering behavior still needs a separate browser check.
+test('FE-02/FE-05 real HTTP session transport accepts the canonical captured payload', async () =>
+  fixture(async ({ app, user, advance }) => {
+    const person = await user();
+    const server = app.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const base = `http://127.0.0.1:${server.address().port}`;
+    // Node has no browser cookie jar. Retain only the real cookie set by login;
+    // this adapter neither injects identity nor bypasses server authentication.
+    let cookie = '';
+    const fetchImpl = async (url, options) => {
+      const headers = new Headers(options.headers);
+      headers.set('Origin', config.CLIENT_URL);
+      if (cookie) headers.set('Cookie', cookie);
+      const response = await fetch(`${base}${new URL(url).pathname}`, {
+        ...options,
+        headers,
+      });
+      const received = response.headers.getSetCookie()[0];
+      if (received) cookie = received.split(';')[0];
+      return response;
+    };
+    const call = (path, options) =>
+      frontendRequest(path, { ...options, fetchImpl });
+    try {
+      const session = await call('/auth/login', {
+        method: 'POST',
+        body: { email: person.email, password, role: 'admin' },
+      });
+      assert.equal(session.user.id, person.id);
+      assert.equal(session.user.role, 'student');
+      const restored = await call('/auth/me');
+      assert.equal(restored.csrfToken, session.csrfToken);
+      const patch = { preferences: { uiLocale: 'ar' } };
+      const changed = await call('/users/me', {
+        method: 'PATCH',
+        csrfToken: restored.csrfToken,
+        body: patch,
+      });
+      assert.equal(changed.user.preferences.uiLocale, 'ar');
+      // Deliberately bypass the local guard to demonstrate the SERVER rejects it.
+      const rejected = await fetchImpl(`${base}/api/v1/users/me`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      assert.equal(rejected.status, 403);
+      assert.equal((await rejected.json()).error.code, 'CSRF_FAILED');
+      const invalid = await fetchImpl(`${base}/api/v1/users/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': restored.csrfToken,
+        },
+        body: JSON.stringify({ role: 'admin' }),
+      });
+      assert.equal(invalid.status, 400);
+      await call('/users/me', {
+        method: 'PATCH',
+        csrfToken: restored.csrfToken,
+        body: { preferences: { uiLocale: 'en' } },
+      });
+      const assignment = await call('/sessions', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: {},
+      });
+      assert.equal(assignment.mode, 'practice');
+      assert.equal(assignment.source, 'fallback');
+      await call(`/sessions/${assignment.sessionId}`);
+      advance(60000);
+      const capturedRecording = {
+        sessionId: assignment.sessionId,
+        events: [...assignment.text].map((char, seq) => ({
+          seq,
+          type: 'insert',
+          t: seq * 200,
+          char,
+        })),
+        finishTime: (assignment.text.length - 1) * 200,
+        clientEventCount: assignment.text.length,
+        clientScore: 100,
+      };
+      const submission = toSessionPayload(capturedRecording);
+      assert.deepEqual(Object.keys(submission).sort(), [
+        'events',
+        'finishTimeMs',
+      ]);
+      const result = await call(`/sessions/${assignment.sessionId}/submit`, {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: submission,
+      });
+      assert.equal(result.status, 'completed');
+      assert.deepEqual(await call(`/sessions/${assignment.sessionId}`), result);
+      assert.equal((await call('/sessions')).sessions.length, 1);
+      const abandoned = await call('/sessions', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+        body: {},
+      });
+      await call(`/sessions/${abandoned.sessionId}/abandon`, {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+      });
+      await call(`/sessions/${abandoned.sessionId}`);
+      await call('/auth/logout', {
+        method: 'POST',
+        csrfToken: session.csrfToken,
+      });
+      await assert.rejects(call('/auth/me'), {
+        status: 401,
+        code: 'UNAUTHENTICATED',
+      });
+    } finally {
+      await new Promise((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  }));
 
 test('registration, single-use verification, CSRF, logout and reset revocation', async () => fixture(async ({ agent, inbox, database, emails, prefix }) => {
   const email = `${prefix}@example.test`; emails.push(email);

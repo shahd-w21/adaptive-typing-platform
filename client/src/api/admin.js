@@ -1,2 +1,6 @@
-// Coming soon: Authorized user/content/settings/analytics/moderation/certificate operations; course authoring uses adminCourses.js.
-// Placeholder only: no implementation, exports or runtime wiring.
+// Current admin access probe only; this is not the future admin-management API.
+import { request } from './client.js';
+
+// The server checks the cookie and Admin role; a frontend role check is not proof.
+export const checkAdminAccess = ({ signal } = {}) =>
+  request('/admin/ping', { signal });

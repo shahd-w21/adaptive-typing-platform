@@ -35,6 +35,76 @@ Preserved intent with deliberate corrections: no destructive schema bootstrap; p
 
 The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned reward/integrity defaults are prototype migration policy, pending the open team decisions. Full pair statistics, placement/review/timed/certified modes, difficulty progression, AI text generation, badges, certificates, forum and full admin APIs remain unimplemented. Their existing schema concepts are retained, including the one-accepted-answer-per-thread index. This migration does not certify the entire SRS or approve the remaining draft contract.
 
+## FE-02 current frontend boundary — 22 October 2026
+
+**Implementation status: implemented; Dev 1 review and browser acceptance pending.** This section describes current runtime DTOs, not approved future Prisma models. Existing draft examples below do not override these schemas. The transport remains Fetch; Axios is not added. Existing `request(path, options)` callers and `ApiError.status/code` remain supported.
+
+| Boundary | Request schema | Response schema | Field/verification status |
+| --- | --- | --- | --- |
+| `POST /auth/register` | `registerSchema` | `acknowledgementSchema` | Implemented; extra fields stripped, including role; server always creates Student |
+| `POST /auth/login`, `GET /auth/me` | `loginSchema` / no body | `authResponseSchema` | Implemented; real HTTP login/me schema checks passed |
+| Verify/resend/forgot/reset | `tokenSchema`, `emailSchema`, `resetPasswordSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained; frontend schema tests are not complete browser coverage |
+| `POST /auth/logout` | `emptyRequestSchema` | `acknowledgementSchema` | Implemented; real HTTP logout/revocation passed |
+| `GET/PATCH /users/me` | no body / `profileSchema` | `profileResponseSchema` | Implemented; real HTTP partial update, restoration and unknown-field rejection passed |
+| Password change / account deletion | `changePasswordSchema` / `deleteAccountSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained |
+| `POST /sessions` (practice only) | `startSessionSchema` | `sessionAssignmentSchema` | Implemented; real HTTP assignment checked |
+| `GET /sessions`, `GET /sessions/:id` | no body; UUID ID | `sessionHistorySchema`, `sessionDetailSchema` | Implemented; real HTTP empty/history and created/completed/abandoned DTO checks split across unit/integration tests |
+| Submit / abandon | `submissionSchema` / `emptyRequestSchema` | `sessionResultSchema` / `sessionAbandonmentSchema` | Implemented; real HTTP result/retrieval/abandon checks passed |
+| Error envelope | — | `apiErrorResponseSchema` | Current `{error:{code,message?}}`; requestId/retryable are not server fields |
+| Dashboard/path/progress/gamification/admin reads | — | Feature-owner DTO review pending | Existing endpoints pass through transport; no invented response schemas or future filters |
+| Courses/enrollments, analytics and future reward/progress extensions | Draft only | No new runtime modules | Unimplemented shapes remain pending feature-owner review |
+
+Current fields and units:
+
+- `publicUserSchema`: UUID `id`, `email`, nullable `name`, lowercase `role`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, `xp`, `level`, `streak`, and `preferences.{themePreference,uiLocale}`. No `displayName`, `emailVerified`, token, password hash or internal auth record. Login/me add a 64-character hexadecimal `csrfToken`; profile replies do not.
+- Assignment fields are `sessionId,mode,text,source,issuedAt,expiresAt,rules`. Current source is `fallback`, mode is `practice`; rules are `pauseAllowed,eventVersion,settingsVersion,targetWpm`. Dates are UTC ISO strings, event/active times are milliseconds. Draft `textSource`, `versions` and `canPause` are not current fields.
+- `sessionResultSchema` matches the implemented result list above, including server metrics with nullable unknown values, XP reward records, nullable problem-key average latency and `certificate:null`. No client score is accepted. Future certificate/reward variants require a coordinated schema change.
+- History is `{sessions:[{id,mode,status,netWpm,rawAccuracy,completedAt}]}` with nullable metrics/completion time and a maximum of 100 rows. No agreed pagination/filter parameters. Non-completed detail returns `sessionId,status,mode,text,expiresAt`; completed detail is the official result.
+
+Validation and transport rules:
+
+- Auth request objects strip extra fields; profile (including nested preferences), start and submission objects reject them. Session response schemas reject unrecognized fields; other response schemas strip them and reject missing/invalid required fields. Request schema failures stop before Fetch; the backend independently validates requests and returns `400 INVALID_REQUEST` for invalid fields, rather than the draft 422 validation convention. Invalid replay/submission semantics use 422.
+- The transport validates current auth/user/session routes automatically and accepts explicit `requestSchema`/`responseSchema` for subsequently reviewed boundaries. Calls keep JSON-string bodies; schema-backed calls also accept plain objects. Authenticated writes require an explicit CSRF token. Unreviewed writes without a request schema are rejected. Paths are relative API paths; query strings are not supported until an endpoint's query contract is agreed.
+- Cookies use `credentials:include`; authenticated writes send `X-CSRF-Token`. AuthProvider remains the only auth-state owner and receives CSRF from real login/me; no JWT/CSRF persistence or duplicate token store is introduced. CSRF rejection never automatically retries a write or invents a token.
+- `ApiError` exposes safe `code`, `status`, `messageKey`, `retryable`, `retryAfterMs` and `authenticationRequired`. Server message/details are never surfaced verbatim. Known statuses include 400/401/403/404/409/422/429/5xx; malformed success DTOs produce `CONTRACT_ERROR`, network failure `NETWORK_ERROR`, and cancellation remains an AbortError. Retry metadata does not authorize replaying a write. Retry-After is usable only if exposed to the browser by the server/CORS policy.
+- AuthProvider retains ownership of logout/cache clearing. Transport signals protected-session rejection through `authenticationRequired`; it does not clear global auth on arbitrary late requests. Automatic protected-401 UI/session recovery and stale-account response handling require Dev 1 integration review; this task does not claim those browser flows verified.
+- `available:false` explicitly produces `FEATURE_UNAVAILABLE` before any request. Unmounted/unknown resources returning 404 remain `NOT_FOUND`, not empty arrays. Only a successful valid empty response represents empty data. No automatic fixture fallback exists. Existing fixture DTOs are synthetic schema-test inputs, never real authentication evidence.
+- Protected query factories now require owner ID: `queryKeys.dashboard(userId)` (likewise path/progress/gamification/sessions/adminAccess), detail uses `queryKeys.session(userId,sessionId)`, cleanup uses `queryKeys.owner(userId)`. Prefix is `['owner',userId]`; unsupported filters throw instead of colliding in cache. Auth bootstrap retains `['auth','me']`; public keys have a separate `public` prefix. Existing query/invalidation callers were migrated together; protected query functions forward TanStack's abort signal to Fetch. Routing/providers are unchanged.
+- Safe interface keys live under `apiErrors.CODE` in English/Arabic dictionaries. Arabic wording is supplied for review; human wording approval and feature-page adoption of `messageKey` remain pending.
+
+Verification evidence: `server/tests/unit/frontend-contracts.test.js` (transport/schema/cache-key tests, using explicit synthetic fixtures, plus real TanStack owner-cache removal and request cancellation), and the FE-02 real-HTTP test in `server/tests/integration/features.test.js` (real PostgreSQL test account, real login cookie, profile write/restoration, missing-CSRF rejection by the server, session submission/result, logout). The Node integration adapter retains the actual login cookie because Node Fetch has no browser cookie jar; it does not bypass authentication. All 31 unit tests and 6 integration tests passed; lint and client build passed. The existing bundle-size warning remains. Browser CORS/cookies, account-switch races, English/Arabic/appearance/viewport/accessibility and active typing presentation checks are **not yet verified**; owner/reviewer sign-off is pending.
+
+## FE-05 typing assignment and result boundary — 22 October 2026
+
+**Status: implementation and focused API checks added; owner/reviewer demonstration and browser acceptance remain pending.** The current server flow is practice-only and uses the real `/sessions` API when the controller is active. Developer-fixture typing remains explicitly marked as fixture data; API failures do not silently fall back to fixture sessions.
+
+- `POST /sessions` sends the machine value `{ "mode": "practice" }`. The validated assignment's `text` is passed unchanged to the existing typing screen's `assignedText` prop. The UI label `Adaptive Practice` is presentation text, not a wire mode. The response's `source` and captured `rules` remain validated server data; they do not rewrite the assignment text or provide client scoring authority.
+- Submit places the session ID only in `/sessions/:id/submit`. The shared schema validates the strict body `{ "events": [...], "finishTimeMs": number }`. The adapter accepts the existing recorder snapshot timing name (`finishTime`) or the canonical timing name (`finishTimeMs`), then projects only those two fields. Recorder session IDs, event counts, and diagnostics are not sent; scores, expected keys and correctness claims are never part of the schema. Invalid event fields are rejected.
+- The response is checked against strict assignment, detail, history and official-result schemas. Displayed official metrics/rewards come from the server result, not from the recorder or live provisional metrics.
+- Placement, lesson/course enrollment identifiers, review and test modes, and any additional mode-specific fields remain **Draft**. Existing course examples such as `enrollmentId`/`lessonId` do not authorize adding them to runtime session schemas.
+
+Unit verification uses `server/tests/unit/frontend-contracts.test.js` to check the assignment mapping and exact serialized request body from an actual recorder snapshot, including exclusion of recorder metadata. The focused dashboard/session browser suite passed 12 tests with intercepted HTTP fixtures; it checks the existing session/recovery presentation but is not live-API evidence. A real-HTTP FE-02/FE-05 integration test is present in `server/tests/integration/features.test.js`, where adapter output goes through the shared schema and authenticated session endpoint. Its local run was blocked because `server/.env` has no `TEST_DATABASE_URL` and Docker is unavailable; therefore live-server FE-05 verification remains outstanding. Unit tests (52), lint, production build and the focused browser suite passed; owner/reviewer demonstration and browser acceptance remain pending.
+
+## FE-06 / FE-10 current frontend boundaries — 22 October 2026
+
+**Status: implementation under verification; owner/reviewer and Arabic wording review pending.** No Prisma or server endpoint changes. Real dashboard/path/practice flows use Fetch with cookies; development course cards are isolated samples.
+
+| Boundary | Current fields / behavior | Status |
+| --- | --- | --- |
+| `GET /dashboard` | `user.{name,email,xp,level}`, `streak`, `dailyGoal.{goalMinutes,minutesToday,done}`, `recommendation.{activity,reason,weakestKey?}`, `recentSessions` | Existing API; runtime `dashboardResponseSchema` validates current fields |
+| Recent session | `id,mode,netWpm,grossWpm,rawAccuracy,finalAccuracy,durationMs,xpEarned,completedAt` | Practice only; nullable score values stay unknown; missing required fields fail validation |
+| `GET /path` | `groups`, `keys`, `recommendation` | Existing API; `pathResponseSchema` validates current groups/statistics; absent key evidence is not assumed locked |
+| Practice lifecycle | Existing start/detail/submit/abandon shapes | `useTypingSession` owns assignments; `useSubmitSession` delegates frozen submission/reconciliation to the same controller |
+| Reload pointer | Tab-local `{ownerId,sessionId}` | No JWT, CSRF, text or events persisted; real owned status is checked before recovery |
+| Course resume | No accepted runtime fields | Development-only labelled sample; no target, mastery value or resume action; FE-07/FE-12 review required |
+
+- Dashboard values remain server-derived; required-field failures are contract errors, not zero/empty fallbacks. A path failure does not hide the dashboard. Failed background refresh retains previously loaded data with a warning.
+- The recommendation's English reason is preserved with English/LTR markup. Translated labels explain that placement/timed modes are unavailable; a separately labelled action starts real practice. Future reason codes/parameters need backend-owner agreement.
+- An explicit retry checks owned status before sending the frozen `{events,finishTimeMs}` again. Completed recovery displays the saved result and supplies no new reward notifications. No automatic write retries or replacement assignments hide uncertain writes.
+- Full assignments and typing state stay in memory across presentation changes. Reload recovers a saved result, or explains lost typing progress and requires explicit abandon/restart. Failed abandonment cannot allocate another attempt.
+- Start has no backend idempotency key. A lost start response may leave an orphan assignment; the UI explains the uncertainty and does not automatically retry. A future backend contract is needed to remove this limitation.
+- Developer handoff comments mark unavailable modes, course contracts, reason translation and future reward-notification integration. They are deferred work, not completed feature claims.
+
 ## Conventions to agree
 
 Implement shared schemas as JavaScript ES modules in `packages/shared/`, consumed by root-level `client/` and `server/`. Validate payloads at runtime. The language/folder change does not change these JSON contracts or the `/api/v1` URL prefix.
@@ -90,6 +160,19 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 
 Outside the base path: proposed `GET /health/live` and `GET /health/ready`. Placement, review and both test types share `/sessions`; mode selects behaviour. No Google-login endpoint.
 
+## FE-08 forum development fixture boundary
+
+The forum routes, shared runtime schemas and public reading policy remain **Contract to agree**. FE-08 does not implement or call `/forum/*`, expose public reading, or approve a moderation policy. The existing authenticated `/forum` screen uses an explicitly labelled in-memory adapter only in Vite development. Production returns `FEATURE_UNAVAILABLE`; there is no API-error-to-fixture fallback. All reading, creation, replies, accepted answers and reports are fixtures. Changes disappear on leaving the screen or reloading.
+
+The following feature-local shapes support UI review only; backend/DTO owners must agree them before real integration:
+
+- List: `items`, `page`, `totalPages`, `totalItems`, `permissions.canCreateThread`. Visible summaries include `id`, `status`, authored `title`/`author`, category code, `replyCount` and nullable `acceptedReplyId`. Draft fixture list inputs are `page`, `search`, `category` (`all` or a category code) and `answerStatus` (`all`, `accepted`, `unaccepted`). Search matches visible discussion titles/body text case-insensitively, with outer query whitespace ignored; it does not search replies or rewrite authored text. Combined criteria apply before pagination; filtered matches/counts exclude non-visible posts. Unfiltered browsing retains structural placeholders. These are fixture conventions pending real API agreement.
+- Detail: the visible summary plus authored `body`, a page of `replies`, reply `page`/`totalPages`, and explicit `permissions.canReply`, `canAcceptAnswer`, `canReport`. Visible replies contain `id`, `status`, authored `author`/`body` and `permissions.canReport`. `acceptedReplyId` describes the entire thread, including other pages.
+- Visibility: `visible`, `hidden`, `unavailable`. Non-visible records contain structural identity/status only, with no authored text or author identity. The renderer independently suppresses authored fields/actions on any non-visible or unknown status. Real ordinary responses must enforce omission on the server; UI suppression is not access control.
+- Writes: create takes `title`, `body`, category; reply takes `threadId`, `body`; accept takes `threadId`, `replyId`; report takes `threadId`, `postId`, `reason`. Each fixture operation carries a `requestId`, retained for unchanged explicit retries. Create returns `threadId`; reply returns `threadId`/reply `page`; accept/report acknowledge `threadId`. The UI refreshes DTOs after acknowledgement rather than inventing counts, acceptance or visibility.
+
+Fixture-only input bounds are title 180 characters, discussion/reply 5000, report reason 1000; categories are `technique`, `adaptive`, `hardware`, `general`. These are draft UI constraints, not approved server limits. Fixture owner/permission checks and replay receipts demonstrate the flows; the real server must independently enforce authentication, ownership, revocation, CSRF, validation, atomic single-answer replacement and idempotent writes. Reporting acknowledges a concern without hiding content in the browser. Permission flags are explicit UI hints; absent flags disable controls, and no Admin moderation controls are added by FE-08.
+
 ## Presentation-preference draft
 
 Required behaviour is recorded in [decision 0002](decisions.md#0002); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
@@ -131,10 +214,10 @@ Request to `POST /auth/login`:
 {"email":"student@example.com","password":"example-only-not-a-real-password"}
 ```
 
-Proposed 200 response (authentication cookie is set separately):
+Current 200 response fragment (authentication cookie is set separately; `publicUserSchema` above defines all required user fields):
 
 ```json
-{"user":{"id":"example-user","displayName":"Layla","role":"student","emailVerified":true,"preferences":{"themePreference":"system","uiLocale":"en"}}}
+{"user":{"id":"10000000-0000-4000-8000-000000000001","name":"Layla","role":"student","preferences":{"themePreference":"system","uiLocale":"en"}},"csrfToken":"<64-character hexadecimal token from the server>"}
 ```
 
 ### Start
@@ -147,7 +230,7 @@ Request to `POST /sessions`:
 
 Proposed mode values: `placement`, `lesson`, `practice`, `review`, `timed`, `certified`. Timed mode requests `durationSeconds` from the allowed set. Certified duration comes from approved server policy; the client cannot choose certificate thresholds. Theme options, restart replacement and start-request retry behaviour must be agreed before integration.
 
-Illustrative 201 assignment response:
+Future draft 201 assignment proposal (not the current DTO; see FE-02 above):
 
 ```json
 {

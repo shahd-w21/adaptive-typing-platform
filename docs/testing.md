@@ -1,6 +1,24 @@
 # Testing and acceptance
 
-**Status: verification plan; no application checks have been executed as part of documentation work.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+**Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
+
+## FE-06 / FE-10 verification — 22 October 2026
+
+Implemented the existing dashboard and owned-practice boundaries; this is not acceptance of future courses or every typing mode.
+
+| Check | Evidence / result |
+| --- | --- |
+| Unit tests | 43 passed, including 11 new dashboard/controller checks: DTO validation, nullable/zero values, double start, frozen retries, dropped-response recovery, reload, failed abandonment and late account/logout responses |
+| Real API integration | 7 passed against guarded `typeflow_test`; the new test uses real cookie authentication, server assignment/scoring, deliberately drops a committed response, recovers without resubmitting, and verifies dashboard history/XP/streak |
+| Browser checks | 36 passed in Chrome 155.0.8059.85: 12 new dashboard/session checks plus the 24 existing shared UI checks |
+| Dashboard states | New/returning accounts, loading, no history, permission denial, server error/retry, isolated path failure and stale-data warning after refresh failure |
+| Presentation | English/Arabic and Light/Dark dashboard reflow/accessibility; existing System resolver checks; real-assignment fixture survives theme/locale/large-text/viewport changes with its recorded input intact |
+| Browser data source | Explicit intercepted HTTP fixtures; no developer database writes. The real scoring/authentication loop is the separate PostgreSQL integration test, not a mocked browser claim |
+| Static/build checks | Root lint and production build passed; the existing JavaScript bundle-size warning remains |
+
+Defects found and resolved: keyboard-inaccessible horizontal history table; malformed path-error prop; premature redirect before reload recovery; lost pointer after failed recovery; external font timeouts; cold-run assertion timeouts. Browser tests isolate external fonts and exercise fallback fonts; production font delivery is unchanged. The final run uses condition-based waits, a 60-second test limit and 15-second assertion limit. No fixed sleeps were added.
+
+**Handoff / still pending:** Dev 4 dashboard review, Dev 1 lifecycle review, human Arabic wording approval, live browser cookie/CORS and screen-reader acceptance, and visual review with delivered web fonts. Course resume contracts, placement/review/test APIs, translated reason codes and FE-16 reward notifications remain future work. The backend has no idempotent start contract; a lost start response may leave an orphan assignment, which is explained without an automatic retry. Unfinished typing events are intentionally not persisted across reload.
 
 ## Test layers
 
@@ -45,6 +63,40 @@ For each implemented requirement, add a row or link to a tracked test. Do not ma
 
 Expand to cover all requirements before release. Use a dedicated test database with a positive identity check before any reset. Never run destructive test setup against shared development or production data.
 
+## FE-03 shared interface browser checks
+
+Run `npm run test:ui --workspace=client` from the repository root after the root workspace install. The restored suite uses installed Google Chrome through Playwright and starts/stops an isolated Vite server on `127.0.0.1:5174`; port 5174 must be free. No Docker services or login credentials are needed. All `/api/v1/` requests are intercepted with synthetic responses, and `tests/fixtures/shared-ui.html` is a test entry only, outside the production build. Runs normally generate ignored artifacts under `client/test-results/`; the previously deleted results have not been restored.
+
+The restored [browser suite](../client/tests/e2e/shared-ui.spec.js) covers:
+
+- Public, Student and Admin headers/drawers in English/Arabic and Light/Dark at 320px and 1280px; axe checks of headers, sidebars and open drawers, focus containment/return and page-width assertions with overflow masking removed.
+- Keyboard skip links, public destinations/authentication, Admin/profile navigation, preference menu arrows/Home/End/Escape, and the same authorized Admin destinations/actions on phones.
+- Loading, empty, safe generic/permission errors, explicit retry, Cancel-first confirmation focus, pending dismissal prevention, failed confirmation retry and successful focus return in both locales/themes.
+- Mobile typing entry issuing zero assignment requests; an existing sample review retaining entered correct/incorrect characters and English/LTR passage after theme, locale and viewport changes, including confirmation dismissal.
+- Existing profile/forum modal labels and focus behavior; supporting-page reflow; wrong-role denial; all Admin section controls and a contained, keyboard-focusable user table at 320px with 200% root text size.
+
+**Local verification, 22 October 2026:** `npm run lint` passed; `npm test` passed all 31 tests; `npm run build` passed Prisma generation, the client production build and server entry syntax; `npm run test:ui --workspace=client` passed all 24 browser tests using Windows Google Chrome 155.0.8059.86, Playwright 1.64.1 and axe-core 4.14.0. Representative Light/Dark and Arabic drawer screenshots were visually inspected. New documentation links, translation encoding and `git diff --check` passed. Database integration tests and remote CI were not rerun for this frontend task.
+
+This is focused shared-interface evidence, not acceptance of the entire SYS-11/53–55 range. Owner Dev 5 and reviewer Dev 1 still need to demonstrate the flows together and review the new Arabic copy. Manual screen-reader/forced-colour checks, Firefox/Edge, real-API browser journeys, complete feature-page localisation and broader release acceptance remain pending. Admin/forum/certificate screen bodies and workflows belong to their follow-on feature tasks; their fixture notices remain visible. Official scoring, reward saving and database behavior are outside FE-03.
+
+Defects found and corrected during FE-03: missing phone public navigation, drawer/dialog keyboard boundaries and focus return, disappearing menu-option focus, unsafe narrow popup placement, nested loading/permission main landmarks, assignment creation before phone guidance, overflowing certificate actions, and uncontained Admin navigation/table layout. Test-selector mistakes and Arabic encoding damage introduced during implementation were corrected before the final run. The production bundle still emits the existing over-500-kB chunk warning; local Node 24.13.1 is below the repository's pinned 24.14.0 and emitted an engine warning during test-tool installation.
+
+## FE-08 forum browser checks
+
+Run `npm run build` before `npm run test:ui --workspace=client`. The browser config now includes [forum checks](../client/tests/e2e/forum.spec.js) alongside the preserved FE-03 suite. Tests use the isolated Vite origin on port 5174, a test-only [forum entry](../client/tests/fixtures/forum.html), disposable adapters and intercepted authentication/preferences. One test starts the built production app on port 5175 to verify that the forum fails closed without a real API; both ports must be free. No real forum endpoint or developer database is used.
+
+Coverage includes list loading/error/retry and empty state; list/reply pagination; empty threads; create and reply drafts retained across failed/lost responses and deduplicated retries; literal HTML/script-like text and mixed authored languages; owner-only single accepted-answer replacement and retry; reporting without browser hiding; explicit read-only DTOs; unavailable/hidden detail and hidden/deleted replies; English/Arabic, Light/Dark, 320px/1280px, axe checks, keyboard entry/dialog focus, and 200% text reflow. The existing FE-03 test still checks active English/LTR typing state across appearance, locale and viewport changes.
+
+**Local verification, 22 October 2026:** root `npm run lint` passed; `npm test` passed all 32 unit tests; `npm run build` passed Prisma client generation, the client production build and server syntax; `npm run test:ui --workspace=client` passed all 42 browser tests (18 forum and 24 preserved shared-interface checks) using Windows Chrome 155.0.8059.86. English mobile and Arabic Dark desktop screenshots were visually inspected. All 48 forum translation leaf keys and interpolation parameters match across English/Arabic; new local links/anchors and `git diff --check` pass. Fixture implementations/test markers are absent from the production bundle. Prisma generation does not alter the schema or migrate/reset data.
+
+Defects corrected during FE-08 include lost keyboard focus after an accepted-answer/report control disappears, retained generic fixture notices on an unavailable production forum, ambiguous browser-test selectors, an incomplete authentication test DTO and an incorrect test expectation about the existing anonymous redirect (`/register`). The final run has no failing checks. The existing production bundle-size warning above 500 kB remains.
+
+**Search/filter follow-up, 22 October 2026:** root lint, client production build and all 45 browser tests pass (21 forum and 24 shared-interface checks). Added checks cover combined search/category/accepted-answer criteria before pagination, page reset, Clear filters, no-match recovery, off-page matches, exclusion of hidden/deleted text from filtered matches/counts, failed search retry, rapid query replacement, and Arabic criteria retained across detail navigation and appearance/locale changes. The complete English/Arabic Light/Dark viewport/accessibility matrix still passes, including 200% text reflow and the active typing-state regression. English desktop and Arabic mobile list screenshots were visually inspected; all 61 forum translation leaf keys/placeholders match, and `git diff --check` passes. Search/filter flows use development fixtures; the production API gate and existing bundle-size warning remain. Backend/database checks were not rerun for this frontend-only follow-up.
+
+**FE-06 / FE-08 merge verification, 22 October 2026:** root lint, all 43 unit tests and the full build passed. The combined browser configuration discovers all 57 dashboard, forum and shared-interface tests. The parallel run passed 50 and failed 7; rerunning the 7 failures with `npm run test:ui --workspace=client -- --last-failed --workers=1 --timeout=180000` passed 5. Across both runs, 55 checks passed. Two existing shared confirmation-dialog checks (English Light/Dark, `shared-ui.spec.js`) remain failing around the transient disabled Cancel state / Escape behavior. The test and dialog implementation were unchanged by this merge; investigation remains open, and the combined browser suite is not fully green. The existing bundle-size warning remains. No database integration checks were rerun for this merge.
+
+Owner Dev 5 and reviewer Dev 4 must still demonstrate the behavior together and review Arabic copy. Forum DTO/shared schemas, public reading policy, real server authorization/moderation and persistence remain unimplemented team gates; these fixture checks do not establish SYS-39/40 end-to-end acceptance. Database integration, remote CI, manual screen-reader/forced-colour checks and other browsers are outside this local frontend verification.
+
 ## Appearance, interface language and responsive acceptance
 
 SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns proposed tokens, frame sizes and layouts. These checks are planned, not executed browser evidence.
@@ -82,3 +134,37 @@ Map concrete behavioral tests to SYS-57–64 once exact contracts are agreed. `s
 Compare adaptive and fixed-curriculum policies with identical initial profiles, equal practice budgets and a common held-out assessment. Separate tuning from reporting profiles; run multiple random seeds and report variability. Include novices, slow-accurate, fast-inaccurate and uneven-key typists. Do not build an improvement model that rewards adaptation by definition.
 
 Report simulator assumptions, metrics, seeds, configuration versions and limitations. Simulations validate behaviour under assumptions, not faster human learning. A consented volunteer pilot can provide usability and limited learning evidence; document sample size and duration. Confirm whether the course requires a trained model before finalising evaluation.
+
+## Typography and shared foundations — 23 October 2026
+
+Applied Open Sans to English UI roles, retained Noto Sans Arabic and IBM Plex Mono for Arabic and exercise roles, removed Lato from the font request, and preserved the selected palette. Shared surfaces no longer use decorative gradients or hover lifts. Buttons use short colour feedback; keyboard feedback, caret/key guidance and typing progress are immediate. Reduced motion changes apply without remounting the active attempt. Menus/dialogs retain their existing focus behaviour; no motion library or second stylesheet was added.
+
+Client production build and client lint passed. The existing production bundle-size warning remains. The targeted shared-interface run passed all 18 browser checks with one worker: public/Student/Admin navigation in English/Arabic and Light/Dark at 320px; keyboard navigation and preference menus; increased-text Admin reflow; active session continuity across presentation/viewport/reduced-motion changes; and new Light/Dark checks for stable hover/press bounds, immediate keyboard feedback and live reduced-motion updates. Browser flows use explicit API fixtures and fallback fonts, not real accounts or database writes.
+
+All 70 runtime colour assignments still match DESIGN.md; `git diff --check` passed. These checks do not establish full application, backend, screen-reader or cross-browser acceptance. Remaining page compositions and optional overlay/milestone animations are separate work.
+
+Visual follow-up: the sandboxed external-font review timed out; repeating the review outside the sandbox loaded Open Sans (400/700/800) and Noto Sans Arabic (400/700/800). English desktop (1440px) and Arabic mobile (390px) screenshots were inspected in both themes with reduced motion enabled; no horizontal page overflow was detected. The landing page still has existing untranslated English copy and bidirectional punctuation in the Arabic shell. These content/direction defects remain for the landing phase; this foundation change does not claim complete landing localization. Monospace exercise font selection is preserved; no new glyph-legibility acceptance claim is made.
+
+## Selected logo integration — 23 October 2026
+
+Applied the first approved logo to the public header, shared Student/Admin sidebar and authenticated mobile drawer through `BrandLogo.jsx`. The production PNG is byte-identical to the selected source. Dark mode changes only the displayed wordmark to white; the blue/white symbol and English orientation are preserved. A simplified matching SVG mark replaces the tab icon, with a versioned URL to refresh the old favicon cache.
+
+Client build/lint and six targeted browser checks passed for the final native-image renderer: public navigation at 320px in English/Light; public, Student and Admin navigation in Arabic/Dark; keyboard account navigation; and public keyboard/authentication focus recovery. Desktop English and mobile Arabic screenshots were inspected in both themes, plus the rendered SVG favicon; no horizontal page overflow was detected. These flows use API fixtures. An initial broader run hit accessibility timeouts and was stopped before finalizing the renderer; the complete browser suite was not rerun. Existing landing localization defects and the production bundle-size warning remain outside this branding change.
+
+## Starter landing page — 23 October 2026
+
+- Replaced the existing public landing presentation with the starter in `client/src/features/auth/LandingPage.jsx`; `AuthPages.jsx` retains its router export. Existing registration/login callbacks, public header, account forms and session providers are preserved.
+- English/Arabic copy, Light/Dark themes, English/LTR example text and QWERTY artwork, 320px/768px reflow, section-link focus, account destinations, certificate navigation and reduced-motion behavior are covered by browser checks. API requests use explicit anonymous HTTP fixtures; the landing itself fetches no student/course data.
+- Client build and lint passed. Seven targeted browser checks passed after fixing inverse-section heading contrast; four landing checks were repeated to capture page-top screenshots. Desktop Light/Dark and Arabic mobile screenshots were reviewed. Browser checks use fallback fonts; this change preserves the previously checked font loading configuration.
+- Earlier runs had navigation/accessibility timeouts; the first completed accessibility scan also caught the corrected contrast issue. These do not establish that the entire browser suite passes. Existing production bundle-size warning remains.
+- Follow-up: team review of Arabic wording and final visual direction; replace the explicitly labelled course concept when published metadata and the public library destination are available. No invented course metrics, learner counts, testimonials or live resume target are displayed. Starter illustrations are original HTML/CSS; no third-party images or animation packages were added.
+
+### Expanded landing and footer
+
+Added focused-practice guidance, four native FAQ disclosures, and a full-width footer with product context, section links, account actions, certificate verification and copyright. Both dictionaries include the new copy. The FAQ opens with the keyboard; there are no added animations or requests. Build/lint passed and all four landing checks passed in English/Arabic and Light/Dark, including 320px/768px reflow, automated accessibility and existing account destinations. Desktop Light and mobile Arabic Dark screenshots were reviewed. The first run caught an ambiguous test selector after adding the second section link; it was scoped to the hero and rerun successfully. Arabic wording still needs team review; the existing bundle-size warning remains.
+
+## Login and registration design — 23 October 2026
+
+- Updated the existing routed `AuthModal` with a branded header, start-aligned copy, larger labelled fields, password visibility, registration guidance, verification notice and a separated account-switch action. Shared tokens cover both themes; email/password entry remains LTR in Arabic. No auth routes, schemas, request shapes or backend code changed.
+- Build and lint passed. Four account browser checks passed across English/Arabic and Light/Dark with intercepted API fixtures, covering invalid credentials, confirmation mismatch/focus, show/hide, mode switching, registration notice/reset, Escape, 320px reflow and automated dialog accessibility. No real accounts were created. Desktop login and mobile registration screenshots were reviewed using fallback fonts.
+- The existing public keyboard/focus test initially timed out on page loading; its isolated retry passed. Five targeted checks therefore passed across two runs, not the entire browser suite. Existing bundle-size warning remains; Arabic copy still needs team wording review.

@@ -2,8 +2,10 @@
 
 /* ==========================================================================
    TypeFlow Design System Tokens
-   Source: DESIGN.md v0.2
-   Shared Mint palette in Light and Black Dark themes
+   Source: DESIGN.md v0.4
+   Warm-neutral/navy Light theme and coordinated deep-navy Dark theme.
+   Semantic colours are shared by every screen; presentation changes do not
+   alter session state, scoring or saved user preferences.
    ========================================================================== */
 
 :root,
@@ -11,37 +13,37 @@
   color-scheme: light;
 
   /* Canvas & Surfaces */
-  --tf-color-bg-page: #F7FAF9;
+  --tf-color-bg-page: #F5F3F0;
   --tf-color-bg-surface: #FFFFFF;
-  --tf-color-bg-subtle: #EDF4F1;
-  --tf-color-bg-inverse: #0F2420;
+  --tf-color-bg-subtle: #F7F7F9;
+  --tf-color-bg-inverse: #171C26;
 
   /* Typography */
-  --tf-color-text-primary: #152923;
-  --tf-color-text-secondary: #52635D;
+  --tf-color-text-primary: #122947;
+  --tf-color-text-secondary: #556576;
   --tf-color-text-inverse: #FFFFFF;
 
   /* Borders */
-  --tf-color-border-subtle: #DAE5DF;
-  --tf-color-border-control: #73847C;
+  --tf-color-border-subtle: #E5E7EB;
+  --tf-color-border-control: #738092;
 
   /* Action Buttons */
-  --tf-color-action-primary: #0F766E;
-  --tf-color-action-hover: #115E59;
-  --tf-color-action-pressed: #134E4A;
+  --tf-color-action-primary: #2B3749;
+  --tf-color-action-hover: #354B63;
+  --tf-color-action-pressed: #435F7D;
   --tf-color-action-foreground: #FFFFFF;
-  --tf-color-action-link: #0369A1;
-  --tf-color-focus-ring: #0369A1;
+  --tf-color-action-link: #0666DF;
+  --tf-color-focus-ring: #0666DF;
 
   /* Learning Activity Accent */
-  --tf-color-learning-accent: #0F766E;
+  --tf-color-learning-accent: #0666DF;
   --tf-color-learning-foreground: #FFFFFF;
-  --tf-color-learning-strong: #115E59;
-  --tf-color-learning-soft: #DDF7EE;
-  --tf-color-learning-lip: #134E4A;
+  --tf-color-learning-strong: #1D4ED8;
+  --tf-color-learning-soft: #E8F0FC;
+  --tf-color-learning-lip: #123E80;
 
   /* Progress & Success */
-  --tf-color-success-accent: #16A34A;
+  --tf-color-success-accent: #28AF42;
   --tf-color-success-text: #166534;
   --tf-color-success-soft: #E8F7EC;
 
@@ -55,19 +57,19 @@
   --tf-color-error-soft: #FFF0F2;
 
   /* Rewards & Gamification */
-  --tf-color-reward-accent: #EAB308;
+  --tf-color-reward-accent: #CD964D;
   --tf-color-reward-text: #715500;
   --tf-color-reward-soft: #FEF6CC;
   --tf-color-streak-text: #9A4D00;
 
   /* Disabled States */
-  --tf-color-disabled-bg: #E0E8E3;
-  --tf-color-disabled-text: #52635D;
+  --tf-color-disabled-bg: #E5E7EB;
+  --tf-color-disabled-text: #556576;
 
   /* Overlays & Shadows */
-  --tf-color-overlay: rgba(15, 36, 32, 0.48);
-  --tf-shadow-card: 0 2px 8px rgba(15, 36, 32, 0.06);
-  --tf-shadow-popover: 0 8px 24px rgba(15, 36, 32, 0.12);
+  --tf-color-overlay: rgba(23, 28, 38, 0.48);
+  --tf-shadow-card: 0 2px 8px rgba(18, 41, 71, 0.06);
+  --tf-shadow-popover: 0 8px 24px rgba(18, 41, 71, 0.12);
   --lip-primary: 0 3px 0 var(--tf-color-learning-lip);
   --lip-node: 0 4px 0 var(--tf-color-learning-lip);
 }
@@ -76,71 +78,71 @@
   color-scheme: dark;
 
   /* Canvas & Surfaces */
-  --tf-color-bg-page: #000000;
-  --tf-color-bg-surface: #111111;
-  --tf-color-bg-subtle: #1C1C1C;
-  --tf-color-bg-inverse: #080808;
+  --tf-color-bg-page: #171C26;
+  --tf-color-bg-surface: #242E3E;
+  --tf-color-bg-subtle: #2B3749;
+  --tf-color-bg-inverse: #101722;
 
   /* Typography */
-  --tf-color-text-primary: #F5F5F5;
-  --tf-color-text-secondary: #B8B8B8;
-  --tf-color-text-inverse: #F5F5F5;
+  --tf-color-text-primary: #F7F7F9;
+  --tf-color-text-secondary: #B3B9C1;
+  --tf-color-text-inverse: #F7F7F9;
 
   /* Borders */
-  --tf-color-border-subtle: #333333;
-  --tf-color-border-control: #858585;
+  --tf-color-border-subtle: #42576E;
+  --tf-color-border-control: #8997AA;
 
   /* Action Buttons */
-  --tf-color-action-primary: #5EEAD4;
-  --tf-color-action-hover: #99F6E4;
-  --tf-color-action-pressed: #2DD4BF;
-  --tf-color-action-foreground: #080808;
-  --tf-color-action-link: #7DD3FC;
-  --tf-color-focus-ring: #7DD3FC;
+  --tf-color-action-primary: #E5E7EB;
+  --tf-color-action-hover: #FFFFFF;
+  --tf-color-action-pressed: #B3B9C1;
+  --tf-color-action-foreground: #171C26;
+  --tf-color-action-link: #93C5FD;
+  --tf-color-focus-ring: #93C5FD;
 
   /* Learning Activity Accent */
-  --tf-color-learning-accent: #5EEAD4;
-  --tf-color-learning-foreground: #080808;
-  --tf-color-learning-strong: #99F6E4;
-  --tf-color-learning-soft: #102D28;
-  --tf-color-learning-lip: #25786C;
+  --tf-color-learning-accent: #93C5FD;
+  --tf-color-learning-foreground: #171C26;
+  --tf-color-learning-strong: #BFDBFE;
+  --tf-color-learning-soft: #1E3551;
+  --tf-color-learning-lip: #52739A;
 
   /* Progress & Success */
   --tf-color-success-accent: #86EFAC;
   --tf-color-success-text: #A7F3D0;
-  --tf-color-success-soft: #102A1D;
+  --tf-color-success-soft: #17352A;
 
   /* Attention & Warning */
   --tf-color-warning-accent: #FBBF24;
   --tf-color-warning-text: #FDE68A;
-  --tf-color-warning-soft: #30250D;
+  --tf-color-warning-soft: #3A2E16;
 
   /* Error & Destructive */
   --tf-color-error-text: #FDA4AF;
-  --tf-color-error-soft: #35161E;
+  --tf-color-error-soft: #3D202C;
 
   /* Rewards & Gamification */
   --tf-color-reward-accent: #FACC15;
   --tf-color-reward-text: #FDE68A;
-  --tf-color-reward-soft: #2B240C;
+  --tf-color-reward-soft: #352D18;
   --tf-color-streak-text: #FDBA74;
 
   /* Disabled States */
-  --tf-color-disabled-bg: #262626;
-  --tf-color-disabled-text: #A3A3A3;
+  --tf-color-disabled-bg: #354154;
+  --tf-color-disabled-text: #B3B9C1;
 
   /* Overlays & Shadows */
-  --tf-color-overlay: rgba(0, 0, 0, 0.72);
+  --tf-color-overlay: rgba(16, 23, 34, 0.72);
   --tf-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
   --tf-shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.40);
-  --lip-primary: 0 3px 0 #000000;
+  --lip-primary: 0 3px 0 var(--tf-color-learning-lip);
   --lip-node: 0 4px 0 var(--tf-color-learning-lip);
 }
 
 :root {
   /* Typography Families */
   --tf-font-display: 'Open Sans', Arial, sans-serif;
-  --tf-font-body: 'Lato', Arial, sans-serif;
+  --tf-font-body: 'Open Sans', Arial, sans-serif;
   --tf-font-mono: 'IBM Plex Mono', Consolas, Courier New, monospace;
   --tf-font-arabic: 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
 
@@ -150,12 +152,21 @@
   --content-max: 1200px;
   --study-max: 960px;
 
-  /* Motion */
-  --motion-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
-  --motion-standard: 180ms cubic-bezier(0.2, 0, 0, 1);
+  /* Named timings keep existing controls consistent without a motion library. */
+  --motion-duration-fast: 120ms;
+  --motion-duration-standard: 180ms;
+  --motion-duration-panel: 240ms;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --motion-fast: var(--motion-duration-fast) ease;
+  --motion-standard: var(--motion-duration-standard) var(--motion-ease-out);
+  --motion-panel: var(--motion-duration-panel) var(--motion-ease-drawer);
 }
 
 @theme inline {
+  --default-transition-duration: var(--motion-duration-fast);
+  --default-transition-timing-function: ease;
   --color-page: var(--tf-color-bg-page);
   --color-surface: var(--tf-color-bg-surface);
   --color-subtle: var(--tf-color-bg-subtle);
@@ -212,23 +223,24 @@
     line-height: 1.625; /* 26px line-height on 16px font */
     color: var(--tf-color-text-primary);
     background-color: var(--tf-color-bg-page);
+    font-variant-numeric: tabular-nums;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color var(--motion-standard), color var(--motion-standard);
     min-height: 100%;
   }
 
   [dir="rtl"] {
     font-family: var(--tf-font-arabic), var(--tf-font-body);
     line-height: 1.65;
+    letter-spacing: 0;
   }
 
   body {
     min-height: 100vh;
     background-color: var(--tf-color-bg-page);
     color: var(--tf-color-text-primary);
-    overflow-x: hidden;
+    /* Reflow belongs to layouts; do not hide overflowing or unreachable actions. */
   }
 
   :focus-visible {
@@ -246,16 +258,875 @@
     font-family: var(--tf-font-arabic);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* Native controls retain visible feedback without changing their bounds. */
+  button, a, input, select, textarea {
+    transition: background-color var(--motion-fast),
+      border-color var(--motion-fast), color var(--motion-fast);
   }
 }
 
-@keyframes caret-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+/* Shared skip navigation stays visible above headers when reached by keyboard. */
+.skip-link {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  z-index: 200;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tf-color-border-control);
+  border-radius: 12px;
+  background: var(--tf-color-bg-surface);
+  color: var(--tf-color-action-link);
+  transform: translateY(calc(-100% - 1rem));
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-header {
+  background: var(--tf-color-bg-surface);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--tf-color-border-subtle) 72%, transparent);
+}
+
+/* Bordered information surfaces stay flat; overlays retain their own depth. */
+.bg-surface.rounded-card.border {
+  box-shadow: none;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  max-width: 100%;
+  color: var(--tf-color-text-primary);
+  background-color: var(--tf-color-bg-surface);
+}
+
+::selection {
+  color: var(--tf-color-learning-foreground);
+  background-color: var(--tf-color-learning-accent);
+}
+
+/* Keyboard feedback is immediate, including controls with utility transitions.
+   This does not intercept input or introduce provider/session state. */
+:where(button, a, input, select, textarea):focus-visible {
+  transition-duration: 0s !important;
+}
+
+/* Pointer-specific decoration is deliberately absent: controls do not lift,
+   scale or change position on hover, press, touch or keyboard activation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Apply after utilities so long Arabic headings keep their natural shaping. */
+:where([lang="ar"]) :where(h1, h2, h3, h4, h5, h6, button, label) {
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
+/* English exercise glyphs retain fixed advances and never form ligatures. */
+.font-mono {
+  font-variant-ligatures: none;
+}
+
+/* Keep the approved lockup LTR in either interface language, with stable bounds.
+   The image viewport trims outer whitespace; the source artwork is unchanged. */
+.brand-logo {
+  position: relative;
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  aspect-ratio: 90 / 19;
+  overflow: hidden;
+  flex-shrink: 0;
+  direction: ltr;
+}
+
+.brand-logo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.brand-logo__dark-wordmark {
+  display: none;
+}
+
+/* Clip the duplicate image past the blue key; lighten the wordmark alone. */
+[data-theme="dark"] .brand-logo__dark-wordmark {
+  display: block;
+  clip-path: inset(0 0 0 26.5%);
+  filter: brightness(0) invert(1);
+}
+/* Starter landing uses the shared palette, fonts and motion policy.
+   Its illustrations are static teaching examples, never simulated account data. */
+.landing-container {
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.landing-page h1,
+.landing-page h2,
+.landing-page h3 {
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 56px;
+  padding-block: 84px 88px;
+}
+
+.landing-hero h1 {
+  max-width: 560px;
+  font-size: clamp(2.5rem, 4.5vw, 3.5rem);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.landing-lead {
+  margin-block: 24px 28px;
+  max-width: 58ch;
+  color: var(--tf-color-text-secondary);
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.landing-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+.landing-primary {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  background: var(--tf-color-action-primary);
+  color: var(--tf-color-action-foreground);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--motion-fast);
+}
+
+.landing-primary:hover {
+  background: var(--tf-color-action-hover);
+}
+.landing-primary:active {
+  background: var(--tf-color-action-pressed);
+}
+
+.landing-text-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--tf-color-action-link);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.landing-device-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 48ch;
+  margin-block-start: 26px;
+  color: var(--tf-color-text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.landing-device-note svg,
+.landing-reassurance svg {
+  flex-shrink: 0;
+}
+
+.landing-example {
+  min-width: 0;
+  padding: 28px;
+  border-radius: 52px 52px 52px 12px;
+  background: var(--tf-color-learning-soft);
+}
+
+.landing-example-label {
+  color: var(--tf-color-learning-strong);
+  font-size: 13px;
+  font-weight: 700;
+  margin-block-end: 24px;
+}
+
+.landing-passage {
+  padding: 24px;
+  border: 1px solid var(--tf-color-border-subtle);
+  border-radius: 16px;
+  background: var(--tf-color-bg-surface);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.landing-current-letter {
+  border-block-end: 3px solid var(--tf-color-learning-accent);
+  background: var(--tf-color-learning-soft);
+  color: var(--tf-color-learning-strong);
+}
+
+.landing-keyboard {
+  margin-block: 28px;
+  padding: 16px 10px 12px;
+  border: 1px solid var(--tf-color-border-control);
+  border-block-end-width: 5px;
+  border-radius: 16px;
+  background: var(--tf-color-bg-subtle);
+}
+
+.landing-keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-block-end: 6px;
+}
+
+.landing-key {
+  display: grid;
+  width: 8.6%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--tf-color-border-subtle);
+  border-block-end-width: 3px;
+  border-radius: 5px;
+  background: var(--tf-color-bg-surface);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(9px, 1vw, 13px);
+}
+
+.landing-key-focus {
+  color: var(--tf-color-learning-foreground);
+  background: var(--tf-color-learning-accent);
+  border-color: var(--tf-color-learning-lip);
+}
+
+.landing-spacebar {
+  width: 45%;
+  height: 18px;
+  margin-inline: auto;
+  border: 1px solid var(--tf-color-border-subtle);
+  border-radius: 5px;
+  background: var(--tf-color-bg-surface);
+}
+
+.landing-example-note {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.landing-focus-pair {
+  flex-shrink: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--tf-color-bg-surface);
+  color: var(--tf-color-learning-strong);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.landing-method {
+  scroll-margin-top: 160px;
+  padding-block: 64px;
+  background: var(--tf-color-bg-inverse);
+  color: var(--tf-color-text-inverse);
+}
+
+.landing-page h2 {
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.35;
+}
+.landing-section-heading {
+  max-width: 640px;
+}
+.landing-section-heading > p {
+  margin-block-start: 16px;
+  line-height: 1.75;
+}
+.landing-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  margin-block-start: 40px;
+  list-style: none;
+}
+
+.landing-step-number {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  margin-block-end: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.landing-steps h3 {
+  font-size: 20px;
+  margin-block-end: 12px;
+}
+.landing-steps p {
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 38ch;
+}
+.landing-course {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: 80px;
+  padding-block: 88px;
+}
+
+.landing-path-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 28px;
+  border-radius: 12px 72px 12px 72px;
+  background: var(--tf-color-learning-soft);
+}
+
+.landing-path-node {
+  display: grid;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border: 2px solid var(--tf-color-border-control);
+  border-radius: 50%;
+  background: var(--tf-color-bg-surface);
+  color: var(--tf-color-text-secondary);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.landing-path-done {
+  border-color: var(--tf-color-success-text);
+  color: var(--tf-color-success-text);
+}
+.landing-path-current {
+  border-color: var(--tf-color-learning-accent);
+  color: var(--tf-color-learning-strong);
+}
+.landing-path-connector {
+  flex: 1;
+  height: 2px;
+  max-width: 40px;
+  background: var(--tf-color-border-control);
+}
+.landing-course-status {
+  color: var(--tf-color-text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.landing-reassurance {
+  display: grid;
+  gap: 16px;
+  margin-block-start: 24px;
+  list-style: none;
+}
+.landing-reassurance li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+}
+.landing-reassurance svg {
+  color: var(--tf-color-success-text);
+}
+.landing-closing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-block: 40px;
+  border-block: 1px solid var(--tf-color-border-subtle);
+}
+
+.landing-closing p {
+  margin-block-start: 12px;
+  color: var(--tf-color-text-secondary);
+  line-height: 1.75;
+}
+.landing-footer p {
+  color: var(--tf-color-text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-block: 48px;
+  }
+  .landing-hero-copy {
+    max-width: 650px;
+  }
+  .landing-example {
+    width: 100%;
+    max-width: 600px;
+    justify-self: center;
+  }
+  .landing-course {
+    gap: 32px;
+    grid-template-columns: 1fr;
+    padding-block: 56px;
+  }
+  .landing-path-art {
+    min-height: 180px;
+  }
+  .landing-closing {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .landing-container {
+    width: calc(100% - 32px);
+  }
+  .landing-hero h1 {
+    font-size: 34px;
+  }
+  .landing-lead {
+    font-size: 16px;
+  }
+  .landing-example {
+    padding: 20px 16px;
+    border-radius: 32px 32px 32px 8px;
+  }
+  .landing-example-note {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .landing-keyboard {
+    padding-inline: 6px;
+  }
+  .landing-keyboard-row {
+    gap: 3px;
+  }
+  .landing-passage {
+    padding: 16px;
+  }
+  .landing-steps {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .landing-method {
+    padding-block: 40px;
+  }
+  .landing-path-node {
+    width: 58px;
+    height: 58px;
+  }
+}
+/* Shared headings use primary ink; inverse learning sections need inverse ink. */
+.landing-method h2,
+.landing-method h3 {
+  color: inherit;
+}
+
+/* Expand the learning story without adding simulated scores or account data. */
+.landing-focus-section {
+  padding-block: 80px;
+  background: var(--tf-color-bg-surface);
+  border-block: 1px solid var(--tf-color-border-subtle);
+}
+
+.landing-focus-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 80px;
+}
+
+.landing-focus-detail {
+  max-width: 58ch;
+  color: var(--tf-color-text-secondary);
+  line-height: 1.8;
+}
+
+.landing-focus-story {
+  border-inline-start: 2px solid var(--tf-color-border-subtle);
+  padding-inline-start: 32px;
+}
+
+.landing-focus-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-block: 22px;
+}
+
+.landing-focus-row svg {
+  flex-shrink: 0;
+  margin-block-start: 4px;
+  color: var(--tf-color-learning-strong);
+}
+
+.landing-focus-row h3 {
+  font-size: 20px;
+  margin-block-end: 10px;
+}
+
+.landing-focus-row p {
+  max-width: 42ch;
+  color: var(--tf-color-text-secondary);
+  line-height: 1.8;
+}
+
+.landing-faq {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 80px;
+  padding-block: 88px;
+  scroll-margin-top: 160px;
+}
+
+.landing-faq .landing-section-heading p {
+  color: var(--tf-color-text-secondary);
+}
+
+.landing-faq details {
+  border-block-end: 1px solid var(--tf-color-border-control);
+}
+
+.landing-faq summary {
+  padding-block: 22px;
+  padding-inline-end: 12px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.landing-faq details p {
+  max-width: 62ch;
+  padding-block-end: 24px;
+  color: var(--tf-color-text-secondary);
+  line-height: 1.85;
+}
+
+/* Full-width footer separates navigation, account actions and product context. */
+.landing-footer {
+  display: block;
+  padding-block: 64px 24px;
+  margin-block-start: 64px;
+  background: var(--tf-color-bg-surface);
+  border-block-start: 1px solid var(--tf-color-border-subtle);
+}
+
+.landing-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 64px;
+  padding-block-end: 48px;
+}
+
+.landing-footer-brand p {
+  max-width: 36ch;
+  margin-block-start: 20px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.landing-footer nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.landing-footer nav h2 {
+  margin-block-end: 16px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.landing-footer nav a,
+.landing-footer nav button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: 8px;
+  color: var(--tf-color-action-link);
+  text-align: start;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.landing-footer nav a:hover,
+.landing-footer nav button:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.landing-footer nav p {
+  margin-block-start: 16px;
+  max-width: 32ch;
+  line-height: 1.8;
+}
+
+.landing-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--tf-color-border-subtle);
+}
+
+@media (max-width: 900px) {
+  .landing-focus-layout,
+  .landing-faq {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .landing-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .landing-footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .landing-focus-section,
+  .landing-faq {
+    padding-block: 48px;
+  }
+
+  .landing-focus-story {
+    padding-inline-start: 20px;
+  }
+
+  .landing-footer {
+    margin-block-start: 40px;
+    padding-block-start: 40px;
+  }
+
+  .landing-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Authentication shares the landing's typography and palette; native Dialog
+   retains focus containment, Escape dismissal and a scrollable small-screen layout. */
+.auth-dialog {
+  position: relative;
+  margin: auto;
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border-radius: 24px;
+}
+
+.auth-dialog-brand {
+  padding: 28px 36px;
+  padding-inline-end: 72px;
+  background: var(--tf-color-learning-soft);
+  border-block-end: 1px solid var(--tf-color-border-subtle);
+}
+
+.auth-dialog-body {
+  padding: 32px 36px 24px;
+}
+
+.auth-introduction h2 {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.auth-introduction p {
+  margin-block-start: 12px;
+  color: var(--tf-color-text-secondary);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.auth-form {
+  display: grid;
+  gap: 22px;
+  margin-block-start: 28px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.auth-field label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.auth-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid var(--tf-color-border-control);
+  border-radius: 10px;
+  font-family: var(--tf-font-body);
+  font-size: 16px;
+  transition: border-color var(--motion-fast);
+}
+
+.auth-field input[aria-invalid="true"] {
+  border-color: var(--tf-color-error-text);
+}
+
+.auth-field input:focus-visible {
+  border-color: var(--tf-color-focus-ring);
+}
+
+.auth-password-toggle {
+  min-height: 44px;
+  color: var(--tf-color-action-link);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-field-help,
+.auth-verification-note {
+  color: var(--tf-color-text-secondary);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.auth-field-error {
+  color: var(--tf-color-error-text);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.auth-feedback {
+  padding: 12px 16px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  color: var(--tf-color-action-foreground);
+  background: var(--tf-color-action-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--motion-fast);
+}
+
+.auth-submit:hover {
+  background: var(--tf-color-action-hover);
+}
+
+.auth-submit:disabled {
+  color: var(--tf-color-disabled-text);
+  background: var(--tf-color-disabled-bg);
+  cursor: wait;
+}
+
+.auth-verification-note {
+  margin-block-start: 16px;
+}
+
+.auth-switch {
+  margin-block-start: 24px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--tf-color-border-subtle);
+  text-align: center;
+}
+
+.auth-switch button {
+  min-height: 44px;
+  color: var(--tf-color-action-link);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch button:hover,
+.auth-password-toggle:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-close {
+  position: absolute;
+  inset-block-start: 20px;
+  inset-inline-end: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--tf-color-text-primary);
+  cursor: pointer;
+}
+
+.auth-close:hover {
+  background: var(--tf-color-bg-surface);
+}
+
+@media (max-width: 520px) {
+  .auth-dialog-brand {
+    padding-block: 22px;
+    padding-inline-start: 24px;
+  }
+
+  .auth-dialog-body {
+    padding: 24px;
+  }
+
+  .auth-introduction h2 {
+    font-size: 24px;
+  }
 }

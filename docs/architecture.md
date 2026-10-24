@@ -1,8 +1,8 @@
 # TypeFlow: Architecture and Project Structure
 
-Version 1.3 — 15 October 2026
+Version 1.4 — 22 October 2026
 
-This is the target structure aligned with [the SRS](srs.md) and [decisions](decisions.md). Application code is outside this documentation revision. Paths below are relative to the repository root. For first-clone instructions and daily commands, use the [README](../README.md#quick-start); open this reference when working on module boundaries.
+This describes the project structure and data flow aligned with [the SRS](srs.md) and [decisions](decisions.md). Section 6 distinguishes current implementation from planned behavior; folder trees include reserved future modules and are not proof of implementation. Paths below are relative to the repository root. For first-clone instructions and daily commands, use the [README](../README.md#quick-start); open this reference when working on module boundaries.
 
 ## 1. Repository layout
 
@@ -197,7 +197,7 @@ Persistence practices are in [development](development.md#database-workflow); Fi
 
 ## 3. Frontend layout
 
-The tree below reflects the actual frontend scaffold. Existing teammate screens, styles, preferences, translations, icons and typing engine remain unchanged. Newly reserved JavaScript/JSX files contain only `Coming soon` comments and have no exports or route/provider wiring. `App.jsx` remains the running application until a separately authorized integration; do not import placeholders as usable components. `tests/e2e/` is reserved by `.gitkeep`, not executable browser tests.
+The tree below records the frontend scaffold and includes reserved future modules. App routing/providers, authentication, preferences, the shared Fetch transport and several data hooks now have implementations; other files remain comment-only placeholders. Preserve existing teammate screens, styles, translations, icons and typing behavior. Inspect a module before importing it; a listed filename does not guarantee usable exports. `tests/e2e/` remains a reservation, not evidence of executable browser coverage. Section 6 explains current real-API and fixture flows.
 
 Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies. Add formatting helpers, schema-valid development fixtures or browser-only schemas when concrete implementation needs them, not as empty parallel layers.
 
@@ -385,17 +385,17 @@ client/
 └── vite.config.js
 ```
 
-Target flow: page → feature hook → API function → shared HTTP client. Components render state; API files only send requests and handle transport shapes. TanStack Query is the target owner of remote data; Context handles the few cross-page UI concerns. The new query client, providers, hooks and transport are placeholders, not installed/configured integrations. API authentication/ownership checks remain mandatory even when frontend route guards exist. Keep the existing root workspace install/commands; this scaffold changes no dependencies or build configuration.
+Data flow: page → feature hook → API function → shared Fetch transport → Express middleware/route → service/pure rules → Prisma/PostgreSQL; validated responses return to the query cache and then the screen. TanStack Query manages remote data and request state; Context coordinates identity/presentation. These foundations are implemented, while feature integrations remain mixed real API and explicitly labelled samples. Section 6 explains each step, failures and ownership. Frontend route guards never replace backend authentication/ownership checks.
 
-The recorder emits ordered monotonic events. The reducer replays allowed end-of-buffer operations and mode transitions. Live metrics use shared formulas and are labelled provisional until submission succeeds. The frontend must retain the same submission payload during a network retry, and must not replay reward toasts as new awards when recovering an already-saved result.
+The recorder emits ordered monotonic events. The target reducer handles allowed end-of-buffer operations and mode transitions; inspect implementation status before importing it. Live metrics must use shared formulas and remain provisional until submission succeeds; current browser formula copies are not authoritative. The frontend must retain the same submission payload during a network retry, and must not replay reward toasts as new awards when recovering an already-saved result. Section 6 separates these requirements from current recovery behavior.
 
 Do not let polling or dashboard rendering interfere with typing. Large-text and reduced-pressure settings affect presentation, not official elapsed time. Defer optional sounds until required behaviour is working.
 
 ### Presentation, interface language and responsive layouts
 
-SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. This extends the target architecture only; no existing application file or dependency was assessed or created.
+SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. Preference coordination is implemented; complete presentation/browser acceptance remains separate from implementation status.
 
-PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query still owns the account DTO. Shared user schemas validate the draft `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
+PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query owns the account DTO. Shared user schemas validate implemented `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
 
 Keep reviewed static dictionaries and locale/direction helpers in the proposed frontend `i18n/` area. Use stable error/reason codes with parameters for translated system explanations; the detailed shared shape is still to agree in the [API contract](api-contract.md). No LLM/network translation service is required. Do not select a new localisation dependency or scaffold files during documentation work.
 
@@ -432,11 +432,13 @@ packages/shared/
 
 Use shared Zod schemas for runtime validation and documented JSON contracts. Optional JSDoc can explain function inputs and outputs; generated or inferred static types are not required. Separate public DTOs from database records; never export token hashes, internal moderation data or private profile fields by accident. Sharing formulas does not make a client score authoritative: the server derives all formula inputs independently.
 
+The tree is a target module inventory. Current exports include health/empty-request contracts, auth/user request and response contracts, practice-session contracts and metrics. Course/enrollment and other reserved modules are not automatically implemented or exported. The [API contract](api-contract.md) records field-by-field status; never import a placeholder merely because it appears in this tree. Follow AGENTS.md's required file/function explanations for new or changed code.
+
 Use runtime constants or Zod enums in `enums.js`. The shared package exposes JavaScript modules through agreed package exports without a static-type compilation step. Validate requests, external responses and configuration at their boundaries; keep fixtures aligned with those schemas.
 
 ## 5. Data model and persistence invariants
 
-The exact Prisma schema is a phase-zero deliverable. Expected concepts:
+Account/practice persistence already has an implemented Prisma schema and migrations. The table below includes additional target concepts; it does not claim that every listed model exists. Review future model additions per phase without changing the current schema through frontend tasks.
 
 | Area | Records and responsibilities |
 | --- | --- |
@@ -453,42 +455,410 @@ The exact Prisma schema is a phase-zero deliverable. Expected concepts:
 | Administration | AdminAuditLog, immutable SettingVersion |
 | Operations | JobRun/checkpoint state where needed for catch-up |
 
-Key constraints: one official result per session, one key/pair statistic per user and item, unique badge awards, deduplicated reward events, unique certificate codes and one certificate per qualifying session. Store accepted payload hashes separately from expiring raw logs. Session status distinguishes created, completed, abandoned and expired.
+Target constraints: one official result per session, one key/pair statistic per user and item, unique badge awards, deduplicated reward events, unique certificate codes and one certificate per qualifying session. Store accepted payload hashes separately from expiring raw logs. Session handling must distinguish created, completed, abandoned and expired; current practice stores the first three statuses and derives expiry from its timestamp, as explained in section 6.
 
 Completed results and settings versions are immutable during normal operation. Privacy deletion and retention remain allowed; “append-only” is not an exception to those requirements. Store the text actually assigned, not just a mutable content reference. Keep referenced settings versions available for retained results.
 
-Protect updates from separate simultaneous sessions for the same student. Choose a database-backed per-user lock or optimistic version check with bounded retries during implementation. Do not rely on a process-local mutex, which fails across multiple server processes. Re-read current learning state under the chosen concurrency protection before applying the update.
+Protect updates from separate simultaneous sessions for the same student. Current submission uses a database-backed per-user row lock within a Serializable transaction and bounded retries. Future course/evidence writes must participate in that protection. Do not replace it with a process-local mutex, which fails across multiple server processes. Re-read current learning state under concurrency protection before applying the update.
 
 ## 6. Main flows
 
-### Start a session
+Use this section to follow an action from the screen to storage and back.
 
-1. Authenticate, validate requested mode/options and check rate/attempt limits.
-2. Read current learning state and active settings; derive a feasible spec.
-3. Obtain validated cached, generated or fallback text outside a database transaction.
-4. Persist an owned assignment with the exact text, captured rules/versions and expiry.
-5. Return the assignment. The server controls certified-test text; the client cannot substitute it.
+- **Current:** implemented code inspected on 22 October 2026. Browser acceptance is still separate.
+- **Planned:** approved responsibility, but no working function/API is claimed.
+- **Where:** links open source files; names identify the function or method to inspect.
+- **Inline handler/effect:** code inside a containing function, not a separately exported function.
 
-### Submit a session
+Exact JSON fields and verification status remain in the [API contract](api-contract.md#fe-02-current-frontend-boundary--22-october-2026).
 
-1. Authenticate, validate shape/size and load the owned assignment.
-2. Canonicalise and hash the submission. If already completed, return its result for an identical hash or reject a conflict.
-3. Replay and validate against the captured assignment; calculate official metrics and eligible evidence.
-4. Begin a transaction, acquire concurrency protection and recheck submission status.
-5. Load current student statistics; run applicable pure adaptive/reward functions using the captured rules.
-6. Save the result, hash, expiring raw log, applicable statistics, decision, rewards and certificate record once.
-7. Commit and return the saved result, reward events and next recommendation.
-8. Render a requested certificate PDF outside the transaction. PDF failure must not erase a completed test or cause duplicate issuance.
+### 6.1 System map and data ownership
 
-Any recommendation requiring new text is fulfilled by a later start request. Do not keep a submit request open while waiting for the LLM.
+~~~text
+Screen / user action
+  → feature hook or action handler
+  → feature API function
+  → shared Fetch transport
+  → Express middleware and route
+  → service coordinates rules and database work
+  → PostgreSQL through Prisma
 
-### Maintenance
+Response returns:
+  service → route JSON → Fetch validation → query cache/action state → screen
+~~~
 
-Use database records/checkpoints to find overdue purge and pre-generation work at startup and scheduled intervals. A scheduling library may wake the runner, but in-process scheduling alone is not the guarantee. Use locking or claims to avoid duplicate work across instances. Purging and catch-up must be retry-safe. Review dates can be computed when reading the path; email reminders are not required.
+**Not every action sends a request.** Typing updates the local recorder. A guest theme change updates presentation/local storage.
+
+| Data | Where it lives | Who changes it? |
+| --- | --- | --- |
+| Saved accounts, learning evidence and results | PostgreSQL | Server services through Prisma |
+| Authentication JWT | httpOnly browser cookie | Server sets/clears it; browser sends it |
+| Confirmed user + CSRF | Auth query and Context | [AuthContext.jsx](../client/src/context/AuthContext.jsx): AuthProvider |
+| Remote summaries | In-memory TanStack cache | Feature queries and invalidation |
+| Active buffer, events and timer | React state + recorder | [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): TypingSessionPage |
+| Appearance and language | PreferencesContext; guest storage or account fields | [PreferencesContext.jsx](../client/src/context/PreferencesContext.jsx): PreferencesProvider |
+| Shared contracts/formulas | Imported code in each application | [shared/index.js](../packages/shared/src/index.js) exports implemented modules |
+
+**Boundary:** the browser never connects directly to PostgreSQL, SMTP or the LLM. Shared code is a library, not another running service.
+
+### 6.2 Startup and the first browser load — current
+
+~~~text
+npm run dev
+  → Vite + API process
+  → React providers mount
+  → restore identity
+  → apply preferences
+  → choose accessible route
+~~~
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Start processes | Check ports, then launch client and server. | [root package.json](../package.json): predev/dev commands; [check-dev-ports.js](../scripts/check-dev-ports.js) |
+| 2. Prepare API | Validate environment; create Prisma adapter; assemble Express; start retention; listen. | [server.js](../server/src/server.js): top-level startup; [env.js](../server/src/config/env.js): loadEnvironment(); [prisma.js](../server/src/db/prisma.js): createDatabase() |
+| 3. Render React | Apply visitor presentation before render; load the single stylesheet and provider tree. | [main.jsx](../client/src/main.jsx): applyGuestPreferencesBeforeRender(), createRoot().render(); [providers.jsx](../client/src/app/providers.jsx): AppProviders() |
+| 4. Restore identity | Request /auth/me; expose loading, authenticated, anonymous or error state. | [AuthContext.jsx](../client/src/context/AuthContext.jsx): AuthProvider(), sessionQuery.queryFn; [api/auth.js](../client/src/api/auth.js): fetchCurrentSession() |
+| 5. Apply presentation | Use account preferences when authenticated; otherwise visitor/default values. | [PreferencesContext.jsx](../client/src/context/PreferencesContext.jsx): readGuestPreferences(), preferencesFromUser(), identity-sync effect |
+| 6. Select screen | Check signed-in state and role before rendering protected routes. | [router.jsx](../client/src/app/router.jsx): AppRouter(), AppRoutes(); [RequireAuth.jsx](../client/src/components/RequireAuth.jsx): RequireAuth(); [RequireRole.jsx](../client/src/components/RequireRole.jsx): RequireRole() |
+
+**Important limits:**
+
+- Development startup does **not** start Docker, run migrations or seed content.
+- A listening API is not proof of a working database.
+- [app.js](../server/src/app.js), createApp(): /health/live checks the process; /health/ready probes PostgreSQL.
+- Server database/SMTP/signing secrets stay server-side. VITE_API_URL is public frontend configuration.
+- [server.js](../server/src/server.js), shutdown signal handlers: stop retention, close HTTP and disconnect Prisma.
+
+### 6.3 Reading data: opening the dashboard — current
+
+~~~text
+Dashboard
+  → useDashboard()
+  → account-scoped query cache
+  → fetchDashboard()
+  → request('/dashboard')
+  → authentication + Student check
+  → summary database read
+  → cache result → render
+~~~
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Subscribe | Ask for data/loading/error/refetch state. Disable fetching without a user. | [Dashboard.jsx](../client/src/features/dashboard/Dashboard.jsx): Dashboard(); [useDashboard.js](../client/src/features/dashboard/hooks/useDashboard.js): useDashboard() |
+| 2. Identify cache entry | Build a key containing owner ID and resource name. | [queryKeys.js](../client/src/lib/queryKeys.js): queryKeys.dashboard(), resource(), owner() |
+| 3. Fetch when needed | Reuse fresh data, or call the query function. Pass its abort signal onward. | [queryClient.js](../client/src/app/queryClient.js): queryClient defaults; [api/dashboard.js](../client/src/api/dashboard.js): fetchDashboard() |
+| 4. Send HTTP | Add API base URL and cookie credentials; handle response/error parsing. | [api/client.js](../client/src/api/client.js): request() |
+| 5. Dispatch/check access | Apply middleware, locate /dashboard and require an active authenticated Student. | [app.js](../server/src/app.js): createApp(); [routes.js](../server/src/routes.js): createRoutes(), inline GET handler; [middleware/auth.js](../server/src/middleware/auth.js): createAuthMiddleware(), requireRole() |
+| 6. Build summary | Lock the user, initialize missing starter evidence, read saved data and derive daily goal/streak/recommendation. | [path/service.js](../server/src/modules/path/service.js): createPathService() returns the summary function; [stats/service.js](../server/src/modules/stats/service.js): ensureKeyProgress(); [path/recommend.js](../server/src/modules/path/recommend.js): recommendNext() |
+| 7. Return/render | Select dashboard JSON; resolve the query; cache it under this owner's key; rerender subscribers. | [routes.js](../server/src/routes.js): inline /dashboard handler → request() → useDashboard() → Dashboard() |
+
+**How the cache behaves:**
+
+- Example key: ['owner', 'student-123', 'dashboard', {}].
+- The key names cached data. It does not send a request or grant access.
+- Current defaults: 30-second freshness, one query retry, no window-focus refetch.
+- Freshness is not a 30-second polling schedule.
+- API HTTP responses use no-store; TanStack's in-memory application cache is a separate mechanism.
+- Current summary reads can initialize missing key evidence; they are not entirely read-only database operations.
+
+**Other current summaries use the same backend function:**
+
+| UI query | Frontend entry | API returns |
+| --- | --- | --- |
+| Learning path | [useLearningPath.js](../client/src/features/learning-path/useLearningPath.js): useLearningPath() → [api/path.js](../client/src/api/path.js): fetchLearningPath() | Groups, key evidence and recommendation |
+| Progress | [useProgress.js](../client/src/features/progress/hooks/useProgress.js): useProgress() → [api/progress.js](../client/src/api/progress.js): fetchProgress() | Completed sessions and key evidence |
+| Rewards | [useGamification.js](../client/src/features/gamification/hooks/useGamification.js): useGamification() → [api/gamification.js](../client/src/api/gamification.js): fetchGamification() | XP, level, streak and daily goal |
+
+**Schema coverage:** current auth/session responses are validated by shared runtime schemas. These summary response schemas still need feature-owner agreement; transport currently returns their JSON without that DTO validation.
+
+### 6.4 Registration, mail, login and logout — current
+
+#### A. Register and verify email
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Submit credentials | Validate form values and call the registration action. | [AuthPages.jsx](../client/src/features/auth/AuthPages.jsx): AuthModal(); [router.jsx](../client/src/app/router.jsx): AuthRoute(), submit(); [AuthContext.jsx](../client/src/context/AuthContext.jsx): signUp() |
+| 2. Send/validate | Choose register endpoint; validate again on the server. Unknown role fields cannot create an Admin. | [api/auth.js](../client/src/api/auth.js): register(); [shared/auth.js](../packages/shared/src/auth.js): registerSchema; [auth/routes.js](../server/src/modules/auth/routes.js): authRoutes() |
+| 3. Create account | Hash password and store an unverified Student. | [auth/service.js](../server/src/modules/auth/service.js): createAuthService() → register() |
+| 4. Send link | Generate token, save only its hash/expiry, then send email outside the token transaction. | Same service: emailLink(); [auth/tokens.js](../server/src/modules/auth/tokens.js): generateToken(), hashToken(); [mailer/index.js](../server/src/integrations/mailer/index.js): createMailer() |
+| 5. Verify once | Read link token, send it to API, consume it and mark email verified. | [router.jsx](../client/src/app/router.jsx): EmailVerificationRoute(); [VerifyEmailPage.jsx](../client/src/features/auth/pages/VerifyEmailPage.jsx): VerifyEmailPage(); [api/auth.js](../client/src/api/auth.js): verifyEmail(); auth service: verify(), consumeToken() |
+
+**Mailpit receives development emails. PostgreSQL stores accounts and token hashes.**
+
+If SMTP fails, the account may already exist. Report delivery failure and use resend; do not assume the account transaction rolled back. Verification does not automatically log in.
+
+#### B. Login and restore a session
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Sign in | Send credentials and wait for a server-confirmed identity. | [router.jsx](../client/src/app/router.jsx): AuthRoute(), submit(); [AuthContext.jsx](../client/src/context/AuthContext.jsx): signIn(); [api/auth.js](../client/src/api/auth.js): login() |
+| 2. Authenticate | Compare password, recheck account state and create a revocable AuthSession. | [auth/service.js](../server/src/modules/auth/service.js): login() |
+| 3. Set credentials | Set JWT cookie; return user DTO + CSRF separately in JSON. | [auth/routes.js](../server/src/modules/auth/routes.js): inline login handler; [auth/tokens.js](../server/src/modules/auth/tokens.js): cookieOptions(), csrfToken(); [users/dto.js](../server/src/modules/users/dto.js): publicUser() |
+| 4. Store confirmed state | Validate JSON; cancel/remove old protected queries; update auth query. | [api/client.js](../client/src/api/client.js): request(); [shared/auth.js](../packages/shared/src/auth.js): authResponseSchema; [AuthContext.jsx](../client/src/context/AuthContext.jsx): signIn(), clearProtectedQueries() |
+| 5. Restore after reload | Use the cookie to revalidate the server session; return user + CSRF again. | [api/auth.js](../client/src/api/auth.js): fetchCurrentSession(); [auth/routes.js](../server/src/modules/auth/routes.js): /me handler; [middleware/auth.js](../server/src/middleware/auth.js): createAuthMiddleware() |
+
+**Credential separation:**
+
+- JWT: httpOnly cookie, sent by the browser; not readable/persisted by application JavaScript.
+- CSRF: returned by real login/me; exposed by AuthProvider to authenticated write callers.
+- User DTO: public account fields only; never a password hash or internal auth record.
+- Client validation does not replace server JWT, revocation, active-account or ownership checks.
+
+#### C. Logout and other account changes
+
+| Action | What happens | Where it happens |
+| --- | --- | --- |
+| Leave active practice on logout | Attempt server abandonment; clear local assignment; navigate out. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → handleLogout(); [api/sessions.js](../client/src/api/sessions.js): abandonSession() |
+| Revoke login | Send logout with CSRF; revoke AuthSession; clear cookie. | [AuthContext.jsx](../client/src/context/AuthContext.jsx): signOut(); [api/auth.js](../client/src/api/auth.js): logout(); backend auth routes/service: logout handler and logout() |
+| Clear browser identity/data | Always cancel queries, remove non-auth cache entries and set auth query to null. | [AuthContext.jsx](../client/src/context/AuthContext.jsx): signOut() finally → clearSession() → clearProtectedQueries() |
+| Restore visitor appearance | Reload visitor choices after identity becomes anonymous. | [PreferencesContext.jsx](../client/src/context/PreferencesContext.jsx): identity-sync effect, readGuestPreferences() |
+| Reset password | Email a one-use reset link; consume it; change password and revoke sessions. | [api/auth.js](../client/src/api/auth.js): forgotPassword(), resetPassword(); [auth/service.js](../server/src/modules/auth/service.js): forgot(), reset(), consumeToken() |
+| Change password / delete account | Require password and CSRF; revoke sessions or remove linked records. Protect the last active Admin. | [api/users.js](../client/src/api/users.js): changeMyPassword(), deleteMyAccount(); [users/service.js](../server/src/modules/users/service.js): changePassword(), remove() |
+
+**Failure limit:** local logout still happens if HTTP logout fails. That does not prove server revocation; a retained cookie may authenticate again after reload. Current cleanup removes all non-auth cache entries, not just one owner prefix.
+
+### 6.5 Saving a profile or changing appearance/language — current
+
+~~~text
+User changes a choice
+  → immediate presentation update
+  → guest localStorage OR authenticated profile PATCH
+  → confirmed account DTO
+  → update auth data / save status
+~~~
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Capture change | Build a small allowed patch. Update presentation immediately for preference changes. | [ProfileView.jsx](../client/src/features/profile/ProfileView.jsx): saveProfile(); [PreferencesContext.jsx](../client/src/context/PreferencesContext.jsx): changePreference(), setThemePreference(), setUiLocale(), setLargeText(), setReducedPressure() |
+| 2. Choose persistence | Visitor: save allowed local values. Account: queue a real API save with CSRF. | PreferencesProvider: changePreference(), enqueueAccountSave() |
+| 3. Validate and send | Parse strict profile schema; reject extra fields; send only the patch. | [api/users.js](../client/src/api/users.js): updateMyProfile(); [api/client.js](../client/src/api/client.js): request(); [shared/auth.js](../packages/shared/src/auth.js): profileSchema |
+| 4. Update owner | Authenticate, check CSRF, update only supplied fields and return public DTO. | [users/routes.js](../server/src/modules/users/routes.js): userRoutes(), PATCH handler; [users/service.js](../server/src/modules/users/service.js): update(); [users/dto.js](../server/src/modules/users/dto.js): publicUser() |
+| 5. Confirm or recover | Update confirmed user; on save failure restore affected choices and offer retry. | [AuthContext.jsx](../client/src/context/AuthContext.jsx): updateUser(); PreferencesProvider: enqueueAccountSave(), retryPreferenceSave(); ProfileView: saveProfile() |
+| 6. Apply appearance | Resolve System theme; set document language/direction; choose dictionary. | PreferencesProvider: resolvedTheme and DOM effect; [useTranslation.js](../client/src/i18n/useTranslation.js): useTranslation() |
+
+**Rules:** saving locale does not replace an unrelated theme. Rapid account saves are queued. Account-switch/save-response races still need browser acceptance.
+
+**Typing stays independent:** Arabic changes the shell, not English/LTR exercise content. Theme/locale changes must not replace text, reset the recorder or change official timing.
+
+### 6.6 Starting real practice — current
+
+~~~text
+Start practice
+  → server assignment request
+  → load captured policy + eligible keys
+  → generate fallback text
+  → persist assignment
+  → mount typing with server text
+~~~
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Launch real mode | Request an assignment, not a locally invented exercise. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → launchTyping({ serverPractice: true }) → useTypingSession().controller.startPractice(); [api/sessions.js](../client/src/api/sessions.js): startPracticeSession() |
+| 2. Validate access/input | Require authenticated Student, CSRF and practice request shape. | [sessions/routes.js](../server/src/modules/sessions/routes.js): sessionRoutes(), POST handler; [shared/session.js](../packages/shared/src/session.js): startSessionSchema |
+| 3. Read policy/evidence | Load prototype settings; briefly lock user and read initialized eligible keys. | [sessions/service.js](../server/src/modules/sessions/service.js): start(); [stats/service.js](../server/src/modules/stats/service.js): ensureKeyProgress(); [db/transaction.js](../server/src/db/transaction.js): transaction() |
+| 4. Produce text | Weight available keys and generate fallback outside the read transaction. | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): keyWeight(), generatePracticeText() |
+| 5. Capture assignment | Save owner, exact text, rules/target/timezone, settings reference and expiry. | Sessions service: start() → database.typingSession.create() |
+| 6. Check response | Validate assignment DTO before the page uses it. | [api/client.js](../client/src/api/client.js): request(); [shared/session.js](../packages/shared/src/session.js): sessionAssignmentSchema |
+| 7. Enter typing | Keep the full assignment in the owner-scoped controller; the router navigates to /typing. | [router.jsx](../client/src/app/router.jsx): launchTyping(), AuthenticatedLayout(); [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): TypingSessionPage() |
+
+**Current limits:**
+
+- Practice is the only server mode implemented.
+- Missing settings/unlocked content returns CONTENT_NOT_READY, not an empty exercise.
+- No LLM/cache orchestrator is called by current start().
+- Router source='server' means API-backed; assignment source='fallback' describes text generation.
+- [useTypingSession.js](../client/src/features/typing/hooks/useTypingSession.js) owns one controller above routes. [sessionController.js](../client/src/features/typing/sessionController.js): startPractice() prevents duplicate pending starts; restart() confirms abandonment before replacement.
+- Reload stores only owner/session IDs in tab storage. recover() retrieves real owned status; [SessionRecovery.jsx](../client/src/features/typing/components/SessionRecovery.jsx) explains lost typing progress. Completed results recover directly; unfinished attempts require explicit abandon/restart.
+- Planned lesson/placement/review/test modes must reuse this lifecycle with reviewed mode rules.
+
+### 6.7 While the student types — current
+
+**No API request is needed for every character.**
+
+| User action | What changes | Where it happens |
+| --- | --- | --- |
+| Insert a character | Append buffer input; record ordered insert and elapsed timestamp. | [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): handleCharInput(); [keystrokeRecorder.js](../client/src/features/typing/engine/keystrokeRecorder.js): KeystrokeRecorder.recordInsert() |
+| Backspace | Remove the last buffered character; record the edit. | TypingSessionPage: handleBackspace(); KeystrokeRecorder.recordBackspace() |
+| Pause/resume | Change local pause state and record transitions. | TypingSessionPage: togglePause(); KeystrokeRecorder.recordPause(), recordResume() |
+| Update feedback | Render highlighting and provisional metrics from local state. | TypingSessionPage: live useMemo; [liveMetrics.js](../client/src/features/typing/engine/liveMetrics.js): computeLiveMetrics(); [TypingStage.jsx](../client/src/features/typing/components/TypingStage.jsx): TypingStage() |
+| Finish | Copy captured events and adapt finishTime to API finishTimeMs. | TypingSessionPage: handleComplete(); KeystrokeRecorder.getSubmissionPayload() |
+
+**Real result:** send events/time; the server derives official metrics. Do not submit trusted XP, WPM, mastery or correctness flags.
+
+**Sample result:** handleComplete() takes its isFixture branch and uses computeOfficialResults() locally with sample:true. Despite that helper's name, this result is not server-authoritative.
+
+**Remaining debt:** browser formula copies and sample views are not completion evidence for real scoring, review/tests, certificates, forum or admin APIs.
+
+### 6.8 Submitting, replaying and committing a real result — current
+
+~~~text
+Captured events
+  → strict request validation
+  → canonical payload hash
+  → Serializable transaction + user lock
+  → owned assignment + retry/state checks
+  → replay → metrics/evidence → mastery/rewards
+  → save everything together
+  → committed official result
+~~~
+
+| Step | What happens | Where it happens |
+| --- | --- | --- |
+| 1. Send submission | Send events/finish time with cookie and CSRF. Reject extra fields and invalid shapes. | [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): handleComplete(); [api/sessions.js](../client/src/api/sessions.js): submitSession(); [shared/session.js](../packages/shared/src/session.js): submissionSchema, eventSchema |
+| 2. Enter service | Authenticate, enforce role/CSRF/body limits and parse request. | [app.js](../server/src/app.js): createApp(); [sessions/routes.js](../server/src/modules/sessions/routes.js): submit handler; [validate.js](../server/src/middleware/validate.js): parse() |
+| 3. Identify payload | Canonicalize events/time and calculate accepted-payload hash. | [sessions/service.js](../server/src/modules/sessions/service.js): submit(), canonical/payloadHash |
+| 4. Protect consistency | Open Serializable transaction, lock user and load by session ID + owner ID. | Sessions service: submit(); [db/transaction.js](../server/src/db/transaction.js): transaction() |
+| 5. Check retry/state | Same accepted hash: return saved result. Different hash: conflict. Expired/abandoned: unavailable. | Sessions service: submit() completed/status/expiry checks |
+| 6. Replay official attempt | Rebuild buffer; check edits, timing, pauses and completion; derive metrics/evidence from stored text. | [scoring/replay.js](../server/src/modules/scoring/replay.js): replay(); [shared/metrics.js](../packages/shared/src/metrics.js): calculateMetrics() |
+| 7. Apply learning/rewards | Gate on raw accuracy; update key evidence/mastery/unlocks and calculate XP/streak. | [stats/service.js](../server/src/modules/stats/service.js): updateKeyProgress(); [adaptive/mastery.js](../server/src/modules/adaptive/mastery.js): updateKeyEvidence(), eligibleUnlocks(); [gamification/rules.js](../server/src/modules/gamification/rules.js): rewards() |
+| 8. Commit saved state | Save result/hash/raw log and account/activity/evidence changes atomically. | Sessions service: submit(), transaction-scoped Prisma updates |
+| 9. Render confirmed result | Validate response, then render returned metrics/reward values. | [api/client.js](../client/src/api/client.js): request(); [shared/session.js](../packages/shared/src/session.js): sessionResultSchema; TypingSessionPage: handleComplete(); [OfficialResult.jsx](../client/src/features/result/OfficialResult.jsx): OfficialResult() |
+
+**Transaction facts:**
+
+- Replay currently runs **inside** the result transaction.
+- Failure rolls back that transaction's result/evidence/reward changes together.
+- Recognized serialization/deadlock errors can retry database work up to three additional times.
+- No LLM, SMTP or PDF work runs inside this transaction.
+- Expiry is checked from a timestamp; no persisted expired-status transition currently exists.
+- Current result has certificate:null. Full course progress/pair evidence/badge/certificate effects remain planned.
+- The hash supports identical retries. It is not proof of human typing.
+
+### 6.9 Refreshing other screens and recovering uncertain writes
+
+| Event | What happens | Where it happens |
+| --- | --- | --- |
+| Confirmed submission or recovered result | Cache the owned result and refresh dashboard/path/progress/rewards/history plus the shell's identity summary. | [useTypingSession.js](../client/src/features/typing/hooks/useTypingSession.js): onResult callback; [sessionController.js](../client/src/features/typing/sessionController.js): acceptResult() |
+| Confirmed profile save | Refresh affected dashboard/reward summaries. | [ProfileView.jsx](../client/src/features/profile/ProfileView.jsx): saveProfile() |
+| Active stale query | TanStack normally refetches it; subscribers render updated data. | Existing useDashboard(), useLearningPath(), useProgress(), useGamification() hooks |
+| Cancel owner reads | AbortSignal reaches Fetch; cancelled query data cannot populate its cache. | Query functions in [client/src/api](../client/src/api); [api/client.js](../client/src/api/client.js): request() |
+| Logout/account cleanup | Cancel requests, remove cached protected data and reset identity. | [AuthContext.jsx](../client/src/context/AuthContext.jsx): clearProtectedQueries(), clearSession() |
+
+**Invalidate vs remove:** invalidation marks data stale; removal discards cached entries. Neither operation writes results to PostgreSQL.
+
+**If submit loses its response:**
+
+1. The server may already have committed.
+2. Keep the same events/time payload.
+3. Retrieve the owned saved result or retry that identical payload under the agreed session UX.
+4. Do not invent a local official result or create a replacement assignment to hide uncertainty.
+
+**Where support exists:** [api/sessions.js](../client/src/api/sessions.js), fetchSession()/submitSession(); [sessions/service.js](../server/src/modules/sessions/service.js), get()/submit().
+
+**Current retry/reload boundary:** [useSubmitSession.js](../client/src/features/typing/hooks/useSubmitSession.js) delegates to sessionController.submit()/retry(). The first payload is copied once; explicit retry retrieves owned status before resending the identical body. Recovered results refresh owner summaries without new reward notifications. Late responses are invalidated on logout/account change. request() never automatically retries writes.
+
+**Still pending:** human/browser acceptance recorded in testing, backend start idempotency, and future FE-16 notification UI. Notifications must consume the controller's deduplicated newRewards, not replay saved rewards.
+
+### 6.10 Adaptive decisions, future courses and LLMs
+
+#### Current adaptive loop
+
+| Input → output | What decides it? | Where it happens |
+| --- | --- | --- |
+| Replayed events → per-key evidence | Attempts, errors and eligible latency samples | [scoring/replay.js](../server/src/modules/scoring/replay.js): replay() |
+| New evidence + old statistics → mastery/unlocks | Captured policy and raw-accuracy gate | [stats/service.js](../server/src/modules/stats/service.js): updateKeyProgress(); [adaptive/mastery.js](../server/src/modules/adaptive/mastery.js): updateKeyEvidence(), eligibleUnlocks() |
+| Saved evidence → next recommendation | Current prototype recommendation rules | [path/recommend.js](../server/src/modules/path/recommend.js): recommendNext() |
+| Eligible keys/evidence → next text | Key weighting and fallback generation | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): keyWeight(), generatePracticeText() |
+
+Pure rules receive explicit state/settings/time/randomness. They do not fetch database settings or call integrations themselves.
+
+#### Planned course flow
+
+~~~text
+Admin draft → validate/publish immutable version
+Student enrollment → pin version → evaluate entry evidence
+Lesson request → shared session engine
+Official submission → shared skill update + enrollment progress + reward commit
+~~~
+
+| Responsibility | What it will do | Reserved location — not implemented |
+| --- | --- | --- |
+| Author/publish | Validate metadata, lesson graph, objectives and feasible constraints; preserve published versions. | [courses/publication.js](../server/src/modules/courses/publication.js), [courses/validator.js](../server/src/modules/courses/validator.js); future functions not defined |
+| Enroll and choose activity | Capture owned course version; evaluate prerequisites and entry evidence. | [courses/service.js](../server/src/modules/courses/service.js), [courses/path.js](../server/src/modules/courses/path.js), [courses/placement.js](../server/src/modules/courses/placement.js); future functions not defined |
+| Save course progress | Apply lesson objective/completion/exemption evidence within the common submission transaction. | [courses/progress.js](../server/src/modules/courses/progress.js); future functions not defined |
+
+**Required distinctions:** shared skill evidence vs enrollment progress; placement exemption vs mastery vs completion. Reused evidence must not award XP twice. Existing enrollments stay pinned; archive blocks new enrollments without discarding agreed history/access.
+
+#### Planned text-generation flow
+
+~~~text
+Approved learning objective
+  → feasible exercise specification
+  → matching validated cache / reviewed LLM-and-fallback policy
+  → validate alphabet, coverage, length and content
+  → persist exact assignment text
+~~~
+
+| Boundary | Responsibility | Reserved location — not implemented |
+| --- | --- | --- |
+| Orchestration | Choose source; enforce feasibility, cache/version and validation rules. | [generation/service.js](../server/src/modules/generation/service.js), [feasibility.js](../server/src/modules/generation/feasibility.js), [validator.js](../server/src/modules/generation/validator.js), [cache.js](../server/src/modules/generation/cache.js) |
+| External LLM | Server-only provider call, bounded request and untrusted response handling. | [llm/client.js](../server/src/integrations/llm/client.js), [prompts.js](../server/src/integrations/llm/prompts.js), [schemas.js](../server/src/integrations/llm/schemas.js) |
+| Existing fallback | Produce text using eligible keys; integrate with the reviewed source-validation pipeline. | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): generatePracticeText() is implemented |
+
+The LLM supplies text only. It cannot award XP, unlock lessons, score sessions or issue certificates. Exact generation/course DTOs and cache policy still require review.
+
+### 6.11 Other feature flows and integration boundaries
+
+| Flow | How data will move | Current location/status |
+| --- | --- | --- |
+| Admin management | Form → validated role/CSRF-protected write → update + audit → refresh admin queries | [admin/routes.js](../server/src/modules/admin/routes.js), [admin/service.js](../server/src/modules/admin/service.js): reserved. Current real probe is [routes.js](../server/src/routes.js), createRoutes() /admin/ping handler |
+| Analytics | Defined database aggregate → protected DTO → query → chart/table | [analytics/service.js](../server/src/modules/analytics/service.js): reserved; definitions/access scope need agreement |
+| Forum | Input → permission/content validation → persistence → safe text rendering | [forum/routes.js](../server/src/modules/forum/routes.js), [forum/service.js](../server/src/modules/forum/service.js): reserved; current screen uses samples |
+| Certificates | Captured result/policy → eligibility + saved record → PDF outside result transaction → owner download/public verification | [certificates/service.js](../server/src/modules/certificates/service.js), [eligibility.js](../server/src/modules/certificates/eligibility.js), [pdf/certificate.js](../server/src/integrations/pdf/certificate.js): reserved |
+| Account email | Persist token hash → SMTP → user follows link → consume token | [auth/service.js](../server/src/modules/auth/service.js): emailLink(), consumeToken(); [mailer/index.js](../server/src/integrations/mailer/index.js): createMailer() — implemented |
+
+Do not invent function names or mounted endpoints for reserved files. Future integration failures must not erase a committed result or duplicate an award on retry.
+
+### 6.12 Failures and retries: where they are handled
+
+| Layer | Where to inspect | Responsibility |
+| --- | --- | --- |
+| Browser request/response boundary | [api/client.js](../client/src/api/client.js): request(), contractFor(), failure(), ApiError | Validate shapes; preserve cancellation; normalize safe errors |
+| Backend request validation | [validate.js](../server/src/middleware/validate.js): parse(), HttpError | Reject invalid fields independently of frontend checks |
+| Authentication/CSRF | [middleware/auth.js](../server/src/middleware/auth.js): createAuthMiddleware(), csrf(), requireRole() | Enforce real session, role and security token |
+| HTTP error response | [app.js](../server/src/app.js): createApp() final error middleware | Convert known errors; hide internal failures |
+| Rate limit | [rateLimit.js](../server/src/middleware/rateLimit.js): authLimiter() | Bound account-route attempts |
+| Database concurrency | [transaction.js](../server/src/db/transaction.js): transaction() | Retry recognized serialization/deadlock failures, not all errors |
+| UI recovery | Feature query/action caller; [AuthContext.jsx](../client/src/context/AuthContext.jsx): sessionQuery.queryFn | Render error/retry; /auth/me 401 becomes anonymous |
+
+| Result/code | Meaning | Caller response |
+| --- | --- | --- |
+| Local INVALID_REQUEST / server 400 | Invalid request fields | Correct input; no blind retry |
+| CSRF_FAILED / 403 | Missing/invalid security token | Restore real session/token; never fabricate it |
+| 401 | Missing/expired/revoked session | Signal auth recovery; global recovery for other protected reads remains pending |
+| FORBIDDEN / 403 | Role/origin/access denied | Show permission/security state |
+| NOT_FOUND / 404 | Resource unavailable | Do not substitute empty/sample data |
+| 409 | Conflicting or unavailable session state | Retrieve/reconcile the saved state |
+| INVALID_SUBMISSION / 422 | Replay rejected the attempt | Explain rejection; do not resend known-invalid events |
+| RATE_LIMITED / 429 | Too many requests | Respect browser-accessible Retry-After metadata |
+| 5xx / NETWORK_ERROR | Service/connectivity failure | Preserve recovery state; a write may have committed |
+| CONTRACT_ERROR | Successful response has invalid JSON/DTO | Record a contract defect |
+| FEATURE_UNAVAILABLE | Caller explicitly set available:false | Show unconnected-feature state without requesting it |
+
+**Error language:** ApiError.messageKey selects apiErrors.CODE in the bundled [English](../client/src/i18n/dictionaries/en.json)/[Arabic](../client/src/i18n/dictionaries/ar.json) dictionaries. [useTranslation.js](../client/src/i18n/useTranslation.js), useTranslation(), resolves messages. Arabic approval and screen adoption are still pending.
+
+**Do not confuse:** TanStack read retries, database transaction retries and browser submission retries are three different mechanisms. Transport does not automatically retry a write or fall back to fixtures.
+
+### 6.13 Maintenance, retention and operational boundaries
+
+| Event | What happens | Where it happens |
+| --- | --- | --- |
+| API starts | Run raw-log cleanup immediately; schedule hourly attempts. | [server.js](../server/src/server.js): startup; [purgeKeystrokeLogs.js](../server/src/jobs/purgeKeystrokeLogs.js): startLogRetention() |
+| Cleanup runs | Delete expired KeystrokeLog rows; leave saved official results/hash separate. | Same job: purgeKeystrokeLogs() |
+| Cleanup fails | Log a bounded message; retry on a later run. | startLogRetention() → run() catch |
+| API stops | Stop interval, close HTTP listener, disconnect Prisma. | server.js: signal handlers; stopRetention() returned by startLogRetention() |
+| Schema changes | Run guarded migrations through setup/release commands, never a page request. | [scripts/database.js](../scripts/database.js): command dispatcher; [Prisma migrations](../server/prisma/migrations) |
+| Future durable jobs | Claim/checkpoint overdue work and coordinate multiple instances. | [jobs/runner.js](../server/src/jobs/runner.js), [pregenerateTexts.js](../server/src/jobs/pregenerateTexts.js): reserved |
+
+**Current limitation:** the retention timer is process-local. It does not guarantee work while the host sleeps or provide durable cross-instance scheduling.
+
+**Persistence limit:** query cache, active typing state and guest preferences are different from saved learning results. Reload recovery checks the stored owner/session pointer against the API; raw typing events are not persisted, so unfinished typing progress cannot resume.
+
+Use [development](development.md#database-workflow) for database commands and [testing](testing.md) for acceptance evidence. Test execution must use the guarded dedicated test database.
 
 ## 7. API groups
 
-All application routes use `/api/v1`. Define complete request/response schemas and error codes in the later API contract; the examples below are proposed names.
+All application routes use `/api/v1`. The [API contract](api-contract.md) distinguishes current routes/shared schemas from proposals. The groups below mix implemented subsets and future scope; see section 6 for execution flow and do not assume every example is mounted.
 
 | Group | Examples |
 | --- | --- |

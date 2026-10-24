@@ -23,7 +23,7 @@ export class KeystrokeRecorder {
   }
 
   getElapsedMs() {
-    if (!this.startTime) return 0;
+    if (this.startTime === null) return 0;
     return Math.max(0, performance.now() - this.startTime);
   }
 
@@ -100,12 +100,10 @@ export class KeystrokeRecorder {
   }
 
   getSubmissionPayload(sessionId) {
-    const now = performance.now();
     return {
       sessionId,
       events: [...this.events],
-      finishTime: this.startTime ? Math.round(now - this.startTime) : 0,
-      clientEventCount: this.events.length,
-    };
+      finishTime: this.events.at(-1)?.t ?? 0,
+      clientEventCount: this.events.length, };
   }
 }

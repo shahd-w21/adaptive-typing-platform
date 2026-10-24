@@ -43,7 +43,7 @@ npm run db:seed
 npm run dev
 ```
 
-`npm ci` installs all workspaces from the root lockfile. Environment setup creates missing local files and a signing secret; existing files remain unchanged. Prisma generation creates the backend database client. Docker downloads the pinned service images on the first `db:up`, which may take longer, then waits for readiness. Migrations create/update the development tables; seeding adds starter curriculum without creating accounts. `dev` starts the website and API; keep its terminal open. Do not commit actual `.env` files.
+`npm ci` installs all workspaces from the root lockfile. Environment setup creates missing local files and a signing secret; existing files remain unchanged. Prisma generation creates the backend database client. Docker downloads the pinned service images on the first `db:up`, which may take longer, then waits for readiness. Migrations create/update the development tables; seeding adds starter curriculum and a verified [local Admin](#local-development-admin) when missing. `dev` starts the website and API; keep its terminal open. Do not commit actual `.env` files.
 
 Check the website at http://localhost:5173 and API readiness at http://localhost:5000/health/ready, which should return `{"status":"ready"}`. Open http://localhost:8025 for verification/reset emails captured by Mailpit; these are not delivered to real recipients. To inspect registered accounts and other records, run `npm run db:studio` in another root terminal and open the address it prints.
 
@@ -105,6 +105,35 @@ Keep CSS limited to shared theme values, document defaults, focus/reduced-motion
 The owner's 19 October 2026 appearance update selects a shared Mint palette for Light and Dark modes. Light uses off-white/white surfaces and deep mint actions; Dark uses a black canvas, charcoal surfaces and bright mint actions. Both share green progress, blue links/focus and gold rewards, with shades tuned for contrast. Tokens remain in `client/src/index.css` and match the updated [design colour system](../DESIGN.md#3-proposed-typeflow-colour-system). The existing Light/Dark/System preference resolves to the same two themes; native controls follow the resolved colour scheme. Client lint, production build and 94 opaque contrast checks across both modes pass; this colour change does not verify API integration or broader feature readiness.
 
 Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
+
+### FE-03 shared interface handoff
+
+FE-03 keeps the existing FE-01 view names, `onNavigate(view)`, `onLogout` and `user` props. `AdminShell` reuses the authenticated shell with Admin-only destinations; profile and logout remain available at both desktop and mobile widths. Existing Admin section controls stay in `AdminView`, wrap on phones, and retain the same actions. Role guards and server checks remain authoritative.
+
+Public and authenticated layouts expose `#main-content` for skip navigation and route focus. Shared native dialogs make the background inert, cycle Tab/Shift+Tab, support Escape/backdrop dismissal when allowed, and restore the opener. If navigation removes the opener, the destination main region receives focus. Appearance/language menus use menu-button/radio semantics with arrow, Home/End, Escape and Tab behavior; their position is constrained to the viewport. `index.css` remains the only styling entry point.
+
+Additive component props for page-owner/reviewer review:
+
+| Component | Props and ownership |
+| --- | --- |
+| `Loading` | `label` or `labelKey`, optional `compact`; announces status without fake progress |
+| `EmptyState` | Localized `title`, `description`, optional paired `actionLabel`/`onAction` |
+| `ErrorMessage` | `error.code` maps to safe interface copy; optional localized `title`/`message`, `onRetry`, `retrying`; never pass raw server text as UI copy |
+| `ConfirmDialog` | Controlled `open`, `onCancel`, `onConfirm`; localized title/description/button labels, `pending`, `error`, `destructive`; page closes after success and retains error/retry state after failure |
+| `Dialog` | Internal modal boundary in `components/ui/Dialog.jsx`; label or labelled-by ID, optional description ID/initial-focus ref, controlled `open`/`onClose`, `dismissible` |
+| `DeviceGuidance` | `onBack`, optional localized `backLabel`; presentation only, no assignment or session effects |
+
+Typing launch now checks the live viewport before either a real assignment request or a sample attempt is created. Resizing an existing attempt shows guidance while retaining its mounted typing page and existing pause/resume rules; Escape on that guidance cannot abandon the attempt. The explicit Back action retains the existing exit behavior. Existing authentication, profile, forum and typing dialogs adopt the shared boundary; screen contents and recording/scoring logic are preserved. Certificate cards only receive reflow fixes.
+
+Data boundaries remain explicit: authentication, session restoration, profile/preferences, dashboard and adaptive-practice start/submit use the real API. Forum, certificate list, Admin management/analytics and sample review/tests remain development fixtures; Admin access probing uses the real API. Shared states/dialogs do not fetch or persist data. FE-03 browser tests intercept all API calls with disposable presentation fixtures and do not use a live database. The suite is restored; previously deleted results remain absent. See [test evidence and remaining review](testing.md#fe-03-shared-interface-browser-checks).
+
+### FE-08 forum UI handoff
+
+The existing forum view now supports list/detail pagination, discussion/reply forms, one accepted answer with owner-only controls, post reports, retained drafts/explicit retry, and hidden/unavailable placeholders. Authored strings render as plain text with their original language and direction. Shared states/dialogs and the existing styling entry point remain in use; preference changes do not reset forum drafts/pages or alter the typing lifecycle.
+
+Forum discovery also includes live title/discussion-text search, category and accepted-answer filters, result counts, no-match guidance and Clear filters. Criteria are combined before fixture pagination, reset the list to page 1 when changed, and remain selected on return from a thread or after presentation changes. Hidden content never participates in matching or filtered counts. Search/filters remain development fixtures under the same API gate.
+
+Every forum flow uses a **development fixture**, not a real API. Vite development loads a disposable adapter for the current account/view; changes disappear when leaving the screen or reloading. Production reports `FEATURE_UNAVAILABLE` without making forum requests. The page owns its fixture notice, replacing the generic route notice for this screen. No Prisma, backend, public reading or browser moderation policy is changed. See the [draft fixture DTO boundary](api-contract.md#fe-08-forum-development-fixture-boundary) and [FE-08 verification](testing.md#fe-08-forum-browser-checks). Real API/schema/access agreement and Dev 5/Dev 4 demonstration remain integration gates.
 
 ## GitHub CI
 
@@ -210,7 +239,7 @@ Prisma owns schema and migrations in `server/prisma/`. Root scripts resolve the 
 | --- | --- |
 | First clone or pulling committed schema changes | `npm run db:migrate` applies existing migrations to the development database only |
 | You intentionally change the schema | Coordinate with schema reviewer; `npm run db:migration:create -- --name short-description` creates a development migration |
-| Starter content needs loading | `npm run db:seed` adds missing key groups and prototype settings version without replacing content/accounts |
+| Starter content needs loading | `npm run db:seed` adds missing key groups, prototype settings version and local Admin without replacing content/accounts |
 | Inspect data in a browser | `npm run db:studio` opens Prisma Studio for the development database |
 | Integration tests | `npm run test:integration` explicitly targets `TEST_DATABASE_URL`, with an identity check before resets |
 | Deployment | Controlled release applies committed migrations; production procedure reviewed before release |
@@ -226,6 +255,19 @@ An “already exists” message means it is already created. The integration wra
 Never edit an applied shared migration or use `db push` on shared data. Review generated SQL for dropped data, backfills, defaults and compatibility; test both a fresh database and an upgrade. Do not reset the database or delete volumes as a routine fix for drift. Seeded demo accounts must be synthetic and local-only; do not commit real passwords or silently reset existing roles/passwords.
 
 Use Prisma for ordinary access and parameterised SQL where it makes complex reporting clearer. Validate returned shapes; handle BigInt/numeric serialisation without unsafe casts. Ownership filters, timezone/report windows and dynamic sort allowlists remain required. Pass the transaction client through every participating helper; global-client calls escape that transaction. Keep external service calls outside it and test duplicate/concurrent submissions. See [architecture](architecture.md) for the result-saving flow.
+
+### Local development Admin
+
+`npm run db:seed` creates an active, email-verified Admin in the loopback `typeflow_dev` database when `NODE_ENV=development`:
+
+- Email: `admin@typeflow.local`
+- Password: `TypeFlow!`
+
+These are public, synthetic local-development credentials. No verification email is needed. Repeating the seed preserves existing accounts, including their password, role, activation and verification state; an existing account with this email is never silently promoted or reset. If that account's password was changed, use its current password or the normal reset flow. Test content seeding omits this account, and production/remote targets are rejected. Production Admin provisioning remains a separate release procedure.
+
+Existing accounts created with the previous seed password keep that password; rerunning `db:seed` does not change it. The short synthetic password above is for local seeding only; registration and password-reset requirements remain unchanged.
+
+Verified on 22 October 2026 before the seed password change: two `npm run db:seed` runs preserved every field of the existing local Admin, and the real authentication service accepted the previous seed credentials. All 32 unit tests, lint, seed-file syntax and diff checks passed; the added guard test rejects production/test modes and remote or unintended databases before database access.
 
 ## Troubleshooting
 
