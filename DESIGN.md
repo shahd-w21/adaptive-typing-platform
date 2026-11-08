@@ -2,7 +2,9 @@
 
 **Status: revised design proposal. Required product behaviour is retained. The owner selected the warm-neutral/navy colour direction on 23 October 2026; broader visual and motion guidance still needs review. This document does not establish implementation or accessibility conformance.**
 
-Version 0.4 · 23 October 2026 · Design owner/reviewer: TBD · Approved Figma link: not recorded here.
+Version 0.5 · 9 November 2026 · Design owner/reviewer: TBD · Approved Figma link: not recorded here.
+
+Figma brief revision · 9 November 2026: preserves the selected identity, semantic palette, typography, product scope and existing implementation notes. Adds surface hierarchy, usable layout budgets, component composition, precise motion contracts and an ordered MCP handoff. These additions are proposals for review in Figma; no application code or Figma file is changed by this revision.
 
 Palette update · 23 October 2026: warm off-white surfaces and navy primary actions replace the earlier TypeFlow Mint theme in this brief. Light values reuse the recorded edclub reference where appropriate; accessible semantic shades and the navy Dark adaptation are TypeFlow choices. This is a documentation update, not an application theme change.
 
@@ -33,6 +35,14 @@ The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) 
 | Figma-to-code handoff | Sections 10–12 | Approved frame, component mapping and recorded checks |
 
 **Fixed boundaries:** JavaScript/JSX, React/Vite, Tailwind, existing routing/providers and one typing lifecycle. **Proposed here:** visual composition, type simplification and interaction timings. **Owned elsewhere:** API fields, scoring, progression and course-completion policy. A polished frame cannot approve a missing contract.
+
+### 1.2 Authority for the next design pass
+
+Read this as the target design brief for a future editable Figma design, not as a screenshot specification for the current application. Preserve the selected TypeFlow logo, warm-neutral/navy identity, Open Sans/Noto Sans Arabic/IBM Plex Mono roles and required behaviours. Improve composition within those boundaries. Existing implementation notes describe the recorded baseline; they are not evidence that the proposed frames or all states already exist.
+
+The SRS controls behaviour; this document controls the proposed visual system; a later reviewed Figma frame resolves its composition. A frame cannot silently replace a requirement or approve a policy marked TBD. Keep established section headings and source links when updating this document. No additional product document, generated sidecar, package installation or source edit is needed for this documentation pass.
+
+The design skills supply methods, not a replacement brand. Use frontend-design for identity and hierarchy, Impeccable for surface purpose and completeness, UI/UX Pro Max for focused usability guidance, and the animation skills for purposeful motion and later performance checks. Their generic palettes, fonts, feature grids and library suggestions do not override TypeFlow's selected direction.
 
 ## 2. Reference extraction and interpretation
 
@@ -125,6 +135,23 @@ The memorable element is an original **passage-to-keyboard learning illustration
 **Typography direction selected for implementation, 23 October 2026:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
 
 Before approving a composition, remove any decoration that could belong unchanged on an unrelated SaaS homepage. Keep structure that helps a learner understand the next activity, their evidence or the keyboard.
+
+### 2.6 Surface purpose and visual hierarchy
+
+**The next-action rule.** In learning views, the recommendation and its reason lead. Supporting goals, streaks and history remain visibly subordinate. A screen can contain secondary actions, but it has one visually dominant next action. A due-review item becomes that recommendation only when the actual recommendation calls for it.
+
+**The still-passage rule.** The exercise is a stable reading and input surface. Expression belongs in the surrounding brand and occasional confirmed milestone, never in moving letters, bouncing keys, animated scores or shifting passage geometry.
+
+| Surface | Visitor's job | Composition and emphasis |
+| --- | --- | --- |
+| Landing — Persuade | Understand English keyboard learning and choose an entry action | Open copy/keyboard-example composition; the passage-to-keyboard example is the visual focal point, with restrained supporting sections |
+| Dashboard, courses and path — Operate | Identify and start the right eligible activity | Start-aligned title, dominant recommendation, readable path/list, subordinate evidence and motivation |
+| Typing — Operate | Read the assignment and type accurately | Passage first, stable progress and guide, compact mode controls; no navigation rail or promotional content |
+| Result and progress — Operate | Understand measured performance and the next step | Explicit authority/metric labels, grouped evidence, one continuation action; no reward wall before the evidence |
+| Forum and explanations — Read | Read, contribute and understand | Comfortable line length, clear author/reply structure and quiet actions; original user text remains unchanged |
+| Admin — Operate | Inspect, validate and safely change a specific object | Compact filters and records, visible validation and version context; decorative learning-path styling stays out of editors |
+
+Use the same colour/type/component foundations across these surfaces while varying composition and density. Do not apply a landing-page entrance sequence, repeated promotional CTA or hero treatment to working screens. Use keyboard artwork where it explains learning; do not put it behind tables, form fields or the active passage.
 
 ## 3. TypeFlow colour system
 
@@ -290,6 +317,21 @@ Use a 4px base. Number variables: `space/1=4`, `space/2=8`, `space/3=12`, `space
 
 Frame heights are viewport sizes, not fixed page heights. Use auto-layout and scrolling; do not crop history, forms or long forum text.
 
+#### Layout budgets and density
+
+`layout/content/max` caps the content inside its shell; it is not a width added beside the sidebar. Subtract navigation, gutters and any rail before sizing the main column. At larger widths centre the capped content within the remaining workspace. The following budgets are for the English desktop student shell; Arabic mirrors placement with the same widths.
+
+| Viewport | Navigation | Content after gutters | Main / gap / rail |
+| --- | --- | --- | --- |
+| 1440px | 224px | 1152px after two 32px gutters | 848px / 24px / 280px |
+| 1280px | 224px | 992px after two 32px gutters | 688px / 24px / 280px |
+| 1024px | 224px | 752px after two 24px gutters | 752px main; rail moves below |
+| 390px | Drawer | 358px after two 16px gutters | One column; rail content follows recommendation |
+
+These are composition checks, not new fixed-width tokens. If long Arabic labels or larger text make the main column unusable, move the rail below sooner. Never squeeze fields or introduce horizontal page scrolling to preserve a two-column mockup. The study shell has no sidebar: its maximum is 960px within the viewport minus its gutters.
+
+Use open sections for page structure; a card groups one task or related evidence. Learning cards use 24px internal padding on desktop and 16px on phones. Admin records may use 12–16px internal spacing while retaining readable text and 44px action hit areas. Public sections use 64–96px vertical separation on desktop and 40–48px on phones. Do not enlarge every dashboard gap to the landing-page rhythm or shrink font sizes to fit more records.
+
 ### 5.2 Shells and responsive behaviour
 
 | Shell | Composition | Responsive behaviour |
@@ -376,7 +418,7 @@ These replace the earlier single curve and 600ms reward token. Map them into the
 | --- | --- | --- |
 | Button | Feedback: colour change at 120ms; a main learning CTA may depress up to 2px on pointer press | No movement; keyboard feedback immediate |
 | Menu/popover | Spatial consistency: 180ms opacity and scale from 0.97, origin aligned with its trigger | Immediate for keyboard activation; pointer version instant or opacity-only up to 120ms |
-| Dialog/drawer | Spatial consistency: 240ms opacity/transform; drawer comes from logical inline-start and exits the same way | Keyboard activation: instant. Reduced motion: no slide/scale, instant or opacity-only up to 120ms; focus available immediately |
+| Dialog/drawer | Spatial consistency: 240ms entrance / 180ms exit, opacity/transform; drawer comes from logical inline-start and exits the same way | Keyboard activation: instant. Reduced motion: no slide/scale, instant or opacity-only up to 120ms; focus available immediately |
 | Save acknowledgement | State indication: persistent status text; optional 180ms fade | Instant or short opacity change; never colour alone |
 | Official milestone | Feedback: one contained 240ms check/badge acknowledgement after newly confirmed server evidence | Static earned state; no replay on reload, retry or cached results |
 | Landing illustration | Explanation: static by default; user may step through a labelled practice example | The same static steps and controls; no auto-typing, looping caret, parallax or scroll choreography |
@@ -391,6 +433,24 @@ These replace the earlier single curve and 600ms reward token. Map them into the
 - Honour `prefers-reduced-motion: reduce`, including a preference change while the page is open. Remove translation, scaling, smooth scrolling and decorative movement; short opacity/colour feedback is optional, and instant updates are valid. Essential content remains visible if animation is unavailable.
 - Reduced pressure is a separate presentation preference: it reduces live speed/timer emphasis without changing timing or scoring. Neither preference remounts the recorder or changes an assignment.
 - Never wait for an entrance, reward or exit animation before capturing input, exposing an action, showing an error or navigating. Focus changes in tests still follow their real timing rules.
+
+#### Motion contract for Figma and later implementation
+
+The interaction table above decides whether motion exists. Use these exact recipes only for the permitted occasional pointer/touch interactions; keyboard-triggered overlays and repeated typing/navigation updates remain instant. The target state and controls are available immediately, even while a visual transition finishes.
+
+| Recipe | Start → end | Timing and origin | Exit / interruption |
+| --- | --- | --- | --- |
+| Small menu | Opacity 0 → 1; scale 0.97 → 1 | 180ms, `motion/ease-out`; origin at the trigger attachment | Reverse the same path at 180ms; a second activation retargets the current state |
+| Centred dialog | Opacity 0 → 1; scale 0.97 → 1 | 240ms, `motion/ease-out`; centre origin | Reverse at 180ms; dismissal and focus return never wait for the visual exit |
+| Navigation drawer | Opacity 0 → 1; translate from minus 100% of its own width in LTR, plus 100% in RTL, to 0 | 240ms, `motion/ease-drawer`; no content reflow | Return toward the same logical edge at 180ms; retarget without a queued replay |
+| Save acknowledgement | Existing status region changes to confirmed text; optional opacity 0 → 1 | 180ms, `motion/ease-out`; no position change | Text persists until the next relevant state; no duplicate toast on retry |
+| Newly earned milestone | One check/badge changes opacity 0 → 1 and scale 0.97 → 1 | 240ms, `motion/ease-out`; centre origin | Remains in its earned state; no loop, confetti or replay for an already-saved event |
+
+In reduced motion, omit translation/scale; use instant states or an opacity-only change up to `motion/fast`. An instant option is always valid. Main learning-button pointer depression is at most 2px over `motion/fast`, with immediate release; it never changes layout or runs on keyboard activation. Ordinary hover uses colour only. No animation runs merely because a dashboard, path, table or chart enters the viewport.
+
+For each Figma prototype connection, annotate trigger, purpose, start/end values, duration, curve, exit, interruption and reduced-motion/keyboard alternative. Keep matching layer names across motion states. Use the prototyping capability available through the selected MCP tools; where it cannot express a curve, interruptibility or runtime preference change, draw the end states and record the exact contract beside them. Do not silently replace it with a default spring or claim Figma proves browser behaviour.
+
+Later implementation should use CSS transitions for these recipes, with WAAPI only where control is required. Prefer transform/opacity for movement and reveals; do not animate blur, shadows, layout dimensions or inherited variables across a whole subtree. Never drive animation through per-frame React state or add permanent `will-change` speculatively. Performance approval needs a browser recording during real loading/navigation on representative hardware; a smooth Figma preview is not evidence of web frame performance.
 
 ## 6. Learning-path and game-design translation
 
@@ -486,6 +546,23 @@ Build components before screens. Bind semantic variables/text styles; states are
 
 Save acknowledgements may use toasts; important errors/results need persistent inline content. Never rely solely on a toast for certificate status, typing rejection or deletion outcome.
 
+### 7.1 Component composition and state precedence
+
+Build small, meaningful sets rather than one variant for every theme × language × viewport × data-state combination. Theme belongs to semantic variable modes; direction belongs to shell/layout variants; content uses text properties; optional icons/help use boolean or instance-swap properties. Create only valid component-state combinations and put screen-specific data states in named review frames.
+
+| Component family | Explicit component properties | Composition rule |
+| --- | --- | --- |
+| Button / field | Kind, size and interaction state; label/help/error text; optional icon | Focus is visible on any enabled state; loading preserves label/width and prevents duplicate activation |
+| Navigation | Current/unselected, focus, optional real badge; label/icon | Current page and keyboard focus can coexist; selection never replaces the focus ring |
+| Path node / course lesson | Eligibility/progress state, recommended flag, optional due-review marker | Locked explains its prerequisite; due review does not erase mastery; placement exemption never uses the mastered/completed label |
+| Typing character / keycap | Character state or key-learning state; independent next-key/error cue | The current position and latest error remain readable without changing glyph advance or physical key position |
+| Metric / status | Authority, availability and value/unit text | Unavailable has no fabricated numeric value; official authority is independent of positive/negative performance |
+| Dialog / menu / drawer | Open/closed, purpose/content, direction where relevant | Shared focus/close behaviour; long content scrolls inside the overlay and actions remain reachable |
+
+Keep `Surface/Card` neutral: selected, interactive, warning and reward treatments belong to named semantics, not a different shadow/gradient for every feature. Use dividers and rows for history, reports and preferences. A blank card is not an acceptable substitute for a loading, unavailable or empty state.
+
+Each set's documentation shows default, focus, failure and relevant long-content examples in both themes. Check at least one Arabic long-label instance and one reduced-motion interaction before propagating the set. Reuse these instances across screen families; avoid detached copies that drift when a token changes.
+
 ## 8. Typing experience — primary design priority
 
 Relevant requirements: SYS-10–32, SYS-46–47 and SYS-50–51; SRS sections 8–9.
@@ -541,7 +618,7 @@ These are **screen labels, not agreed browser URLs or new API endpoints**. Use a
 
 | Screen / module | Content and primary action | Requirements/boundaries |
 | --- | --- | --- |
-| Landing / public | “Build speed. Keep accuracy.”; Start learning/Log in; keyboard illustration; benefits/path sample; certificate explanation | Guest entry; no invented efficacy claims/testimonials |
+| Landing / public | “Learn the keyboard. Build accuracy.”; Start learning/Log in; keyboard illustration; benefits/path sample; certificate explanation | Guest entry; no invented efficacy claims/testimonials |
 | Register/login / auth | Labeled single-column form, verification explanation, safe errors | SYS-1–8; email/password; no role picker/Google button |
 | Verify/resend / auth | Needed/success/expired/used states, actual resend guidance | SYS-3; login blocked until verified |
 | Forgot/reset / auth | Generic acknowledgement, invalid/expired/used token, return to login | SYS-5, SYS-48; no enumeration |
@@ -582,6 +659,42 @@ Deletion views explain personal history, authored text and certificate identity/
 **Official result, 1440 × 1024:** mode-specific completion heading + **Official result**. Metric row: Net WPM, Gross WPM, Raw accuracy, Final accuracy, each explicitly labeled. Follow with key/pair evidence, applicable rewards, next recommendation; Continue primary, View progress/Return secondary. Placement says “Placement estimate” with official saved measurements and provisional ability evidence; omit XP/certificates. Tests omit curriculum/mastery-change claims.
 
 Raw-accuracy help: “Counts every typing attempt, including corrected mistakes.” Final-accuracy help: “Accuracy of the text remaining when you finished.” Unknown shows “Not available”, never a perfect score. Low accuracy uses “Let's give these keys more practice”, not a failure banner for insufficient evidence.
+
+#### Anchor composition and content priority
+
+Use these structures to direct the first Figma frames; they refine the existing anchor descriptions without changing their behaviour. Text aligns to logical start, except individual centred node icons and deliberately centred numeric values. Do not centre whole working screens.
+
+```text
+Dashboard — wide desktop
+[224px navigation] [Page title                                      ]
+                   [Recommendation: activity, focus, why] [Goal      ]
+                   [Start learning activity             ] [Streak/XP ]
+                   [Compact path preview                 ] [Review    ]
+                   [Recent sessions: readable rows                   ]
+
+Study — centred, no sidebar
+[Exit] [Mode]                          [Text / pressure / preferences]
+[Activity title, focus keys and short reason                         ]
+[Passage progress OR mode-bound timer                                ]
+[Exact English passage; stable current line and error cues           ]
+[Live provisional metrics, reduced-pressure alternative              ]
+[Complete physical-QWERTY guide                                      ]
+[Mode-permitted actions and concise help                             ]
+
+Official result
+[Completion heading] [Official result / placement-specific authority ]
+[Net WPM] [Gross WPM] [Raw accuracy] [Final accuracy]
+[Evidence and what it means; unavailable states remain explicit      ]
+[Applicable confirmed rewards] [Explained next activity + Continue    ]
+```
+
+| Anchor | First visual priority | Supporting content and checks |
+| --- | --- | --- |
+| Dashboard | Recommendation title, concise reason, focus chips and one Start action | Use section headings/rows for the path and recent sessions. Rail items remain quieter than Start; a due-review count is not a second competing hero. First-use and unavailable recommendation frames have their own honest action. |
+| Typing | The active passage line and current-position cue | Keep instructions compact and long reasons expandable before typing. At 1024 × 768 test the complete keyboard, essential controls and large-text variant together; reduce optional surrounding spacing and use a stable passage viewport with visible scroll affordance as needed, never shrink the specified exercise type or remove assigned text. Secondary help may scroll. |
+| Official result | Completion/authority and all four explicitly named metrics | At wide desktop use one shared metric band with separators, not four promotional cards. Evidence and next activity precede expanded reward detail. At phone width reflow metrics to two columns, then one if labels/text need it. Saving uncertainty is a separate frame, never a result frame with provisional rewards. |
+
+For each anchor, show typical content plus a stress case: a wrapped Arabic recommendation, long focus-key list, unavailable optional metric or no-history state. Focus chips wrap and the reason may grow; neither should push the sole primary action out of reach. Fixture annotations sit beside review frames, with a visible sample-data notice whenever a preview could be mistaken for real progress. Do not derive mastery, daily-goal units or completion rules from sample numbers.
 
 ### 9.2 Charts and reports
 
@@ -651,7 +764,7 @@ The proposed team split is landing design/implementation by the project owner, w
 
 **Account dialog implementation:** login/register reuse the existing routed modal and native `Dialog` focus/scroll boundary. The branded header, start-aligned introduction, full-width fields/action, password visibility control, inline validation, verification notice and separated account-switch action use shared tokens in both themes. Email/password entry stays LTR within Arabic UI. Paste and password-manager autocomplete remain available; mobile dialogs scroll within the viewport.
 
-Forms have visible labels, field-level messages and an error summary for multiple failed fields. After a failed submission, focus the summary or the first relevant error. Preserve entered non-secret values; allow password managers and paste in authentication fields. The paste restriction applies to the scored typing surface only. Destructive actions name the object and consequence; users can cancel without losing unrelated work. Course editors provide button/keyboard alternatives to dragging lessons.
+Forms have visible labels, field-level messages and an error summary for multiple failed fields. After a failed submission, focus the summary or the first relevant error. A multi-field summary links each message to its invalid field; keep the inline messages and do not move focus on every blur. Preserve entered non-secret values; allow password managers and paste in authentication fields. The paste restriction applies to the scored typing surface only. Destructive actions name the object and consequence; users can cancel without losing unrelated work. Course editors provide button/keyboard alternatives to dragging lessons.
 
 Use semantic buttons/links, current-page states, one page heading and a logical heading order. Decorative icons beside equivalent text are hidden from assistive technology; icon controls have accessible names. Sticky elements should keep the entire focused control visible as a TypeFlow design target. Charts need a readable table/summary; tooltips cannot be the only way to obtain a value.
 
@@ -722,6 +835,22 @@ Each approved frame includes the intended user action, required states, responsi
 
 A future implementation PR names the approved frame, affected components and actual checks. Do not install a styling, icon or animation package merely because an exported frame mentions one. Verify motion by slow playback, rapid open/close and reduced-motion testing; screenshots alone cannot establish correct timing or session continuity.
 
+### 11.5 Ordered workflow for the future Figma MCP session
+
+This section prepares the next task; it does not create or modify a Figma file now. Use the applicable Figma creation/library/design-generation/motion skills before their corresponding tools. The future session should first inspect its actual MCP capabilities and the supplied destination or library; a filename, screenshot or this brief is not proof that a Figma library exists.
+
+1. **Establish the destination and brief.** Read sections 1, 2.5–2.6 and the target screen inventory. Inspect an existing destination when one is supplied; otherwise create the requested file through the available Figma workflow. Record its link in the handoff when available. Preserve unrelated existing pages and assets.
+2. **Build foundations.** Create the page structure in section 11.1, the selected brand asset, primitive/semantic variables, Light/Dark modes, text styles, layout grids and named effects. Bind properties to the foundation values; do not substitute a tool's default palette or invent a third System colour mode.
+3. **Build a reusable component sample.** Make the shell, button, field, recommendation, path node, typing character/keycap, metric, feedback and overlay sets with the state rules in section 7.1. Review rendered Light/Dark and English/Arabic examples before copying them into screens.
+4. **Resolve the core compositions.** Design dashboard, typing and official result at 1440px, plus the 1024 × 768 study check and 390px dashboard/result/device guidance. Then create landing with the same foundations. Review each rendered frame for hierarchy, spacing, actual text wrapping and contrast before expanding the inventory.
+5. **Expand the approved system.** Cover the remaining public/account, course/path, progress/community/preferences and admin screens in section 9. Use the coverage matrix rather than finishing only the hero and dashboard. Non-typing actions stay available on narrow screens.
+6. **Wire journeys and annotate limits.** Connect the journeys in section 11.3; implement supported motion connections using section 5.4 and annotate the rest. Mark sample data, contract-pending values, destructive consequences, tab order, focus return and session-timing constraints beside the frame.
+7. **Review and hand off.** Inspect screenshots/previews at the specified widths and in both themes/directions, correct visible defects, and record which combinations were actually inspected. Return the file/frame links, component mapping and remaining decisions. Figma review does not certify keyboard semantics, server scoring, persistence or browser performance.
+
+Keep the result editable: real text layers, auto-layout frames, named component instances, vector/icon assets and bound variables wherever supported. A flattened screenshot or an imported whole-page image cannot serve as the implementation reference. Use original artwork only for the illustration itself; controls, passage states, tables and labels remain individually editable.
+
+Every screen annotation includes: **Purpose**, **Primary action**, **Data status**, **Required states**, **Responsive/RTL rules**, **Interaction/motion**, **Implementation boundary**, and **Review status**. Missing policy/contract values remain marked pending. If a tool limitation prevents part of the specification, report the specific gap and preserve the intended design in annotations rather than silently lowering fidelity or changing product behaviour.
+
 ## 12. Review gates and unresolved decisions
 
 Concrete enough for Figma exploration; team approval and implementation evidence remain separate.
@@ -733,6 +862,9 @@ Concrete enough for Figma exploration; team approval and implementation evidence
 - [ ] Design owner/reviewer and Figma link assigned.
 - [ ] Revised warm-neutral/navy hierarchy, simplified typography, landing composition and motion policy reviewed by team.
 - [ ] Anchor screens and course entry/path/editor states reviewed by team.
+- [ ] Figma components remain editable, use bound semantic variables and cover valid combined states without detached-copy drift.
+- [ ] Dashboard width budgets, minimum-desktop study/large-text fit and phone device guidance reviewed in rendered frames.
+- [ ] Every prototype transition has the section 5.4 contract or an explicit tool-limit annotation; static keyboard/reduced-motion alternatives included.
 - [ ] Branding, Latin/Arabic font licences/assets, Arabic translation and typing glyph legibility reviewed.
 - [ ] Curriculum/targets, reward policies and certificate rules approved in owning documents.
 - [ ] Missing DTOs and public forum-reading policy agreed.
