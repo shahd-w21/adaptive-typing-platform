@@ -368,7 +368,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Steps**
 
-1. Reuse landing/auth visual work, correct real auth-aware calls to action, direct recovery/verification links and certificate lookup.
+1. Implement the [current landing composition](../DESIGN.md#93-landing-page-show-the-learning-experience) and split account frames. Reuse existing feature wiring for auth-aware calls to action, recovery/verification links and certificate lookup.
 2. Host Dev 5's verification data/actions through agreed props/hooks without a second public verification implementation.
 3. Confirm phone navigation and anonymous states.
 

@@ -28,7 +28,7 @@ typeflow/
 │   ├── jira-backlog.json            # generated planning manifest; no issue creation implied
 │   └── decisions.md                # history, open questions and record template
 ├── AGENTS.md                       # concise repository-wide agent guidance
-├── DESIGN.md                       # proposed visual system and Figma brief
+├── DESIGN.md                       # visual implementation reference and Figma frame index
 ├── .github/
 │   ├── workflows/ci.yml
 │   ├── pull_request_template.md
@@ -393,7 +393,7 @@ Do not let polling or dashboard rendering interfere with typing. Large-text and 
 
 ### Presentation, interface language and responsive layouts
 
-SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. Preference coordination is implemented; complete presentation/browser acceptance remains separate from implementation status.
+SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the current Figma palette, type roles, screen compositions and responsive requirements. Preference coordination is implemented; complete presentation/browser acceptance remains separate from implementation status.
 
 PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query owns the account DTO. Shared user schemas validate implemented `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
 

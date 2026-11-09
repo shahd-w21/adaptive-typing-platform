@@ -1,6 +1,6 @@
 # Current state
 
-Updated: 15 October 2026. Keep this short: current task/phase, evidence, blockers and next step. Replace stale status rather than appending chat history.
+Foundation snapshot: 15 October 2026. Visual handoff updated 9 November 2026. Keep this short: current task/phase, evidence, blockers and next step. Replace stale status rather than appending chat history.
 
 | Area | Status |
 | --- | --- |
@@ -10,14 +10,14 @@ Updated: 15 October 2026. Keep this short: current task/phase, evidence, blocker
 | Architecture/API | Target architecture and draft endpoint contracts; not implementation evidence |
 | Onboarding | README defines the intended clone/configure/database/run workflow; foundations must implement/verify root scripts, environment examples and Compose services |
 | Runtime verification | No application/database execution verified by this Markdown revision |
-| Design | DESIGN.md v0.2 proposals retained; earlier source/contrast checks are not rendered UI or Figma approval |
+| Design | [Current Figma handoff](../../DESIGN.md#main-screen-references): ten frames and 45 prototype links; implementation, dark/RTL rendering and browser acceptance remain separate |
 
 ## Next steps
 
 1. Confirm deadline, rubric and whether a trained model is required.
 2. During foundations, agree owners/contracts and implement/verify the README onboarding workflow.
 3. Resolve learning, reward and certificate-policy questions before their implementation phases.
-4. Review Figma screens/translations and the draft preference contract before UI implementation.
+4. Use the linked frames for implementation; review translations and the preference contract and compare the rendered frontend against Figma.
 5. Select hosting/providers and verify operations before deployment.
 
 See [decisions](../decisions.md#open-decisions) for the full open list. The [README](../../README.md) is the teammate entry point; [AGENTS.md](../../AGENTS.md) is the agent entry point. Documentation was consolidated without changing SRS product requirements or authorising code changes.

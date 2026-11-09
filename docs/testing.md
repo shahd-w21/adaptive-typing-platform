@@ -99,7 +99,7 @@ Owner Dev 5 and reviewer Dev 4 must still demonstrate the behavior together and 
 
 ## Appearance, interface language and responsive acceptance
 
-SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns proposed tokens, frame sizes and layouts. These checks are planned, not executed browser evidence.
+SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns the Figma tokens, frame links, reference sizes and implementation layouts. These checks are planned, not executed browser evidence. For visual parity, use the [ten linked frames](../DESIGN.md#main-screen-references), including the flat navy hero/showcase join, sole curved transition into the course map, 50/50 account split and mobile journal order. Compare the light English screens first, then verify the required dark and Arabic adaptations.
 
 | Area | Required checks |
 | --- | --- |
@@ -141,7 +141,7 @@ Applied Open Sans to English UI roles, retained Noto Sans Arabic and IBM Plex Mo
 
 Client production build and client lint passed. The existing production bundle-size warning remains. The targeted shared-interface run passed all 18 browser checks with one worker: public/Student/Admin navigation in English/Arabic and Light/Dark at 320px; keyboard navigation and preference menus; increased-text Admin reflow; active session continuity across presentation/viewport/reduced-motion changes; and new Light/Dark checks for stable hover/press bounds, immediate keyboard feedback and live reduced-motion updates. Browser flows use explicit API fixtures and fallback fonts, not real accounts or database writes.
 
-All 70 runtime colour assignments still match DESIGN.md; `git diff --check` passed. These checks do not establish full application, backend, screen-reader or cross-browser acceptance. Remaining page compositions and optional overlay/milestone animations are separate work.
+At the time of that historical check, all 70 runtime colour assignments matched the then-current brief; `git diff --check` passed. These checks do not establish full application, backend, screen-reader or cross-browser acceptance. Remaining page compositions and optional overlay/milestone animations are separate work.
 
 Visual follow-up: the sandboxed external-font review timed out; repeating the review outside the sandbox loaded Open Sans (400/700/800) and Noto Sans Arabic (400/700/800). English desktop (1440px) and Arabic mobile (390px) screenshots were inspected in both themes with reduced motion enabled; no horizontal page overflow was detected. The landing page still has existing untranslated English copy and bidirectional punctuation in the Arabic shell. These content/direction defects remain for the landing phase; this foundation change does not claim complete landing localization. Monospace exercise font selection is preserved; no new glyph-legibility acceptance claim is made.
 
