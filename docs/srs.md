@@ -363,7 +363,7 @@ Use HTTPS, validated server inputs, ownership checks, CSRF protection, explicit 
 
 Support keyboard navigation, visible focus, adequate contrast, non-colour error indicators, large text and reduced-pressure mode. Do not capture typing outside the exercise. Test the exercise in current desktop Chrome, Edge and Firefox, recording actual versions at release.
 
-Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; large text and essential non-text indicators at least 3:1. Test actual foreground/background states, not only palette swatches. Non-typing content shall reflow at 320 CSS pixels without page-wide horizontal scrolling; genuinely two-dimensional data may scroll within an accessible region. Responsive controls should offer at least 44 × 44 CSS pixel hit areas. Verify keyboard, screen-reader, zoom and Arabic mixed-direction behaviour. [DESIGN.md](../DESIGN.md) owns proposed colours, typography, layout breakpoints and reference frames, not scoring thresholds.
+Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; large text and essential non-text indicators at least 3:1. Test actual foreground/background states, not only palette swatches. Non-typing content shall reflow at 320 CSS pixels without page-wide horizontal scrolling; genuinely two-dimensional data may scroll within an accessible region. Responsive controls should offer at least 44 × 44 CSS pixel hit areas. Verify keyboard, screen-reader, zoom and Arabic mixed-direction behaviour. [DESIGN.md](../DESIGN.md) owns the Figma colours, typography, layout breakpoints and reference frames, not scoring thresholds.
 
 ### 10.3 Reliability and maintainability
 
@@ -455,7 +455,7 @@ Figure 3. Core conceptual relationships, not a complete database schema. A sessi
 | Profile/settings | Name, timezone, target, daily goal, accessibility, Appearance & language, deletion |
 | Admin | Analytics, users, content, settings, moderation, certificates and audit |
 
-This is a page inventory, not a prototype. Use [DESIGN.md](../DESIGN.md) for the proposed desktop/mobile and Light/Dark × English/Arabic screen brief; no Figma prototype or working UI is verified by these documents.
+This is a page inventory, not a prototype. Use [DESIGN.md](../DESIGN.md) for the ten existing Figma reference screens and required responsive, theme and locale coverage. Prototype links illustrate navigation; implementation and accessibility require browser verification.
 
 ## 13. Scenarios and use cases
 

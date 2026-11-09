@@ -1,14 +1,6 @@
-# TypeFlow — visual system and Figma design brief
+# TypeFlow — Figma implementation reference
 
-**Status: revised design proposal. Required product behaviour is retained. The owner selected the warm-neutral/navy colour direction on 23 October 2026; broader visual and motion guidance still needs review. This document does not establish implementation or accessibility conformance.**
-
-Version 0.5 · 9 November 2026 · Design owner/reviewer: TBD · Approved Figma link: not recorded here.
-
-Figma brief revision · 9 November 2026: preserves the selected identity, semantic palette, typography, product scope and existing implementation notes. Adds surface hierarchy, usable layout budgets, component composition, precise motion contracts and an ordered MCP handoff. These additions are proposals for review in Figma; no application code or Figma file is changed by this revision.
-
-Palette update · 23 October 2026: warm off-white surfaces and navy primary actions replace the earlier TypeFlow Mint theme in this brief. Light values reuse the recorded edclub reference where appropriate; accessible semantic shades and the navy Dark adaptation are TypeFlow choices. This is a documentation update, not an application theme change.
-
-Purpose: give a Figma agent concrete visual tokens, components, screen layouts and interaction rules for an adaptive typing learning website. The project owner's reference direction is edclub for fonts, colours, style and theme, and Duolingo for learning-path and game-design ideas. Light/dark appearance, English/Arabic interface switching and desktop/mobile page designs are now required by the owner; the warm-neutral/navy direction is owner-selected while the broader visual brief remains proposed. See [decision 0002](docs/decisions.md#0002). Unresolved learning policies remain separate.
+Version 1.0 · 9 November 2026. Implement the visual design from [TypeFlow — Main Screens](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj). The file contains `00 Foundations` and `01 Main screens`. Ten screen frames and 45 prototype links were checked for this handoff. The recorded views are Light/English. Dark variables exist; Arabic, dark-mode renderings, intermediate breakpoints and browser accessibility still need implementation review.
 
 ## 1. Read this before designing
 
@@ -25,160 +17,46 @@ The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) 
 - Curriculum groups, target defaults/range, reward formulas/goal units, and certified-test policy remain TBD. Bind values to approved configuration later; label examples in Figma **Sample data / policy pending**.
 - Preserve required forum, certificates, preferences and administration. No teacher/class, Google sign-in, leaderboard, multiplayer, payment, lives/hearts or virtual-currency features belong in this brief.
 
-### 1.1 How teammates should use this brief
+### 1.1 How to implement a screen
 
-| Working on | Start here | Deliverable |
-| --- | --- | --- |
-| Visual direction | Sections 2.5–4 | Theme-bound tokens and readable English/Arabic type |
-| Layout or interaction | Sections 5–8 | Responsive component states, focus and motion notes |
-| A page | Section 9, especially landing in 9.3 | One clear primary action and honest data states |
-| Figma-to-code handoff | Sections 10–12 | Approved frame, component mapping and recorded checks |
+Start with the matching frame in section 9. Inspect its nested layout, text styles, artwork, scroll regions and interactions at reference width. Map its component instances to shared React UI. Use semantic tokens for both appearance modes. Render and compare first at the frame dimensions, then check reflow, keyboard use and Arabic. Review static previews as examples; real actions use owned destinations, eligible activities and saved data.
 
-**Fixed boundaries:** JavaScript/JSX, React/Vite, Tailwind, existing routing/providers and one typing lifecycle. **Proposed here:** visual composition, type simplification and interaction timings. **Owned elsewhere:** API fields, scoring, progression and course-completion policy. A polished frame cannot approve a missing contract.
+The Figma file governs visual composition. This document records its essential implementation details and responsive requirements. The SRS governs learning, permissions and session behaviour; API and architecture docs govern data and integration. Existing frontend styles and historical screenshots describe implementation progress, not the visual target.
 
-### 1.2 Authority for the next design pass
+## 2. Visual identity
 
-Read this as the target design brief for a future editable Figma design, not as a screenshot specification for the current application. Preserve the selected TypeFlow logo, warm-neutral/navy identity, Open Sans/Noto Sans Arabic/IBM Plex Mono roles and required behaviours. Improve composition within those boundaries. Existing implementation notes describe the recorded baseline; they are not evidence that the proposed frames or all states already exist.
+Warm paper and navy carry the composition. Cobalt identifies primary actions, current keys and the active lesson. Tangerine picks out finger guides, glider folds, annotation lines and selected margin marks. Treat the quiet/loud balance as a hierarchy, not a literal measured area. Use dedicated status colors, labels, icons and underlines for feedback. Tangerine alone must never communicate a typing error, warning, or eligibility.
 
-The SRS controls behaviour; this document controls the proposed visual system; a later reviewed Figma frame resolves its composition. A frame cannot silently replace a requirement or approve a policy marked TBD. Keep established section headings and source links when updating this document. No additional product document, generated sidecar, package installation or source edit is needed for this documentation pass.
+The visual story follows one keystroke from fingertip to saved evidence and an explained next drill. Original illustrations draw from fingertip arcs, keycap bevels and ridges, engraved legends, folded maps, and paper gliders. Use fine outlines and restrained grain on large illustrated surfaces. Keep texture off forms, tables, charts and the passage. Take editable art from the corresponding frame; do not flatten a screen or source competitor assets.
 
-The design skills supply methods, not a replacement brand. Use frontend-design for identity and hierarchy, Impeccable for surface purpose and completeness, UI/UX Pro Max for focused usability guidance, and the animation skills for purposeful motion and later performance checks. Their generic palettes, fonts, feature grids and library suggestions do not override TypeFlow's selected direction.
-
-## 2. Reference extraction and interpretation
-
-### 2.1 Evidence and limits
-
-References checked on 14 October 2026. edclub's public HTML and linked CSS were retrieved directly; values below are stylesheet declarations, not guessed colours from an image. Browser rendering/computed styles and authenticated product screens were not inspected. CSS URLs may change with the site's next build.
-
-| Reference | Evidence | Use in TypeFlow |
-| --- | --- | --- |
-| [edclub homepage](https://www.edclub.com/) | Public educational content and linked styles | Warm, approachable educational presentation |
-| [edclub global CSS](https://www.edclub.com/_astro/global.B3Yj88F3.css) | Root variables, font-face definitions, body/heading rules | Extracted palette and typography |
-| [edclub homepage CSS](https://www.edclub.com/_astro/homepage.Ced_z5Jv.css) | Hero, CTA, section and feature-panel rules | Spacing, hierarchy, rounded actions and navy sections |
-| [edclub layout CSS](https://www.edclub.com/_astro/base-layout.BwObUmBt.css) | Navigation/layout styles and theme variables | Navigation scale |
-| [Duolingo learn page](https://www.duolingo.com/learn) | Public HTML mainly exposes an application shell; web extraction did not reveal a usable lesson-path view | Requested interaction reference; not a complete current logged-in-page audit |
-| [Duolingo path explanation](https://blog.duolingo.com/new-duolingo-home-screen-design/) | Official explanation and illustrations of a guided path mixing lessons and review | Short visible steps, clear next activity, integrated review |
-| [Duolingo core-tab design article](https://blog.duolingo.com/core-tabs-redesign/) | Official discussion of typography, spacing and consistent screen families | Consistent headers and intentional whitespace |
-
-**Extracted** means directly present in edclub CSS. **Proposed** means a TypeFlow choice. Duolingo-inspired interactions are proposals, not claims about every current Duolingo feature. The articles document a direction, not a guaranteed current desktop layout.
-
-### 2.2 Extracted edclub typography
-
-| CSS evidence | Actual declaration | Interpretation |
-| --- | --- | --- |
-| Body | `Lato, sans-serif`; base `1rem` | Readable body font |
-| `h1`–`h5` | `Open Sans, sans-serif` | Educational headings |
-| Font faces | Open Sans 400/600/700/800; Lato 400 | Explicitly loaded weights |
-| Hero heading | Open Sans 800, 40px / 56px, centred | Spacious display hierarchy |
-| Hero description | Lato, 20px / 32px, max-width 456px | Short supporting copy |
-| Hero button | Lato, 16px / 25px | Legible CTA |
-| Other declared fonts | Montserrat 400/700; `edclubWebsite` | Available declarations, not the main homepage text pairing; `edclubWebsite` is an icon font |
-
-Some section sizes change through media queries. These are source declarations, not computed values at an audited viewport. TypeFlow's scale below is a deliberate adaptation.
-
-### 2.3 Extracted edclub colour tokens
-
-Source tokens do not automatically become TypeFlow semantic assignments. Related variable names are preserved.
-
-| edclub variable | Extracted value |
-| --- | --- |
-| `--background-color-light` | `#F5F3F0` |
-| `--background-color-dark` | `#242E3E` |
-| `--background-color-darker-blue` | `#171C26` |
-| `--theme-white-color` | `#FFFFFF` |
-| `--theme-smoke-10` | `#F7F7F9` |
-| `--theme-smoke-20` | `#E5E7EB` |
-| `--theme-smoke-30` | `#B3B9C1` |
-| `--text-color-primary` | `#122947` |
-| `--text-color-secondary` | `#556576` |
-| `--text-color-tertiary` / `--text-secondary` | `#42576E` |
-| `--text-primary` / `--btn-bg-color` | `#2B3749` |
-| `--btn-hover-bg-color` | `#354B63` |
-| `--btn-active-bg-color` | `#435F7D` |
-| `--link-color-blue` | `#4083F4` |
-| `--theme-purple-color` | `#8449EB` |
-| `--theme-green-color` | `#25CBA9` |
-| `--theme-blue-color` | `#0666DF` |
-| `--theme-magenta` | `#D036B0` |
-| `--theme-emerald` | `#28AF42` |
-| `--theme-citrus-color` | `#E0E04C` |
-| `--theme-cream` | `#FFF1DE` |
-| `--theme-steelblue-color` | `#4682B4` |
-| `--text-gold-color` | `#FFF46C` |
-| `--accent-color-gold` | `#CD964D` |
-| `--highlight-bg-gradient` | `linear-gradient(180deg, #F2EFEB 0%, #FAF9F7 50%, #FAF9F7 100%)` |
-
-### 2.4 Style → TypeFlow direction
-
-edclub's homepage CSS defines a warm hero, generous spacing, bold sans-serif headings, pill-shaped navy actions, blue links and contrasting navy feature sections. Reference values include 72px navigation height, 56px hero gap and 30px CTA radius. Feature panels include asymmetric rounded corners. See the [homepage stylesheet](https://www.edclub.com/_astro/homepage.Ced_z5Jv.css).
-
-**Theme: calm, encouraging keyboard learning.** Light mode uses warm off-white, white study surfaces, navy text and navy primary actions. Blue identifies learning selection and focus; green marks success, amber indicates attention and gold supports earned rewards. Colourful illustration belongs on landing, course paths and achievements; the typing stage stays quiet.
-
-Keep the TypeFlow name. The owner selected the [first TF logo concept](docs/assets/branding/typeflow-logo-concept-v1.png) on 23 October 2026: a flowing white TF symbol on a blue keycap with a navy TypeFlow wordmark. The raised-key and outlined-key alternatives are not selected. Shared navigation uses the original artwork through `BrandLogo.jsx`, with a light wordmark in Dark mode and unchanged blue/white symbol; the tab uses a matching simplified SVG mark. Illustrations use simple rounded keyboard keys, hands, letters and milestones. Use rounded vector icons at 20/24px with 2px strokes. Finished screens use original TypeFlow assets rather than competitor logos, mascots or copied screenshots.
-
-Light and Dark remain required. Dark uses a deep-navy canvas, layered slate/navy surfaces and soft-white text. Its primary actions use a light neutral fill with navy text to remain distinct from the surrounding navy; selected learning states use light blue. This Dark adaptation is proposed for TypeFlow, not claimed to be edclub's live dark theme. Keep status roles consistent and avoid automatic colour inversion. Use inverse tokens for selected marketing sections without turning the whole page into alternating colour blocks.
-
-### 2.5 TypeFlow identity: a focused keyboard-learning workspace
-
-The memorable element is an original **passage-to-keyboard learning illustration**: a short English passage, its focus keys, and one explained next step. This directly shows what TypeFlow teaches and how practice adapts. Keep its surrounding layout quiet. A static illustration is sufficient; it is not a second typing engine or a source of real learning evidence.
-
-| Principle | Apply it | Avoid |
-| --- | --- | --- |
-| Calm concentration | Neutral page/surface layers; generous reading space; one dominant learning action | Glass panels, background blobs, glowing borders and decorative gradients |
-| Purposeful colour | Navy anchors primary actions; blue marks selected navigation and the recommended learning step | Mint primary actions, arbitrary purple selections or a different accent per feature |
-| Keyboard character | Stable keycap geometry, clear English glyphs and a subtle connector between relevant keys | Copied mascots, ornamental terminals or arbitrary monospace labels |
-| Evidence before celebration | Explain what to practise and why; show confirmed progress | Invented mastery percentages, guaranteed speed gains and fake social proof |
-| Warm without clutter | Original keyboard/hand artwork in public, course and milestone views | Toy-like controls, thick shadows on every surface or a dashboard built only from identical tiles |
-
-**Colour hierarchy:** warm neutrals and navy provide most of the screen. Primary actions use the action tokens; blue identifies learning selection, links and focus; green communicates success; amber/red communicate warning/error; gold supports earned rewards. The reference's purple, magenta and mint-green values remain historical source evidence, not additional TypeFlow action themes. Do not copy every reference accent into the interface.
-
-**Typography direction selected for implementation, 23 October 2026:** use Open Sans for English headings, body and metrics, Noto Sans Arabic for Arabic UI, and IBM Plex Mono only for exercise/key legends. This simplifies the previous Open Sans/Lato pairing without changing the educational tone. Do not load an extra display family for the landing page.
-
-Before approving a composition, remove any decoration that could belong unchanged on an unrelated SaaS homepage. Keep structure that helps a learner understand the next activity, their evidence or the keyboard.
-
-### 2.6 Surface purpose and visual hierarchy
-
-**The next-action rule.** In learning views, the recommendation and its reason lead. Supporting goals, streaks and history remain visibly subordinate. A screen can contain secondary actions, but it has one visually dominant next action. A due-review item becomes that recommendation only when the actual recommendation calls for it.
-
-**The still-passage rule.** The exercise is a stable reading and input surface. Expression belongs in the surrounding brand and occasional confirmed milestone, never in moving letters, bouncing keys, animated scores or shifting passage geometry.
-
-| Surface | Visitor's job | Composition and emphasis |
-| --- | --- | --- |
-| Landing — Persuade | Understand English keyboard learning and choose an entry action | Open copy/keyboard-example composition; the passage-to-keyboard example is the visual focal point, with restrained supporting sections |
-| Dashboard, courses and path — Operate | Identify and start the right eligible activity | Start-aligned title, dominant recommendation, readable path/list, subordinate evidence and motivation |
-| Typing — Operate | Read the assignment and type accurately | Passage first, stable progress and guide, compact mode controls; no navigation rail or promotional content |
-| Result and progress — Operate | Understand measured performance and the next step | Explicit authority/metric labels, grouped evidence, one continuation action; no reward wall before the evidence |
-| Forum and explanations — Read | Read, contribute and understand | Comfortable line length, clear author/reply structure and quiet actions; original user text remains unchanged |
-| Admin — Operate | Inspect, validate and safely change a specific object | Compact filters and records, visible validation and version context; decorative learning-path styling stays out of editors |
-
-Use the same colour/type/component foundations across these surfaces while varying composition and density. Do not apply a landing-page entrance sequence, repeated promotional CTA or hero treatment to working screens. Use keyboard artwork where it explains learning; do not put it behind tables, form fields or the active passage.
+Public pages use large illustrations, curved section boundaries and editorial display type. Working screens reuse these details selectively: navy recommendation panels with one cobalt action, small role-specific icons, ink chart lines, and evidence annotations. The active exercise prioritizes stable character positions.
 
 ## 3. TypeFlow colour system
 
-Use these semantic variable names in Figma and map them to the existing client tokens during implementation. Semantic variables may alias primitives. Light adopts the recorded warm-neutral/navy reference direction; Dark adapts it for readable low-light use. The source table is provenance, not a second token system. Add a token only for a named semantic role with both theme values and checked foreground/background pairs.
+Map these 34 semantic variables from the Figma collection to the application theme. Values are resolved sRGB hex. Illustrations can have local surface and edge shades. Use white text on cobalt in both modes; keep charts ink-colored and match inverse panels with inverse text.
 
-| Semantic variable | Light | Dark | Role |
+| Figma variable | Light | Dark | Role |
 | --- | --- | --- | --- |
 | `color/bg/page` | `#F5F3F0` | `#171C26` | Canvas |
-| `color/bg/surface` | `#FFFFFF` | `#242E3E` | Cards, inputs, passage, dialogs |
-| `color/bg/subtle` | `#F7F7F9` | `#2B3749` | Muted sections/table headings |
-| `color/bg/inverse` | `#171C26` | `#101722` | Selected marketing sections |
-| `color/text/primary` | `#122947` | `#F7F7F9` | Main text/upcoming characters |
-| `color/text/secondary` | `#556576` | `#B3B9C1` | Supporting copy/metadata |
-| `color/text/inverse` | `#FFFFFF` | `#F7F7F9` | Text on inverse sections |
-| `color/border/subtle` | `#E5E7EB` | `#42576E` | Decorative edges only |
-| `color/border/control` | `#738092` | `#8997AA` | Identifying control outlines |
-| `color/action/primary` | `#2B3749` | `#E5E7EB` | Main CTA fill |
-| `color/action/hover` | `#354B63` | `#FFFFFF` | Hovered CTA fill |
-| `color/action/pressed` | `#435F7D` | `#B3B9C1` | Pressed CTA fill |
-| `color/action/foreground` | `#FFFFFF` | `#171C26` | Text/icons on all primary CTA states |
-| `color/action/link` | `#0666DF` | `#93C5FD` | Underlined prose links |
-| `color/focus/ring` | `#0666DF` | `#93C5FD` | Focus/current-character caret |
-| `color/learning/accent` | `#0666DF` | `#93C5FD` | Current node/learning accent |
-| `color/learning/foreground` | `#FFFFFF` | `#171C26` | Text/icons on solid accent nodes |
-| `color/learning/strong` | `#1D4ED8` | `#BFDBFE` | Review text on learning-soft |
-| `color/learning/soft` | `#E8F0FC` | `#1E3551` | Selection/review-chip background |
-| `color/learning/lip` | `#123E80` | `#52739A` | Decorative node lip |
+| `color/bg/surface` | `#FBFAF8` | `#242E3E` | Cards, inputs, passage, dialogs |
+| `color/bg/subtle` | `#EAE8E4` | `#2B3749` | Muted sections/table headings |
+| `color/bg/inverse` | `#242E3E` | `#101722` | Selected marketing sections |
+| `color/text/primary` | `#242E3E` | `#F7F7F9` | Main text/upcoming characters |
+| `color/text/secondary` | `#515B68` | `#B3B9C1` | Supporting copy/metadata |
+| `color/text/inverse` | `#F5F3F0` | `#F7F7F9` | Text on inverse sections |
+| `color/border/subtle` | `#D4D3D0` | `#42576E` | Decorative edges only |
+| `color/border/control` | `#78808B` | `#8997AA` | Identifying control outlines |
+| `color/action/primary` | `#145EFF` | `#145EFF` | Main CTA fill |
+| `color/action/hover` | `#0E52EB` | `#0E52EB` | Hovered CTA fill |
+| `color/action/pressed` | `#1344C6` | `#1344C6` | Pressed CTA fill |
+| `color/action/foreground` | `#FFFFFF` | `#FFFFFF` | Text/icons on all primary CTA states |
+| `color/action/link` | `#344459` | `#93C5FD` | Underlined prose links |
+| `color/focus/ring` | `#2858C1` | `#9CB9FF` | Focus/current-character caret |
+| `color/learning/accent` | `#145EFF` | `#145EFF` | Current node/learning accent |
+| `color/learning/foreground` | `#FFFFFF` | `#FFFFFF` | Text/icons on solid accent nodes |
+| `color/learning/strong` | `#2D4154` | `#BFDBFE` | Emphasized learning text, chart lines |
+| `color/learning/soft` | `#EBEEE9` | `#1E3551` | Selection/review-chip background |
+| `color/learning/lip` | `#163EA9` | `#163EA9` | Decorative dimensional key edge |
 | `color/success/accent` | `#28AF42` | `#86EFAC` | Progress decoration |
 | `color/success/text` | `#166534` | `#A7F3D0` | Success/correct characters |
 | `color/success/soft` | `#E8F7EC` | `#17352A` | Success/mastered backgrounds |
@@ -187,15 +65,12 @@ Use these semantic variable names in Figma and map them to the existing client t
 | `color/warning/soft` | `#FFF4DB` | `#3A2E16` | Attention background |
 | `color/error/text` | `#B42335` | `#FDA4AF` | Errors/incorrect characters/destructive text |
 | `color/error/soft` | `#FFF0F2` | `#3D202C` | Error panels/cells |
-| `color/reward/accent` | `#CD964D` | `#FACC15` | Reward decoration |
-| `color/reward/text` | `#715500` | `#FDE68A` | XP/badge labels |
-| `color/reward/soft` | `#FEF6CC` | `#352D18` | Earned-reward background |
-| `color/streak/text` | `#9A4D00` | `#FDBA74` | Streak icon/label on surface |
+| `color/reward/accent` | `#8A7355` | `#FACC15` | Reward decoration |
+| `color/reward/text` | `#554C40` | `#FDE68A` | XP/badge labels |
+| `color/reward/soft` | `#EFEBE4` | `#352D18` | Earned-reward background |
 | `color/disabled/bg` | `#E5E7EB` | `#354154` | Disabled fill |
 | `color/disabled/text` | `#556576` | `#B3B9C1` | Disabled label/explanation |
-| `color/overlay` | `#171C26` at 48% | `#101722` at 72% | Modal scrim |
-
-Use each mode's semantic foreground/background pair. Primary button/node text uses its dedicated foreground token, not inverse-section text: Dark primary buttons and learning nodes require navy text on their light fills. Keep instructional text at full opacity. Do not use decorative accent colours as untested small text or sole control outlines. The source's brighter blue `#4083F4` is not used for small link text; Light uses the recorded deeper blue `#0666DF`. Status-soft fills, strong text shades and Dark assignments are contrast-oriented TypeFlow adaptations. Success/reward accent tokens are decorative; use their text tokens for labels and add text/icons for meaning.
+| `color/illustration/tangerine` | `#FF8D43` | `#FF8D43` | Illustration details, guides and annotations |
 
 ### 3.1 Appearance control and persistence
 
@@ -210,52 +85,15 @@ Use each mode's semantic foreground/background pair. Primary button/node text us
 
 Target: at least 4.5:1 for normal text and 3:1 for large text and essential non-text indicators. This is not a claim of rendered accessibility conformance.
 
-On 23 October 2026, 62 opaque sRGB foreground/background combinations were calculated from the semantic table using relative luminance. All passed their unrounded thresholds. Coverage includes text/link/focus/control borders on page, surface and subtle backgrounds; every primary action state; learning pairs; status labels on soft and surface backgrounds; streak, disabled and inverse text.
+Earlier palette audits cover historical CSS. For the current tokens, white on cobalt is 5.15:1, warm paper on navy is 12.35:1, and tangerine on warm paper has insufficient contrast for small text. Use an appropriate text token or darker annotation stroke on paper. Check rendered hover, pressed, focus, disabled, error, and chart states in both themes, including dark sections inside Light mode. Separate focus rings from selected fills with a contrasting gap.
 
-| Foreground / background token | Calculated ratio | Threshold |
-| --- | --- | --- |
-| Light: `text/primary` / `bg/page` | 13.22:1 | 4.5:1 |
-| Light: `text/secondary` / `bg/page` | 5.40:1 | 4.5:1 |
-| Light: `action/link` / `bg/surface` | 5.28:1 | 4.5:1 |
-| Light: `border/control` / `bg/subtle` | 3.75:1 | 3:1 |
-| Light: `action/foreground` / `action/primary` | 12.03:1 | 4.5:1 |
-| Light: `action/foreground` / `action/pressed` | 6.62:1 | 4.5:1 |
-| Light: `learning/foreground` / `learning/accent` | 5.28:1 | 4.5:1 |
-| Light: `learning/strong` / `learning/soft` | 5.84:1 | 4.5:1 |
-| Light: `success/text` / `success/soft` | 6.43:1 | 4.5:1 |
-| Light: `error/text` / `error/soft` | 5.88:1 | 4.5:1 |
-| Dark: `text/primary` / `bg/page` | 15.95:1 | 4.5:1 |
-| Dark: `text/secondary` / `bg/page` | 8.64:1 | 4.5:1 |
-| Dark: `action/link` / `bg/surface` | 7.58:1 | 4.5:1 |
-| Dark: `border/control` / `bg/subtle` | 4.05:1 | 3:1 |
-| Dark: `action/foreground` / `action/primary` | 13.78:1 | 4.5:1 |
-| Dark: `action/foreground` / `action/pressed` | 8.64:1 | 4.5:1 |
-| Dark: `learning/foreground` / `learning/accent` | 9.46:1 | 4.5:1 |
-| Dark: `learning/strong` / `learning/soft` | 8.78:1 | 4.5:1 |
-| Dark: `success/text` / `success/soft` | 10.37:1 | 4.5:1 |
-| Dark: `error/text` / `error/soft` | 7.70:1 | 4.5:1 |
+## 4. Typography
 
-The earlier Mint-palette calculations are superseded and do not validate this palette. Decorative borders, node lips and reward/success accents are not substitutes for essential control boundaries or readable labels. Recheck any new foreground/background combination rather than assuming every primitive works everywhere.
-
-Browser/Figma review must still check actual text/icon/chart/focus pairings, transparency, overlays, interaction states and illustrations. A light ring on an inverse surface needs a separation gap; focus on a blue node/button needs a contrasting gap so its outline remains distinct. See [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html). No browser checks or runtime theme changes were performed by this documentation task.
-
-## 4. Proposed typography
-
-Use **Open Sans** across the English interface, **Noto Sans Arabic** for Arabic UI, and **IBM Plex Mono** for aligned exercise text and keyboard legends. This proposed simplification replaces the earlier Lato body/metrics role. Obtain fonts from their own distributions and review licences when preparing assets; do not copy font binaries from competitor sites. Load only the scripts and weights actually needed, preserve readable fallback text and reserve space while fonts load.
-
-| Role | Family and weights | Fallback |
-| --- | --- | --- |
-| Display/headings | Open Sans 700/800 | Arial, sans-serif |
-| Body/navigation/forms | Open Sans 400/600/700 | Arial, sans-serif |
-| Exercise/key legends | IBM Plex Mono 400/500 | Consolas, Courier New, monospace |
-| Metrics | Open Sans 700, tabular numerals | Arial, sans-serif |
-| Arabic interface, headings/body | Noto Sans Arabic 400/700/800 | Tahoma, Arial, sans-serif |
-
-The typography above is a TypeFlow choice; the extracted source pairing remains documented in section 2.2. If a font is unavailable in Figma, annotate temporary use of its fallback. Approve glyph legibility and Arabic line boxes before implementation; a matching font name alone is not enough.
+Use Source Serif 4 Regular for selected English editorial headings and the captions in the left account illustrations. The landing hero is 99px with approximately 1.04 line height and −3% tracking at 1440px. The adaptive example heading is 58px, the curved course statement 63px, the closing invitation 60px and the account captions 46px. Scale display type for available width; preserve the centered hero and left-aligned evidence headings. Use Open Sans for app headings, controls, body and metrics, IBM Plex Mono for English passages, key legends and drill previews, and Noto Sans Arabic for Arabic UI. Keep Latin display styling scoped to its actual placements. Provide readable serif, sans-serif and monospace fallbacks.
 
 | Figma text style | Size / line height | Weight | Usage |
 | --- | --- | --- | --- |
-| `Display/Large` | 48 / 60px desktop; 32 / 42px narrow | Open Sans 800 | Landing hero |
+| `Display/Large` | 48 / 60px desktop; 32 / 42px narrow | Open Sans 800 | App display style; landing uses the editorial override above |
 | `Heading/Page` | 32 / 44px | Open Sans 700 | Page title |
 | `Heading/Section` | 24 / 34px | Open Sans 700 | Major section |
 | `Heading/Card` | 20 / 30px | Open Sans 700 | Card title |
@@ -270,7 +108,7 @@ The typography above is a TypeFlow choice; the extracted source pairing remains 
 | `Typing/Large` | 36 / 60px | IBM Plex Mono 400 | Large-text preference |
 | `Keyboard/Legend` | 16 / 24px | IBM Plex Mono 500 | Key labels |
 
-Use zero tracking by default and left-aligned copy; never justify. Body lines should usually stay within 60–75 characters. Preserve exercise spaces, disable ligatures and keep glyph advances stable. Visual wrapping must not alter the assigned passage. Represent space errors with a visible marker and accessible description. Large text also enlarges surrounding instructions without clipping. Check `i/l/1`, `O/0`, punctuation and space markers before approving the typing font.
+Use zero tracking by default for interface text and logical-start alignment; never justify. Body lines should usually stay within 60–75 characters. Preserve exercise spaces, disable ligatures and keep glyph advances stable. Visual wrapping must not alter the assigned passage. Represent space errors with a visible marker and accessible description. Large text also enlarges surrounding instructions without clipping. Check `i/l/1`, `O/0`, punctuation and space markers before approving the typing font.
 
 For Arabic interface text, align to logical start (right), use [Noto Sans Arabic](https://fonts.google.com/noto/specimen/Noto+Sans+Arabic) with the corresponding role size/weight, and increase body/label line height to at least 1.6× size. Allow wrapping and taller controls rather than truncating Arabic or shrinking fonts. Arabic runs retain normal shaping/ligatures and zero letter spacing; the monospace/no-ligature rule applies only to English exercise text. Never use all-caps transformations on Arabic.
 
@@ -296,16 +134,16 @@ Suggested control labels for the prototype (Arabic wording still needs native-la
 
 ### 5.1 Spacing and containers
 
-Use a 4px base. Number variables: `space/1=4`, `space/2=8`, `space/3=12`, `space/4=16`, `space/5=20`, `space/6=24`, `space/8=32`, `space/10=40`, `space/12=48`, `space/16=64`, `space/20=80`, `space/24=96` (px). Card padding 24px, section gap 32px, form gap 20px, icon-label gap 8px.
+Spacing variables use their pixel values as names: `space/4` is 4px, `space/16` is 16px, through `space/96`. Card padding 24px, section gap 32px, form gap 20px, icon-label gap 8px.
 
-| Token / frame | Proposed value |
+| Token / frame | Implementation reference |
 | --- | --- |
 | `layout/public/header` / `layout/app/header` | 72px minimum; can grow for wrapped content |
 | `layout/app/sidebar` | 224px wide |
 | `layout/content/max` | 1200px |
 | `layout/rail/width` | 280px |
 | `layout/study/max` | 960px |
-| `layout/auth/max` | 440px |
+| `layout/auth/max` | 440px field width |
 | `layout/gutter/desktop` | 32px |
 | `layout/gutter/compact` | 24px |
 | `layout/gutter/narrow` | 16px |
@@ -316,6 +154,13 @@ Use a 4px base. Number variables: `space/1=4`, `space/2=8`, `space/3=12`, `space
 | Non-typing phone | 390 × 844; also check reflow at 320px |
 
 Frame heights are viewport sizes, not fixed page heights. Use auto-layout and scrolling; do not crop history, forms or long forum text.
+
+#### High-value measurements from the desktop frames
+
+- The hero headline sits in a 1200px-wide centered text box. The main action row is centered. The exercise strip is 1024 × 164px and fits within the navy hero. Keep the fine divider, left device label, prominent passage, tangerine caret and raised F cue.
+- The dashboard showcase has a clipped 1048 × 650px preview of the student workspace. The adaptive example has a 710 × 422px light exercise sheet on navy. Preserve the marked character and angled annotation at normal reading size.
+- Desktop account layouts allocate 720 × 1024px to each half. The navigation header belongs entirely to the right half. Student/admin chrome uses a 224px sidebar and 72px workspace header. On mobile the 64px header precedes a scrollable 358px content column.
+- Use the token defaults below for new surfaces, and the actual frame for local overrides. Paper exercise sheets have fine outlines and straighter edges than standard cards. The large teaching illustrations are static editable compositions.
 
 #### Layout budgets and density
 
@@ -351,7 +196,7 @@ Narrow-screen menus have a labeled keyboard-accessible trigger. Charts resize an
 
 - Primary frame 1440 × 1024; also check 1280px and minimum typing viewport 1024 × 768. Use 12 content columns with 24px gaps and 32px gutters at wide desktop; compact desktop uses 24px gutters. Side navigation stays 224px and the optional rail 280px where space permits.
 - Dashboard: recommendation/path/history in the main column, goals/review in the rail. Path and progress may use side-by-side map/detail views. Result metrics form one row of four when space permits.
-- Forms remain readable rather than stretching across all columns; authentication is capped at 440px. Admin tables use full available width with filters above and visible row actions.
+- Forms remain readable rather than stretching across all columns; the desktop account form is 496px wide with 440px fields. Admin tables use full available width with filters above and visible row actions.
 - Study stays centred with a 960px maximum, passage-first hierarchy and complete physical-QWERTY guide. Secondary help can scroll at short heights, but the active line and essential controls must stay reachable.
 - Both themes preserve identical geometry. Arabic mirrors shell placement/reading order while retaining LTR exercise, keyboard, codes and chart chronology.
 
@@ -359,7 +204,7 @@ Narrow-screen menus have a labeled keyboard-accessible trigger. Charts resize an
 
 - Primary frame 390 × 844; validate at 320, 360 and 430 CSS pixels. Use four columns, 16px gutters, 16px card padding, 16px gaps and a 64px minimum header that can grow for text. Cards/forms become one column with no fixed viewport-height clipping.
 - Header: compact TypeFlow wordmark, labeled menu trigger and account action. The drawer contains the full navigation, Appearance and Language choices, account/settings and logout. Mark the current page; opening/closing handles focus. RTL drawer opens from the right; LTR from the left. Avoid a crowded bottom bar with nine destinations.
-- Landing stacks copy/illustration/CTA; account fields and main actions fill available width. Dashboard keeps recommendation first, then goal/review and recent sessions. A practice CTA opens device guidance; account, progress and forum remain usable.
+- Landing stacks copy/illustration/CTA; account fields and main actions fill available width. Dashboard places the practice journal immediately after the recommendation, followed by daily goal/review and streak. A practice CTA opens device guidance; account, progress and forum remain usable.
 - Path becomes a compact vertical list of group/activity cards with lock/review explanations. Keep physical key order unchanged if a map is shown; offer a readable key-state list when the full map would be too small.
 - Result/history metrics stack into two columns when readable, one at 320px or with large text. Forum preserves reply/report/accepted-answer actions, wrapping user text and long titles. Certificates stack status/details/actions with a readable unproctored label.
 - Progress charts fit their container with fewer axis labels and a full data-table alternative. History/admin tables may become labeled record cards; genuinely two-dimensional data can scroll inside a labeled region, not the whole page. Required moderation/user/content/settings actions stay available.
@@ -385,7 +230,7 @@ Use shared components and mode/locale/viewport properties for this matrix. Table
 | `radius/control` | 12px | Inputs/buttons |
 | `radius/card` | 20px | Cards |
 | `radius/dialog` | 24px | Dialogs |
-| `radius/pill` | 999px | Chips/landing CTA |
+| `radius/pill` | 999px | Pills and chips; standard primary buttons use the control radius |
 | `border/default` | 1px | Decorative edges |
 | `border/control` | 2px | Fields/interactive cards/keycaps |
 | `Effect/Card` | 0 2px 8px, `#122947` at 6% | Selective card elevation |
@@ -458,7 +303,7 @@ Duolingo's [official path explanation](https://blog.duolingo.com/new-duolingo-ho
 
 ### 6.1 Path composition
 
-Use vertical group sections: heading/key preview, connected activity nodes and a supporting next-step card. Prefer a readable vertical spine. A small horizontal offset is optional where it improves grouping; reading/tab order stays top-to-bottom. Use original keyboard/practice/review/milestone icons.
+Use the chapter flag, contour lines and dashed winding route from the course frame. Keep DOM and tab order top-to-bottom. Each sculpted lesson casing is about 82 × 72px with sloped sidewalls, bevel and lower lip. The inset face is 58px wide, approximately 38px tall when seated/completed and 43px on the raised current key. Face radius is 5px. Keep labels and state icons adjacent to the key. The compact dashboard preview uses smaller keys. The independent spaced-review key has a return-arrow symbol and its own label.
 
 Sections reflect the configured prerequisite graph; do not invent final group names/order. A visually linear recommended route can coexist with several unlocked groups. Include a readable group-list alternative and QWERTY map. A node opens an eligible activity; it does not promise mastery after a fixed number of clicks.
 
@@ -466,7 +311,7 @@ Sections reflect the configured prerequisite graph; do not invent final group na
 | --- | --- | --- |
 | Locked | Neutral node, lock, prerequisite text | View why locked; Start unavailable |
 | Available | Surface-fill node, control outline, activity icon | Start eligible activity |
-| Recommended next | Blue 72px node using learning accent/foreground, 4px bottom lip, adjacent label | Primary Start plus engine reason |
+| Recommended next | Raised cobalt face, darker beveled base, directional icon and adjacent label | Primary Start plus engine reason |
 | In progress | Blue outline, dot/progress cue, text | Evidence still developing |
 | Mastered | Success-soft node, success-text check, label | Confirmed server evidence |
 | Review due | Separate review chip/icon beside underlying state | Start review; does not replace mastery state |
@@ -516,7 +361,7 @@ Use a compact, readable vertical path by default; connectors represent actual pr
 
 ## 7. Figma component catalogue
 
-Build components before screens. Bind semantic variables/text styles; states are variants, not detached copies. Target the existing React/Vite JavaScript/JSX and Tailwind stack. Reuse current UI components; shadcn/ui or any other component library is not assumed installed or authorized by this brief. Implementation targets JavaScript/JSX in root-level `client/`, shared runtime schemas in `packages/shared/` and backend behaviour in `server/`. The language/folder decision does not change the proposed visual system.
+Use the existing Figma components as the starting point for shared implementation. The file contains button variants, navigation states, keycaps, keyboard guide keys, typing characters, fields, metrics and the TypeFlow logo. Some sculpted casings and artwork are editable assemblies around an instance. Reproduce the whole placed composition. The catalogue below also includes implementation requirements beyond the component library. Bind semantic variables/text styles; states are variants, not detached copies. Target the existing React/Vite JavaScript/JSX and Tailwind stack. Reuse current UI components; shadcn/ui or any other component library is not assumed installed or authorized by this brief. Implementation targets JavaScript/JSX in root-level `client/`, shared runtime schemas in `packages/shared/` and backend behaviour in `server/`. The catalogue also covers required states beyond the ten framed views.
 
 | Component / properties | Requirements |
 | --- | --- |
@@ -561,7 +406,7 @@ Build small, meaningful sets rather than one variant for every theme × language
 
 Keep `Surface/Card` neutral: selected, interactive, warning and reward treatments belong to named semantics, not a different shadow/gradient for every feature. Use dividers and rows for history, reports and preferences. A blank card is not an acceptable substitute for a loading, unavailable or empty state.
 
-Each set's documentation shows default, focus, failure and relevant long-content examples in both themes. Check at least one Arabic long-label instance and one reduced-motion interaction before propagating the set. Reuse these instances across screen families; avoid detached copies that drift when a token changes.
+During implementation, exercise default, focus, failure and relevant long-content examples in both themes. Check at least one Arabic long-label instance and one reduced-motion interaction before propagating the set. Reuse these instances across screen families; avoid detached copies that drift when a token changes.
 
 ## 8. Typing experience — primary design priority
 
@@ -591,7 +436,7 @@ Arrange inside the study shell:
 
 Do not replace assigned characters with decoration. Keep glyphs aligned across states. An accessible error summary can describe the latest mismatch/current position without announcing every keystroke. Screen-reader interaction requires prototyping and actual assistive-technology testing; tokens do not prove it works.
 
-Next keyboard key: blue outline plus arrow/label. Mastered: check. Locked: lock/neutral. Weak/review: labeled dot or pattern with legend. Next-key guidance stays dominant; detailed progress heatmaps are separate.
+Next keyboard key: ink outline and a named target in the live provisional metrics. F/J guide keys have tactile ridge marks. Mastered: check. Locked: lock/neutral. Weak/review: labeled dot or pattern with legend. Next-key guidance stays dominant; detailed progress heatmaps are separate.
 
 ### 8.3 Session-state prototypes
 
@@ -614,12 +459,31 @@ Lesson/practice/review allow pause and auto-pause on focus loss. Placement/timed
 
 ## 9. Screen inventory and architecture alignment
 
+### Main screen references
+
+Reference widths, heights and content below come from the current file. The long landing frame is a scrolling composition. Desktop and mobile shell heights describe viewports. Scroll the document or workspace where content extends beyond the viewport.
+
+| Existing Figma frame | Reference px | Implementation details |
+| --- | --- | --- |
+| [01 Landing](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-2) | 1440 × 5476 | Full-width story following one keystroke from fingertip to next lesson. See section 9.3 for section order and surfaces. |
+| [02 Log in](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-3) | 1440 × 1024 | Full-height 50/50 split. Navy illustration fills the left 720px edge to edge. A tangerine glider crosses an engraved keyboard. The serif caption sits on a curved textured navy field. Center the 496px form with 440px fields in the right half. Logo, Appearance and language belong above the form in that half. |
+| [03 Register](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-4) | 1440 × 1024 | Same split and header as login. Two outlined hands reach toward cobalt F and J, with tangerine finger guides and individual QWERTY legends. Right panel holds email, password, confirmation and the verification explanation. |
+| [04 Dashboard](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-5) | 1440 × 1024 | Lead with a navy next-lesson panel, focus keys, monospaced drill excerpt, reason, glider and cobalt Continue practice. Follow with the path preview and practice journal. Right rail carries goal, streak and review. Current lesson links to the course. Matching journal entry opens its official result. |
+| [05 Course learning path](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-6) | 1440 × 1024 | Chapter header and flag, contour lines and a dashed winding path with sculpted keys. The recommendation rail explains eligibility and includes the separate review key. Current lesson opens the shared exercise. See section 6.1. |
+| [06 Active typing](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-7) | 1440 × 1024 | Study shell without student sidebar. Follow the caret in the exact passage; progress and provisional metrics stay quiet. F/J guide keys have tactile ridges. Pause, restart and reduced-pressure controls follow the active mode. |
+| [07 Official result](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-8) | 1440 × 1024 | Show official metrics together, then the marked passage, letter evidence and confirmed rewards. Connect the underlined missed character to its explanation. The navy next-drill panel names the focus keys, explains what the saved evidence supports, previews the sequence and offers Continue, View progress and Back to dashboard. |
+| [08 Progress](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-9) | 1440 × 1024 | Filters precede home-row key history. Connect the selected cobalt F to the evidence directly beneath it. Separate net-speed and raw-accuracy charts use ink lines; the history table gives exact values and a matching result link. |
+| [09 Admin overview](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-10) | 1440 × 1024 | Keep admin navigation, reporting period and denominators explicit. Activity chart and recent activity occupy the main column. The attention rail distinguishes course validation, forum reports and PDF retries with separate icons and text. |
+| [10 Mobile dashboard](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-11) | 390 × 844 | 390 × 844 reference. Use the mobile header and 16px gutters. Show the focus pair, compact drill excerpt, route illustration, course link and desktop-device guidance first. Put the journal directly below, then daily goal/review and streak. Latest matching entry links to the result. Allow vertical scrolling. |
+
+### Product coverage beyond the main frames
+
 These are **screen labels, not agreed browser URLs or new API endpoints**. Use architecture feature folders/draft API groups; complete DTOs/routes need phase agreement. Each screen needs loading, empty, error, success and unavailable/permission states where applicable.
 
 | Screen / module | Content and primary action | Requirements/boundaries |
 | --- | --- | --- |
-| Landing / public | “Learn the keyboard. Build accuracy.”; Start learning/Log in; keyboard illustration; benefits/path sample; certificate explanation | Guest entry; no invented efficacy claims/testimonials |
-| Register/login / auth | Labeled single-column form, verification explanation, safe errors | SYS-1–8; email/password; no role picker/Google button |
+| Landing / public | “Find F without looking.”; Start learning/Log in; annotated exercise and illustrated course map; certificate explanation | Guest entry; no invented efficacy claims/testimonials |
+| Register/login / auth | Full-height illustration and centered form on desktop, verification explanation, safe errors | SYS-1–8; email/password; no role picker/Google button |
 | Verify/resend / auth | Needed/success/expired/used states, actual resend guidance | SYS-3; login blocked until verified |
 | Forgot/reset / auth | Generic acknowledgement, invalid/expired/used token, return to login | SYS-5, SYS-48; no enumeration |
 | Placement / placement | Take or Skip, device/mode guidance, estimate/next step | SYS-16; no mastery/XP promise; skip uses initial configured group |
@@ -650,7 +514,7 @@ These are **screen labels, not agreed browser URLs or new API endpoints**. Use a
 
 Deletion views explain personal history, authored text and certificate identity/PDF removal before confirmation. Anonymous structural forum placeholders retain reply structure without deleted content. Revoked/unavailable certificate views cannot restore erased identity.
 
-### 9.1 Three anchor screens for the first Figma pass
+### 9.1 Anchor screen implementation
 
 **Dashboard, 1440 × 1024:** 224px sidebar, 72px header, 32px main gutters. Flexible content + 280px rail, 24px gap. Main: title/greeting, large recommendation with reason/focus/Start, compact path preview, recent sessions. Rail: daily goal, streak/level and due review. Compact desktop moves rail below. Counts/XP are labeled fixtures.
 
@@ -662,7 +526,7 @@ Raw-accuracy help: “Counts every typing attempt, including corrected mistakes.
 
 #### Anchor composition and content priority
 
-Use these structures to direct the first Figma frames; they refine the existing anchor descriptions without changing their behaviour. Text aligns to logical start, except individual centred node icons and deliberately centred numeric values. Do not centre whole working screens.
+Use these diagrams for information order. Match the linked frames for placement and artwork. Text aligns to logical start, except individual centred node icons and deliberately centred numeric values. Do not centre whole working screens.
 
 ```text
 Dashboard — wide desktop
@@ -696,6 +560,14 @@ Official result
 
 For each anchor, show typical content plus a stress case: a wrapped Arabic recommendation, long focus-key list, unavailable optional metric or no-history state. Focus chips wrap and the reason may grow; neither should push the sole primary action out of reach. Fixture annotations sit beside review frames, with a visible sample-data notice whenever a preview could be mistaken for real progress. Do not derive mastery, daily-goal units or completion rules from sample numbers.
 
+#### Learning-loop parity checks
+
+- Dashboard: the navy recommendation pairs focus keys with a monospace excerpt. The current row in the compact path opens the course, and the latest matching journal entry opens its own result.
+- Course: completed keys sit lower with checks; available keys have an action glyph, the current key has a cobalt face, and locked keys include a lock and prerequisite. The due-review panel is independent of the ordered lessons. Only eligible activities can launch the shared exercise.
+- Typing and result: match the F/J ridges, quiet target outline and visible incorrect-character underline. In the saved result excerpt, the missed S is explicitly named and connected to its explanation. The next panel explains the F/J recommendation and previews a short drill. A missed S and incomplete F/J evidence are separate observations.
+- Progress: keep the selected F visually aligned with its evidence excerpt. Provide chart equivalents as actual table rows; open the matching session result from the journal. On mobile offer View learning path and View result, preserving the physical-keyboard guidance.
+- Admin: use the validation, report and retry icons beside readable issue labels. Tangerine margin marks may reinforce grouping. Keep chart lines, values and table controls legible without relying on hue.
+
 ### 9.2 Charts and reports
 
 Use separate labeled speed/accuracy charts or clearly distinct axes; no unexplained combined score. Filter modes/difficulty where needed. Lines use patterns and labeled legends. Heatmaps distinguish locked/unknown/in-progress/mastered/review due and offer a data table for counts/accuracy/latency. Unknown latency is unavailable, not zero.
@@ -704,34 +576,22 @@ Admin metrics explain reporting windows/denominators. Raw streams, tokens, inter
 
 ### 9.3 Landing page: show the learning experience
 
-**Primary job:** help a visitor understand adaptive English typing practice and choose to start. A returning student gets a clear route back to their real dashboard. This is a proposed page composition, not authorization to implement it.
+The landing page follows one keystroke from fingertip to an explained drill. Implement these sections in frame order. Heights are the measured 1440px-wide reference, not fixed responsive heights. Preserve the uninterrupted navy background from navigation through the course statement. The hero ends flat against the dashboard showcase. The single curved edge leads into a continuous paper field for the course map, history and FAQ.
 
-| Order | Content and layout | User action / restraint |
-| --- | --- | --- |
-| Header | TypeFlow wordmark, concise page links, Appearance/Language and account actions | Keep keyboard focus and phone menu usable; preserve existing auth-aware navigation |
-| Hero | Start-aligned headline “Learn the keyboard. Build accuracy.”; brief explanation of practice based on typing evidence | One primary “Start learning”; secondary “See how practice adapts” scrolls to the explanation without forced smooth motion |
-| Learning illustration | Beside the hero at wide widths; passage + focus keycaps + one next-step reason; stack after copy on phones | Original, labelled example; static default, no fake saved score or usable-looking session input |
-| How practice adapts | Three genuine steps: practise → receive an official result → get an explained next activity | Simple rows/connector diagram; describe behaviour without exposing implementation details or promising outcomes |
-| Course preview | Course objectives and prerequisites; one clear route toward the course library | Use real published metadata when available. Review frames may use labelled fixtures; hide invented popularity/duration/mastery |
-| Learning reassurance | Accuracy before speed; review support; optional first-entry placement; desktop/physical-keyboard requirement | Explain expectations before account creation; no mandatory placement claim |
-| Final action and footer | Repeat “Start learning”; Log in; public certificate-verification link and applicable real information links | No invented university endorsements, testimonials, learner counts, partner logos or unsupported links |
+| Section and frame | Reference height (px) | Composition |
+| --- | ---: | --- |
+| [Public header](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=6-2) | 72 | Wordmark, page links, Appearance, language and Log in share the navy opening. |
+| [One keystroke / illustrated opening](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-302) | 824 | Centered “Find F without looking.” in Source Serif 4 Regular, 99/103px at reference width. Cropped outlined finger reaches toward a beveled cobalt F. Keep Start learning dominant. The 1024 × 164 navy preview strip separates device guidance, monospaced passage with tangerine caret, and the raised next-key F. The hero ends flat against the showcase. |
+| [Inside TypeFlow / dashboard showcase](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=70-321) | 835 | Large inset of the learner dashboard framed by cobalt and tangerine keycap silhouettes. Use a static, sample product view with the same components as the real dashboard. |
+| [Adaptive learning / annotated D–F example](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-386) | 546 | “One keystroke. A different drill.” White exercise sheet on navy compares target `a s d f` with typed `a s d d`. Underline and name the final substitution. Draw the fine annotation to `d f d f`. Repeated substitutions in saved evidence may support a focused drill; the example is illustrative. |
+| [Learning by touch / curved statement](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=70-479) | 518 | Centered statement and Explore the course link above outlined hands and key shapes. The broad arc at the bottom is the transition from navy into paper. |
+| [A learning path made of keys](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-408) | 659 | On paper, pair the folded map and course link with the contour-lined, winding course preview. Use the sculpted key states of the student path. |
+| [Progress you can understand](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-506) | 619 | Stay on paper. Pair “A history for every key.” with the selected F, a legible practice-history excerpt and a sample speed chart. |
+| [Questions before you start](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-536) | 532 | Compact, readable device, placement, language and certificate answers on the same paper field. |
+| [Start your learning](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-557) | 516 | Return to navy. Center the F/J invitation and account actions over a frieze of outlined hands lifting individual keys. |
+| [Footer / product and navigation](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-565) | 355 | Paper footer with brand, section links, account and certificate verification, Appearance and language. Only link to real destinations. |
 
-**Composition:** use an open two-column hero and alternating text/illustration sections within the 1200px container. Keep prose to roughly 60 characters per line. Avoid a wall of equal cards, gradient headline words, oversized empty hero space or floating decorative dashboards. At phone widths, retain message → primary action → illustration order. Arabic mirrors the shell and copy while the example passage/keyboard remain English/LTR.
-
-Wide layout sketch; visual placement follows logical start in each language:
-
-```text
-[Wordmark]  [Page links]              [Appearance] [Language] [Log in]
-[Learning headline + short copy]     [Passage / focus keys / next step]
-[Start learning] [How it works]      [Labelled example]
-[Practise]          [Official result]          [Next activity]
-[Course objectives and entry options]
-[Learning expectations]              [Final action + footer]
-```
-
-**Starter implementation, 23 October 2026:** `client/src/features/auth/LandingPage.jsx` now provides the two-column hero, static English/LTR keyboard example, three-step practice explanation, labelled course concept, account actions and certificate-verification link. `AuthPages.jsx` preserves the existing router export. Shared tokens/fonts and the existing header remain in use; English and Arabic copy live in the dictionaries. No public course API, student data or new session flow is introduced. Course owners must replace the labelled concept only after published metadata and navigation are available. Arabic copy still needs a teammate wording review before final release.
-
-The expanded starter also includes focused-practice guidance, native keyboard-accessible FAQ disclosures, and a full-width footer with product context, section links, account actions and certificate verification. Footer links use existing routes; contact, legal and social destinations remain absent until real destinations are supplied.
+On narrow pages, scale the illustration independently of the heading. Stack evidence copy and exercise sheet, preserve target/typed labels and underline, and keep controls reachable. Reflow wide dashboard/chart previews as contained illustrations. Adapt the 50/50 auth layout to a single readable form with reduced illustration at narrow widths. English keystrokes and keyboard geometry remain LTR in either interface language. The ten frames include one mobile dashboard; other responsive compositions are implementation requirements.
 
 **Navigation boundary:** anonymous Start learning follows the agreed registration/onboarding flow; an authenticated Student gets Continue learning through the real owned destination; an Admin gets the appropriate admin destination. Pending identity must not display a fabricated student or guess their course resume target. Auth redirects, route registration and public certificate data stay with their feature owners; agree component props before changing shared header/auth/router files.
 
@@ -772,108 +632,17 @@ Format WPM and accuracy with at most two decimal places and explicit units; neve
 
 Copy is brief, direct and encouraging: “Continue practice”, “Review these keys”, “More evidence needed”, “Your next practice focuses on…”. Use sentence case; explain adaptation from evidence rather than an unspecified AI coach.
 
-## 11. Instructions for the Figma agent
+## 11. Figma-to-code handoff
 
-This is a prototype brief, not permission to implement code/change the SRS. Use applicable Figma skills/tools when creating the file. This documentation task creates no Figma file.
+Use the ten frame links in section 9 and the components/variables in `00 Foundations`. Keep the existing routing and one shared typing engine. Reuse the selected TypeFlow logo, key faces, button instances, glyph states and the actual illustration layers. Export individual decorative vectors where appropriate; keep headings, instructions, actions, tables and exercise text semantic and selectable. Decorative art is hidden from assistive technology. Provide text for instructional content conveyed by artwork.
 
-### 11.1 File organisation
+The prototype has 45 linked elements across the ten frames: landing 16, login 2, register 1, dashboard 8, course 5, exercise 2, result 3, progress 6, admin 0 and mobile dashboard 2. Preserve the demonstrated flows (section scrolling, public entry, current lesson → exercise, matched journal row → result, result → next activity or progress). Bind links to actual owned resources. For example, a saved journal entry opens its own session result; the current lesson uses the eligible assignment. The static dashboard showcase inside the landing page is a preview. Admin navigation, verification, auth and server scoring still require real application behaviour even when no prototype link exists.
 
-1. `00 Brief & sources` — status, sources, scope, limits, open decisions.
-2. `01 Foundations` — Light/Dark variables, English/Arabic typography, desktop/mobile grids, radius/effects/focus.
-3. `02 Components` — sets, variants and interaction documentation.
-4. `03 Student core` — dashboard, path/map, practice/review, typing/results.
-5. `04 Accounts & public` — landing/auth, placement entry, verification.
-6. `05 Progress & community` — history, achievements, certificates, forum/preferences.
-7. `06 Administration` — analytics/management workflows.
-8. `07 Responsive & accessibility` — full desktop/phone inventory, RTL/LTR matrix, minimum typing desktop, device guidance and accessibility variants.
-9. `08 Prototypes & review` — journeys and unresolved questions.
-
-### 11.2 Construction rules
-
-- Create colour primitives then semantic aliases with **Light** and **Dark** modes. System resolves to one of these. Keep locale/direction and viewport separate from colour modes; use locale strings, mirrored layout variants and desktop/mobile component properties. Separate number collections for spacing/layout/radius/motion; reusable text/effect styles.
-- Use auto-layout, constraints and component instances. Purpose-based names: `Recommendation/Reason`, `Typing/Passage`, `Metric/Raw accuracy`.
-- Compose dashboard, typing and official result as the core interaction anchors; landing exploration may proceed in parallel using the same foundations. Reuse the shell/metrics/feedback across modes and course paths.
-- Preparing/submitting/retryable are UI states, not invented backend enums.
-- Label sample identities/counts/rewards. Keep curriculum/reward/certificate TBDs in annotations/policy-pending variants; no permanent invented defaults.
-- Example beginner passage: `asdf asdf asdf`, only where `a/s/d/f` and spaces are explicitly allowed. Not final curriculum or sufficient test text. No locked punctuation/digits/uppercase for decoration.
-- Annotate missing data as **Contract to agree**, especially key evidence, reward events, prerequisite detail and certificate DTOs; do not invent endpoints.
-- Include focus/disabled/loading/empty/error variants, tab order, focus-return and responsive notes.
-- Deliver each inventory screen/group in the desktop/mobile × Light/Dark × English/Arabic matrix from section 5.2 using instances; phone typing gets device guidance. Include Appearance & language controls, System-selected state, RTL mixed-text examples, save failure/retry and unchanged-English-passage comparisons.
-- Use original TypeFlow illustrations/icons; no competitor brand downloads needed.
-
-### 11.3 Required clickable journeys
-
-| Journey | Frames |
-| --- | --- |
-| New student | Landing → register → verification-needed/success → login → course/entry recommendation → optional first placement or beginner entry → dashboard/path |
-| Course learning | Library → course detail → enrollment → entry recommendation → lesson → shared typing/result → saved course path |
-| Course authoring | Draft → units/lessons/prerequisites → preview → validation errors/fix → publish successor → archive effects |
-| Adaptive loop | Recommendation → ready → active → submitting → official result → updated path/next activity |
-| Review | Due-review card → review → result → evidence update, later groups still unlocked |
-| Retry recovery | Submit → network uncertainty → identical retry → existing result, no repeated rewards |
-| Tests | Timed setup → active → expiry/result; certified rules/consent → countdown → ready/active → result → certificate/PDF |
-| Verification | Code/link → valid/revoked/unavailable, privacy-safe |
-| Forum | List → thread/reply → owner accepts answer; report → moderation |
-| Admin content/settings | Edit → validation failure/success → activation/new version → audited outcome |
-| Deletion | Preferences → effects → confirm → signed-out completion/downstream placeholders |
-| Appearance | Header/profile selector → Light/Dark/System → saved preference → navigation/reload; failure/retry state |
-| Interface language | English → العربية → RTL shell with unchanged English content → saved preference → mobile/desktop navigation |
-
-Required review frames: first use, locked prerequisites, insufficient evidence, no review due, large text, reduced pressure/motion, narrow desktop guidance, missing metrics, rate limit, permission denied, retry, invalid token, PDF failure and no-history charts. Simulated prototypes do not verify scoring, email, persistence or accessibility.
-
-### 11.4 Handoff one screen at a time
-
-Each approved frame includes the intended user action, required states, responsive/RTL behaviour, data status (**real API**, **reviewed fixture** or **contract pending**), and destination in the [architecture](docs/architecture.md). Keep this annotation beside the frame rather than creating another design-spec folder.
-
-| Design responsibility | Existing implementation boundary for later work |
-| --- | --- |
-| Colour/type/spacing/motion | Map variables into `client/src/index.css`, the single styling entry point; no second reset/theme system |
-| Screen composition | Extend the existing feature screen; reusable UI/layout components stay shared |
-| Loading/error/refresh | Feature hook → `client/src/api/` → shared native-fetch client; TanStack Query owns server-state caching |
-| Identity/presentation | Existing auth/preferences providers and registered routes; presentation changes preserve the active session |
-| Course/typing values | Shared runtime contracts plus official server responses; Figma cannot define missing DTO fields or calculate mastery |
-
-A future implementation PR names the approved frame, affected components and actual checks. Do not install a styling, icon or animation package merely because an exported frame mentions one. Verify motion by slow playback, rapid open/close and reduced-motion testing; screenshots alone cannot establish correct timing or session continuity.
-
-### 11.5 Ordered workflow for the future Figma MCP session
-
-This section prepares the next task; it does not create or modify a Figma file now. Use the applicable Figma creation/library/design-generation/motion skills before their corresponding tools. The future session should first inspect its actual MCP capabilities and the supplied destination or library; a filename, screenshot or this brief is not proof that a Figma library exists.
-
-1. **Establish the destination and brief.** Read sections 1, 2.5–2.6 and the target screen inventory. Inspect an existing destination when one is supplied; otherwise create the requested file through the available Figma workflow. Record its link in the handoff when available. Preserve unrelated existing pages and assets.
-2. **Build foundations.** Create the page structure in section 11.1, the selected brand asset, primitive/semantic variables, Light/Dark modes, text styles, layout grids and named effects. Bind properties to the foundation values; do not substitute a tool's default palette or invent a third System colour mode.
-3. **Build a reusable component sample.** Make the shell, button, field, recommendation, path node, typing character/keycap, metric, feedback and overlay sets with the state rules in section 7.1. Review rendered Light/Dark and English/Arabic examples before copying them into screens.
-4. **Resolve the core compositions.** Design dashboard, typing and official result at 1440px, plus the 1024 × 768 study check and 390px dashboard/result/device guidance. Then create landing with the same foundations. Review each rendered frame for hierarchy, spacing, actual text wrapping and contrast before expanding the inventory.
-5. **Expand the approved system.** Cover the remaining public/account, course/path, progress/community/preferences and admin screens in section 9. Use the coverage matrix rather than finishing only the hero and dashboard. Non-typing actions stay available on narrow screens.
-6. **Wire journeys and annotate limits.** Connect the journeys in section 11.3; implement supported motion connections using section 5.4 and annotate the rest. Mark sample data, contract-pending values, destructive consequences, tab order, focus return and session-timing constraints beside the frame.
-7. **Review and hand off.** Inspect screenshots/previews at the specified widths and in both themes/directions, correct visible defects, and record which combinations were actually inspected. Return the file/frame links, component mapping and remaining decisions. Figma review does not certify keyboard semantics, server scoring, persistence or browser performance.
-
-Keep the result editable: real text layers, auto-layout frames, named component instances, vector/icon assets and bound variables wherever supported. A flattened screenshot or an imported whole-page image cannot serve as the implementation reference. Use original artwork only for the illustration itself; controls, passage states, tables and labels remain individually editable.
-
-Every screen annotation includes: **Purpose**, **Primary action**, **Data status**, **Required states**, **Responsive/RTL rules**, **Interaction/motion**, **Implementation boundary**, and **Review status**. Missing policy/contract values remain marked pending. If a tool limitation prevents part of the specification, report the specific gap and preserve the intended design in annotations rather than silently lowering fidelity or changing product behaviour.
+Implement against one reference frame at a time. Compare at reference width and normal reading size, including the main hero drill strip, evidence sheet, course key housings, account split and mobile journal. Verify viewport scrolling, focus, non-color state cues, persistent preferences, real loading/empty/error states and reduced motion. Capture differences and resolve them against the frame and SRS.
 
 ## 12. Review gates and unresolved decisions
 
-Concrete enough for Figma exploration; team approval and implementation evidence remain separate.
-
-- [x] Reference declarations extracted with source links.
-- [x] Proposed tokens, components, layouts and full screen inventory specified.
-- [x] Selected Light/Dark opaque colour-pair contrast calculations completed.
-- [x] Required appearance, English/Arabic interface and desktop/mobile behaviour documented with a scope decision.
-- [ ] Design owner/reviewer and Figma link assigned.
-- [ ] Revised warm-neutral/navy hierarchy, simplified typography, landing composition and motion policy reviewed by team.
-- [ ] Anchor screens and course entry/path/editor states reviewed by team.
-- [ ] Figma components remain editable, use bound semantic variables and cover valid combined states without detached-copy drift.
-- [ ] Dashboard width budgets, minimum-desktop study/large-text fit and phone device guidance reviewed in rendered frames.
-- [ ] Every prototype transition has the section 5.4 contract or an explicit tool-limit annotation; static keyboard/reduced-motion alternatives included.
-- [ ] Branding, Latin/Arabic font licences/assets, Arabic translation and typing glyph legibility reviewed.
-- [ ] Curriculum/targets, reward policies and certificate rules approved in owning documents.
-- [ ] Missing DTOs and public forum-reading policy agreed.
-- [ ] Desktop/mobile × Light/Dark × English/Arabic responsive, keyboard, screen-reader and rendered contrast checks completed.
-- [ ] Motion checks: keyboard actions immediate; rapid interruption safe; reduced-motion changes respected; no replayed milestone on retry/reload.
-- [ ] Data-state checks: real empty vs unavailable/error, account isolation, accurate number formatting and no invented course destination.
-- [ ] Final visual approval/date recorded.
-
-For each approved page, record pass/fail and defects for the relevant combinations below. A checkbox above is completed only with recorded evidence; this document-only revision runs none of these browser checks.
+The ten main compositions, semantic modes and prototype flows are documented. Browser parity, dark/RTL rendering, responsive coverage beyond the reference frames, font licensing, API integration, keyboard/screen-reader testing and learning policy approvals remain separate checks. Use the following matrix for implementation acceptance.
 
 | Check | Review coverage |
 | --- | --- |
@@ -884,4 +653,4 @@ For each approved page, record pass/fail and defects for the relevant combinatio
 | Session continuity | Theme/locale/large-text changes and resize keep assignment/input; timing follows the active mode |
 | Data | First-use/returning, missing optional fields, failed refresh, unavailable future API and identical-save retry |
 
-Begin anchor-screen exploration with labeled sample data/configurable UI. Do not treat policy TBDs as agreed behaviour. Update the SRS/decision records if a later team choice changes requirements.
+Use labelled fixtures for visual comparison. Do not treat policy TBDs as agreed behaviour. Update the SRS/decision records if a later team choice changes requirements.

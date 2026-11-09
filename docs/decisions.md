@@ -145,6 +145,13 @@ Rationale: courses make curriculum discoverable without restarting skill measure
 
 The owner approved the initial optional-placement/targeted-check policy, shared evidence with separate progress, objective/checkpoint completion and immutable publication/archival model. Approval authorizes structural placeholders and documentation only; it does not authorize implementing or wiring routes, UI, models or migrations. Exact JSON/Prisma schemas, numerical freshness/reattempt policies, concrete lesson objectives and checkpoint thresholds, the initial course outlines and any future enrollment-migration mapping remain to agree before their implementation. Preserve existing teammate files.
 
+<a id="0009"></a>
+## 0009 — Adopt the current TypeFlow Figma file for visual implementation
+
+**Status:** Accepted for visual handoff, 9 November 2026. The project owner selected the direction through the TypeFlow design revisions. This updates the visual values previously described as proposals in decision 0002; its theme, language and device requirements still apply.
+
+Use [DESIGN.md](../DESIGN.md) and its live frame links for the ten main views, semantic color roles, editorial versus interface typography, keyboard artwork, responsive account split and learning flow. Treat prototype examples as presentation fixtures. Policy thresholds, server scoring, eligibility, routes and API ownership continue to come from their owning specifications. Rendering and accessibility in the application are separate acceptance work.
+
 ## Open decisions
 | Decision | When it must be settled |
 | --- | --- |
