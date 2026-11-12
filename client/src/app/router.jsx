@@ -27,6 +27,8 @@ import {
   PublicCertificateVerification,
 } from '../features/auth/AuthPages.jsx';
 import { VerifyEmailPage } from '../features/auth/pages/VerifyEmailPage.jsx';
+import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage.jsx';
+import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage.jsx';
 import { Dashboard } from '../features/dashboard/Dashboard.jsx';
 import { LearningPath } from '../features/learning-path/LearningPath.jsx';
 import { TypingSessionPage } from '../features/typing/pages/TypingSessionPage.jsx';
@@ -211,6 +213,7 @@ function AuthRoute({ mode }) {
       <AuthModal
         mode={mode}
         onClose={() => navigate('/')}
+        onForgotPassword={() => navigate('/forgot-password')}
         onModeChange={(nextMode) =>
           navigate(routeForView(nextMode), { replace: true })
         }
@@ -531,6 +534,22 @@ function AppRoutes() {
           element={<Navigate to="/verify-certificate" replace />}
         />
         <Route path="/verify-email" element={<EmailVerificationRoute />} />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicLayout activeTab="landing">
+              <ForgotPasswordPage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicLayout activeTab="landing">
+              <ResetPasswordPage />
+            </PublicLayout>
+          }
+        />
         <Route path="/login" element={<AuthRoute mode="login" />} />
         <Route path="/register" element={<AuthRoute mode="register" />} />
 

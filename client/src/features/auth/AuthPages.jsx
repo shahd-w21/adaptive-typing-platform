@@ -25,7 +25,13 @@ function authMessageFor(error, t) {
 }
 
 /** Branded account form; Dialog owns focus/scroll and the route owner performs authentication. */
-export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
+export function AuthModal({
+  mode = 'login',
+  onClose,
+  onModeChange,
+  onSubmit,
+  onForgotPassword,
+}) {
   const { t } = useTranslation();
   const isRegister = mode === 'register';
   const [notice, setNotice] = useState('');
@@ -200,6 +206,11 @@ export function AuthModal({ mode = 'login', onClose, onModeChange, onSubmit }) {
           </button>
         </form>
 
+        {!isRegister && onForgotPassword && (
+          <button type="button" onClick={onForgotPassword} className="mt-4 text-sm font-bold text-action-link">
+            {t('auth.forgotPassword')}
+          </button>
+        )}
         {isRegister && <p className="auth-verification-note">{t('auth.verificationNote')}</p>}
         <div className="auth-switch">
           <button type="button" onClick={switchMode}>

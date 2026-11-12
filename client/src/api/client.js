@@ -8,7 +8,7 @@ import {
   registerSchema,
   loginSchema,
   emailSchema,
-  tokenSchema,
+  verifyEmailSchema,
   resetPasswordSchema,
   profileSchema,
   changePasswordSchema,
@@ -102,8 +102,7 @@ const failure = (code, options) =>
 // These rules describe client validation, not server access-control enforcement.
 const contracts = {
   'POST /auth/register': [registerSchema, acknowledgementSchema],
-  'POST /auth/verify-email': [tokenSchema, acknowledgementSchema],
-  'POST /auth/resend-verification': [emailSchema, acknowledgementSchema],
+  'POST /auth/verify-email': [verifyEmailSchema, acknowledgementSchema],
   'POST /auth/login': [loginSchema, authResponseSchema],
   'GET /auth/me': [null, authResponseSchema],
   'POST /auth/logout': [emptyRequestSchema, acknowledgementSchema, true],

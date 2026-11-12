@@ -135,13 +135,12 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 | Method/path (under base path) | Access | Input/output intent |
 | --- | --- | --- |
 | `POST /auth/register` | Public, rate-limited | Email/password → verification-needed acknowledgement |
-| `POST /auth/verify-email` | Public, rate-limited | One-time token → acknowledgement |
-| `POST /auth/resend-verification` | Public, rate-limited | Email → safe acknowledgement |
+| `POST /auth/verify-email` | Public, rate-limited | Registration email + one-time token → acknowledgement; both identify the same account |
 | `POST /auth/login` | Public, rate-limited | Email/password → public user DTO + cookie |
 | `POST /auth/logout` | Authenticated | Revoke current session, clear cookie |
 | `GET /auth/me` | Authenticated | Public user DTO including own presentation preferences |
 | `POST /auth/forgot-password` | Public, rate-limited | Email → same acknowledgement whether account exists or not |
-| `POST /auth/reset-password` | Public, rate-limited | Token/new password → acknowledgement; revoke sessions |
+| `POST /auth/reset-password` | Public, rate-limited | Token/new password/confirmation → acknowledgement; revoke sessions |
 | `PATCH /users/me` | Owner (Student or Admin) | Allowlisted profile/preferences fields → updated DTO; partial preference merge |
 | `DELETE /users/me` | Owner | Deletion confirmation contract TBD → completion/status |
 | `POST /sessions` | Student | Mode/options → server assignment |

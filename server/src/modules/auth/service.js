@@ -28,9 +28,10 @@ export function createAuthService({ database, config, sendMail, now = () => new 
     return transaction(database, async tx => {
       const found = await tx.emailToken.findUnique({ where: { hash: hashToken(token) } });
       if (!found || found.purpose !== purpose || found.expiresAt <= now()) throw invalidLink();
+      const result = await apply(tx, found.userId);
       const used = await tx.emailToken.deleteMany({ where: { hash: found.hash, expiresAt: { gt: now() } } });
       if (used.count !== 1) throw invalidLink();
-      return apply(tx, found.userId);
+      return result;
     });
   }
   return {
@@ -42,8 +43,12 @@ export function createAuthService({ database, config, sendMail, now = () => new 
       await emailLink(user, 'verify');
       return { message: 'Check your email to verify your account' };
     },
-    async verify({ token }) {
-      await consumeToken(token, 'verify', (tx, userId) => tx.user.update({ where: { id: userId }, data: { emailVerifiedAt: now() } }));
+    async verify({ email, token }) {
+      await consumeToken(token, 'verify', async (tx, userId) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user || user.email !== email) throw invalidLink();
+        return tx.user.update({ where: { id: userId }, data: { emailVerifiedAt: now() } });
+      });
       return { message: 'Email verified. You can now log in.' };
     },
     async resend({ email }) {
