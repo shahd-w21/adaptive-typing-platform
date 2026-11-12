@@ -333,3 +333,9 @@ Fill this for each phase and retain previous agreements when evolving the contra
 | Verification evidence | Not run |
 
 Before marking agreed, settle required/optional/null fields, time units, permission checks, error codes, pagination, duplicate/concurrent behaviour and matching mocks. A breaking change needs coordination and an updated decision/contract, not a silent field rename.
+
+## Guest practice integration boundary
+
+Approved public flows cover course exploration, guest typing and an attempt result with gross WPM and raw accuracy. No guest endpoint, identity mechanism, durable storage or guest-to-account import is specified by the Figma prototype. Keep existing authenticated assignment, submit, result and history contracts owner-scoped. A guest summary is separate from an official saved result. If server support is chosen for guest attempts, document inputs, abuse limits, lifetime and response authority before exposing it.
+
+For a signed-in save retry, reuse the original attempt identifier and payload. Render confirmed metrics and rewards only after the authoritative response. The Figma saving transition is illustrative, not a timeout-based success condition.

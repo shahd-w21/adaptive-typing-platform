@@ -92,7 +92,7 @@ These formulas are project conventions. The result screen must label gross WPM, 
 
 | User class | Privileges |
 | --- | --- |
-| Guest | View landing page; register, verify email, log in, reset password and verify a certificate |
+| Guest | Explore public pages and courses; try guest typing, view the attempt result and replay; register, verify email, log in, reset password and verify a certificate |
 | Student | Practise, take tests, view own progress, earn rewards/certificates, use the forum and manage own account |
 | Admin | Manage users, content, settings, moderation, certificates and platform statistics |
 
@@ -337,7 +337,9 @@ The owner approved multiple courses, each with its own learning path, and admin 
 
 **Shared skill, separate course progress.** Maintain one per-user key/pair evidence profile for the supported layout/language; do not reset it on enrollment or duplicate it per course. Enrollment records the course version and its own lesson progress, placement/exemption decisions and completion. Only compatible learning evidence transfers: practice against the same skill definitions may contribute to multiple objectives, but unrelated course lessons are not auto-completed. Evaluate any transferred eligibility against the selected course's captured targets and prerequisites. A published course's declared key set must be explicitly introduced or supported by eligible prior evidence; unrelated global unlocks must not silently widen an assignment's alphabet. Broad placement is an explicit assessment exception to ordinary locked-key practice restrictions. Due reviews stay user-level and can be recommended within a compatible course or through the existing Review activity.
 
-**Placement recommendation.** Offer one optional broad placement at the student's first learning entry, not on every website visit/login. Skipping starts at the selected course's beginner entry without fabricated evidence. On joining another course, reuse compatible evidence and show a suggested starting point; offer a targeted entry check only for missing/insufficient evidence. Students can decline and start at an available beginner entry; advanced courses with unmet safety/skill prerequisites remain locked and direct them to suitable beginner work. Reassessment is optional and rate-limited under a policy still to agree. Placement exemptions are distinct from mastery and completed learning, award no XP/certificate, preserve prerequisite order and use section 9.2 evidence rules. Reassessment does not erase earned progress or replace established learning evidence with sparse test samples. Stale/contradictory evidence can trigger a recommended check; its freshness policy is TBD.
+**Guest entry.** Landing and account pages offer Continue as a guest. Allow public course exploration, desktop practice, attempt-level speed/accuracy, replay and return to browsing before registration. Mobile visitors can browse and receive device guidance. Guest status is unauthenticated. Saved account history, enrollment, mastery, rewards and official results belong to the authenticated learner. The guest result offers account creation for future history. Guest progress transfer has no approved contract.
+
+**Placement recommendation.** Present a provisional starting level, recommended course and eligible first lesson with a readable reason. Lead with placement on first verified entry and keep Skip to the home row available. The adaptive walkthrough uses repeated D-for-F substitutions as an example of prior evidence informing a drill. Offer one optional broad placement at the student's first learning entry, not on every website visit/login. Skipping starts at the selected course's beginner entry without fabricated evidence. On joining another course, reuse compatible evidence and show a suggested starting point; offer a targeted entry check only for missing/insufficient evidence. Students can decline and start at an available beginner entry; advanced courses with unmet safety/skill prerequisites remain locked and direct them to suitable beginner work. Reassessment is optional and rate-limited under a policy still to agree. Placement exemptions are distinct from mastery and completed learning, award no XP/certificate, preserve prerequisite order and use section 9.2 evidence rules. Reassessment does not erase earned progress or replace established learning evidence with sparse test samples. Stale/contradictory evidence can trigger a recommended check; its freshness policy is TBD.
 
 **LLM and fallback.** Build the generation spec from the course-version lesson constraints plus the student's eligible skill state and captured settings. Reuse the existing validated cache/LLM/fallback pipeline, bounded retries and feasibility rules. Cache compatibility includes effective constraints and content/validation versions; never reuse text solely because two lessons have the same title. LLM output supplies practice text, not curriculum structure, prerequisite policy or official results. Curated introductory text and constrained drills remain valid when a narrow alphabet cannot support themed prose. Unavailable LLM service must not block an otherwise feasible course.
 
@@ -409,6 +411,8 @@ The planning assumption is five students and 6–8 weeks; confirm the actual dea
 ```mermaid
 flowchart LR
     Guest --> Accounts[Register / verify / login / reset]
+    Guest --> Browse[Browse public courses]
+    Browse --> Try[Desktop guest practice and result]
     Guest --> Verify[Verify certificate]
     Student --> Placement[Placement and keyboard path]
     Student --> Learn[Lessons / adaptive practice / review]

@@ -1,6 +1,6 @@
 # TypeFlow — Figma implementation reference
 
-Version 1.0 · 9 November 2026. Implement the visual design from [TypeFlow — Main Screens](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj). The file contains `00 Foundations` and `01 Main screens`. Ten screen frames and 45 prototype links were checked for this handoff. The recorded views are Light/English. Dark variables exist; Arabic, dark-mode renderings, intermediate breakpoints and browser accessibility still need implementation review.
+12 November 2026 · [TypeFlow Figma](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj). The ten main screens are supplemented by linked onboarding, guest, menu, study, mobile and recovery states. Prototype fixtures illustrate decisions. Browser behavior and service integration require separate verification.
 
 ## 1. Read this before designing
 
@@ -9,7 +9,7 @@ The [SRS](docs/srs.md) owns behaviour. Use [architecture](docs/architecture.md) 
 - TypeFlow teaches English touch typing on a physical desktop QWERTY keyboard. Typing targets viewports at least 1024 CSS pixels wide; other pages adapt to narrow screens.
 - The interface supports English and Arabic. Translate website controls and system explanations, never assigned passages, keyboard letters, authored content or the curriculum. An Arabic interface does not enable Arabic typing lessons.
 - Every screen uses the Light/Dark token modes below. Desktop and mobile page variants share the same features and preferences; phone typing entry points show desktop guidance.
-- Student and Admin are the only account roles. Visitors can access landing, account and public certificate-verification pages.
+- Student and Admin are the only account roles. Visitors can also browse public courses, try desktop guest practice, view their guest result, and access account and public certificate-verification pages.
 - The core journey is assigned text → typing → server-scored official result → updated evidence → explained next activity.
 - Structured lessons, adaptive practice, spaced review, placement and tests share one typing experience with mode-specific controls.
 - Raw accuracy drives progression. Distinguish it from final accuracy and distinguish provisional metrics from official results.
@@ -29,11 +29,11 @@ Warm paper and navy carry the composition. Cobalt identifies primary actions, cu
 
 The visual story follows one keystroke from fingertip to saved evidence and an explained next drill. Original illustrations draw from fingertip arcs, keycap bevels and ridges, engraved legends, folded maps, and paper gliders. Use fine outlines and restrained grain on large illustrated surfaces. Keep texture off forms, tables, charts and the passage. Take editable art from the corresponding frame; do not flatten a screen or source competitor assets.
 
-Public pages use large illustrations, curved section boundaries and editorial display type. Working screens reuse these details selectively: navy recommendation panels with one cobalt action, small role-specific icons, ink chart lines, and evidence annotations. The active exercise prioritizes stable character positions.
+Public pages use large illustrations, curved section boundaries and editorial display type. Working screens reuse these details selectively: navy recommendation panels with one cobalt action, small role-specific icons, blue speed and green accuracy lines, and evidence annotations. The active exercise prioritizes stable character positions.
 
 ## 3. TypeFlow colour system
 
-Map these 34 semantic variables from the Figma collection to the application theme. Values are resolved sRGB hex. Illustrations can have local surface and edge shades. Use white text on cobalt in both modes; keep charts ink-colored and match inverse panels with inverse text.
+Map these 34 semantic variables from the Figma collection to the application theme. Values are resolved sRGB hex. Illustrations can have local surface and edge shades. Use white text on cobalt in both modes; keep chart paper neutral and match inverse panels with inverse text.
 
 | Figma variable | Light | Dark | Role |
 | --- | --- | --- | --- |
@@ -71,6 +71,24 @@ Map these 34 semantic variables from the Figma collection to the application the
 | `color/disabled/bg` | `#E5E7EB` | `#354154` | Disabled fill |
 | `color/disabled/text` | `#556576` | `#B3B9C1` | Disabled label/explanation |
 | `color/illustration/tangerine` | `#FF8D43` | `#FF8D43` | Illustration details, guides and annotations |
+
+### Product colour pairs
+
+The [dark-mode handoff](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=122-598) supplements the semantic variables with implementation targets for local artwork and product surfaces. Select by role. Tangerine remains an illustration accent, cobalt carries actions and current keys, and chart paper uses the neutral surface token.
+
+| Surface or mark | Light | Dark |
+| --- | --- | --- |
+| Keyboard case | #E1E9F6 | #2B3749 |
+| Selected-key evidence | #DCE8FF | #1E3551 |
+| Map sand | #F9EFDA | #302D29 |
+| Sage terrace | #D5E9D6 | #283D34 |
+| Blue terrace | #D6E5F7 | #293C52 |
+| Apricot terrace | #F3C9A4 | #48372E |
+| Worked exercise paper | #FFF6E9 | #292C31 |
+| Suggested drill band | #D9EDDF | #203A31 |
+| Streak panel | #F9E7D5 | #403129 |
+| Speed line | #245BC4 | #93B5FF |
+| Accuracy line | #24714F | #84CDA8 |
 
 ### 3.1 Appearance control and persistence
 
@@ -361,6 +379,10 @@ Use a compact, readable vertical path by default; connectors represent actual pr
 
 ## 7. Figma component catalogue
 
+[Shared interface components](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=125-619) holds the 23 original masters across 11 families. Implement the three Action/Button kinds, Nav/Item (default/selected), Learning/Keycap (completed/current/available/locked/placement exempt), Typing/Character (upcoming/current/correct/incorrect), Learning/GuideKey, Form/Input, Form/Password field, Status/Label (success/warning/info), Typing/Progress track, Metric/Value and Brand/TypeFlow. The compact foundations sheet was consolidated into this guide. Use the placed active-exercise treatment in section 8 for completed characters.
+
+Desktop button references are 48 px high with a 12 px radius and centered Open Sans Bold labels. The library examples use 192 px primary, 232 px secondary and 184 px ghost widths from their corresponding screens. Allow width to follow context, full-width forms and translated labels. Primary is cobalt with white text, secondary uses a bordered paper surface, and ghost is transparent.
+
 Use the existing Figma components as the starting point for shared implementation. The file contains button variants, navigation states, keycaps, keyboard guide keys, typing characters, fields, metrics and the TypeFlow logo. Some sculpted casings and artwork are editable assemblies around an instance. Reproduce the whole placed composition. The catalogue below also includes implementation requirements beyond the component library. Bind semantic variables/text styles; states are variants, not detached copies. Target the existing React/Vite JavaScript/JSX and Tailwind stack. Reuse current UI components; shadcn/ui or any other component library is not assumed installed or authorized by this brief. Implementation targets JavaScript/JSX in root-level `client/`, shared runtime schemas in `packages/shared/` and backend behaviour in `server/`. The catalogue also covers required states beyond the ten framed views.
 
 | Component / properties | Requirements |
@@ -416,11 +438,11 @@ Relevant requirements: SYS-10–32, SYS-46–47 and SYS-50–51; SRS sections 8�
 
 Arrange inside the study shell:
 
-1. **Top bar:** Exit, mode, Large text and Reduced pressure; compact Appearance/Language menu. Explain abandonment before active exit/restart and respect mode focus rules when using preferences.
+1. **Top bar:** Exit, mode, Large text, Hand guide and Reduced pressure; compact Appearance/Language menu. Explain abandonment before active exit/restart and respect mode focus rules when using preferences.
 2. **Activity header:** Title, focus chips and reason. Intentional restricted-alphabet exercises are labeled “Key drill” with a brief explanation.
 3. **Progress:** Passage progress for untimed modes; selected duration/time remaining for tests unless visually hidden. Hidden timing still runs.
 4. **Typing surface:** Semantic surface card, 32–48px padding, exact English/LTR passage/current position in either theme/interface language. Keep active line visible without jarring scrolling.
-5. **Live metrics:** “Live · provisional”, gross WPM and raw accuracy. Reduced pressure hides live speed/timer emphasis while retaining progress/instructions.
+5. **Live metrics:** “Live · provisional”, gross WPM and raw accuracy. Reduced pressure hides live WPM and accuracy and reduces timer emphasis while retaining progress/instructions.
 6. **QWERTY guide:** Next expected key; Shift hints only for permitted assignments. Informational guide, not a touch keyboard.
 7. **Controls/help:** Pause/Resume only where allowed; Restart and keyboard guidance. Shortcuts cannot collide with exercise letters or captured controls.
 
@@ -430,13 +452,13 @@ Arrange inside the study shell:
 | --- | --- | --- |
 | Upcoming | Plain glyph, no completion underline | Primary text on surface in the selected mode |
 | Current | Caret/outline/current-position cue | Blue caret, primary glyph |
-| Correct | Thin solid completion underline | Success-text token; optional success-soft tint |
+| Correct | Before the caret, stable and unmarked in active practice | Quiet secondary ink |
 | Incorrect | Thick/double underline, tinted cell, persistent error summary | Error-text token on error-soft |
 | Wrong space | Visible space marker with matching state/description | Error semantic colours |
 
 Do not replace assigned characters with decoration. Keep glyphs aligned across states. An accessible error summary can describe the latest mismatch/current position without announcing every keystroke. Screen-reader interaction requires prototyping and actual assistive-technology testing; tokens do not prove it works.
 
-Next keyboard key: ink outline and a named target in the live provisional metrics. F/J guide keys have tactile ridge marks. Mastered: check. Locked: lock/neutral. Weak/review: labeled dot or pattern with legend. Next-key guidance stays dominant; detailed progress heatmaps are separate.
+Next keyboard key: solid cobalt face, light legend and a named target in the live provisional metrics. F/J guide keys have tactile ridge marks. Mastered: check. Locked: lock/neutral. Weak/review: labeled dot or pattern with legend. Next-key guidance stays dominant; detailed progress heatmaps are separate.
 
 ### 8.3 Session-state prototypes
 
@@ -475,6 +497,20 @@ Reference widths, heights and content below come from the current file. The long
 | [08 Progress](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-9) | 1440 × 1024 | Filters precede home-row key history. Connect the selected cobalt F to the evidence directly beneath it. Separate net-speed and raw-accuracy charts use ink lines; the history table gives exact values and a matching result link. |
 | [09 Admin overview](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-10) | 1440 × 1024 | Keep admin navigation, reporting period and denominators explicit. Activity chart and recent activity occupy the main column. The attention rail distinguishes course validation, forum reports and PDF retries with separate icons and text. |
 | [10 Mobile dashboard](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-11) | 390 × 844 | 390 × 844 reference. Use the mobile header and 16px gutters. Show the focus pair, compact drill excerpt, route illustration, course link and desktop-device guidance first. Put the journal directly below, then daily goal/review and streak. Latest matching entry links to the result. Allow vertical scrolling. |
+
+### Linked journeys and screen treatments
+
+| Entry | Interaction and visual handoff |
+| --- | --- |
+| [Public navigation](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=142-1452) | How it works and Courses open wide rounded paper panels over the navy hero. Each has a serif introduction, featured action and three illustrated links. Support hover, switching triggers, click/tap, keyboard activation and Escape with focus return. Keep the menu open while moving into its links. |
+| [Guest explorer](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=145-1050) | Continue as a guest on landing, login and register opens the public Keyboard foundations map. Try a typing lesson → guest result with gross WPM and raw accuracy → practise again, explore courses or create an account. The map is a course preview, not earned progress. On [mobile](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=145-1708), provide browsing, a return link and physical-keyboard guidance. |
+| [First verified visit](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=107-340) | Lead with placement. Explain the physical keyboard and full-alphabet assessment. Skip leads directly to the beginner lesson. The [result](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=132-613) groups provisional level, recommended course, starting lesson and evidence-based reason. Beginner → Keyboard foundations → Find your home row is a fixture. Omit the journal until a session is saved. |
+| [Adaptive walkthrough](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=107-371) | Compare target **a s d f** with input **a s d d**. Underline the final D. The result explains this attempt; the recommendation uses repeated saved substitutions to justify **d f d f**, alternating left middle and index fingers. Keep illustrated headers and the sage drill band. |
+| Dashboard and course | Distinguish **Suggested drill / Practise F and J** from **Next course lesson**. Use sculpted F/J artwork, a neutral daily goal, apricot streak and mint review. On the course map use the deep-blue chapter banner, colored terraces and winding sculpted keys. Keep review quieter than the current lesson. |
+| [Active study](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=4-7) | Navy lesson heading, cobalt progress and pale-blue keyboard case. Editable outlined hands align with physical keys. Hand guide and Reduced pressure toggle independently in four combinations. Hiding hands retains the caret, active key and F/J ridges. Toggling either preserves focus, input, timer and scoring. The [Arabic dark study](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=108-533) mirrors the surrounding UI and preserves English passage and physical key order. |
+| [Save recovery](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=132-1552) and result | Preserve completed passage and input through **Saving practice…** and **Retry save**. Retry the same attempt. After confirmation show blue session evidence, neutral rewards and a deep-green explanation of the next drill. Keep **In this session** distinct from **Why this drill?** |
+| Progress and admin | Place the selected F alongside its evidence on blue. Use neutral chart surfaces, distinct labeled lines and tabular equivalents. Group admin reporting metrics in navy; differentiate validation, reports and retries with compact icons, readable labels and restrained accents. |
+| Public illustrations | Returning learner and first-time learner have distinct full-height left illustrations and a 50/50 desktop split. Slate blue closes the login scene, warm umber closes registration. Mobile uses a compact illustration above the form. Landing reuses the map terraces, dashboard artwork and enlarged F ridge next to the progress excerpt. |
 
 ### Product coverage beyond the main frames
 
@@ -564,7 +600,7 @@ For each anchor, show typical content plus a stress case: a wrapped Arabic recom
 
 - Dashboard: the navy recommendation pairs focus keys with a monospace excerpt. The current row in the compact path opens the course, and the latest matching journal entry opens its own result.
 - Course: completed keys sit lower with checks; available keys have an action glyph, the current key has a cobalt face, and locked keys include a lock and prerequisite. The due-review panel is independent of the ordered lessons. Only eligible activities can launch the shared exercise.
-- Typing and result: match the F/J ridges, quiet target outline and visible incorrect-character underline. In the saved result excerpt, the missed S is explicitly named and connected to its explanation. The next panel explains the F/J recommendation and previews a short drill. A missed S and incomplete F/J evidence are separate observations.
+- Typing and result: match the F/J ridges, solid cobalt target key and visible incorrect-character underline. In the saved result excerpt, the missed S is explicitly named and connected to its explanation. The next panel explains the F/J recommendation and previews a short drill. A missed S and incomplete F/J evidence are separate observations.
 - Progress: keep the selected F visually aligned with its evidence excerpt. Provide chart equivalents as actual table rows; open the matching session result from the journal. On mobile offer View learning path and View result, preserving the physical-keyboard guidance.
 - Admin: use the validation, report and retry icons beside readable issue labels. Tangerine margin marks may reinforce grouping. Keep chart lines, values and table controls legible without relying on hue.
 
@@ -576,14 +612,14 @@ Admin metrics explain reporting windows/denominators. Raw streams, tokens, inter
 
 ### 9.3 Landing page: show the learning experience
 
-The landing page follows one keystroke from fingertip to an explained drill. Implement these sections in frame order. Heights are the measured 1440px-wide reference, not fixed responsive heights. Preserve the uninterrupted navy background from navigation through the course statement. The hero ends flat against the dashboard showcase. The single curved edge leads into a continuous paper field for the course map, history and FAQ.
+The landing page follows one keystroke from fingertip to an explained drill. Implement these sections in frame order. Heights are the measured 1440px-wide reference, not fixed responsive heights. Preserve the uninterrupted navy background from navigation through the course statement. The hero ends flat against the adaptive example. The single curved edge leads into a continuous paper field for the course map, history and FAQ.
 
 | Section and frame | Reference height (px) | Composition |
 | --- | ---: | --- |
 | [Public header](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=6-2) | 72 | Wordmark, page links, Appearance, language and Log in share the navy opening. |
-| [One keystroke / illustrated opening](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-302) | 824 | Centered “Find F without looking.” in Source Serif 4 Regular, 99/103px at reference width. Cropped outlined finger reaches toward a beveled cobalt F. Keep Start learning dominant. The 1024 × 164 navy preview strip separates device guidance, monospaced passage with tangerine caret, and the raised next-key F. The hero ends flat against the showcase. |
+| [One keystroke / illustrated opening](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-302) | 824 | Centered “Find F without looking.” in Source Serif 4 Regular, 99/103px at reference width. Cropped outlined finger reaches toward a beveled cobalt F. Keep Start learning dominant. The 1024 × 164 navy preview strip separates device guidance, monospaced passage with tangerine caret, and the raised next-key F. The hero ends flat against the adaptive example. |
+| [Adaptive learning / annotated D–F example](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-386) | 546 | “One keystroke. A different drill.” Warm exercise sheet on navy with a sage recommendation band compares target `a s d f` with typed `a s d d`. Underline and name the final substitution. Draw the fine annotation to `d f d f`. Repeated substitutions in saved evidence may support a focused drill; the example is illustrative. |
 | [Inside TypeFlow / dashboard showcase](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=70-321) | 835 | Large inset of the learner dashboard framed by cobalt and tangerine keycap silhouettes. Use a static, sample product view with the same components as the real dashboard. |
-| [Adaptive learning / annotated D–F example](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-386) | 546 | “One keystroke. A different drill.” White exercise sheet on navy compares target `a s d f` with typed `a s d d`. Underline and name the final substitution. Draw the fine annotation to `d f d f`. Repeated substitutions in saved evidence may support a focused drill; the example is illustrative. |
 | [Learning by touch / curved statement](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=70-479) | 518 | Centered statement and Explore the course link above outlined hands and key shapes. The broad arc at the bottom is the transition from navy into paper. |
 | [A learning path made of keys](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-408) | 659 | On paper, pair the folded map and course link with the contour-lined, winding course preview. Use the sculpted key states of the student path. |
 | [Progress you can understand](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-506) | 619 | Stay on paper. Pair “A history for every key.” with the selected F, a legible practice-history excerpt and a sample speed chart. |
@@ -591,7 +627,7 @@ The landing page follows one keystroke from fingertip to an explained drill. Imp
 | [Start your learning](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-557) | 516 | Return to navy. Center the F/J invitation and account actions over a frieze of outlined hands lifting individual keys. |
 | [Footer / product and navigation](https://www.figma.com/design/OYtuX60oQ9GVoMn1ghUqgj?node-id=22-565) | 355 | Paper footer with brand, section links, account and certificate verification, Appearance and language. Only link to real destinations. |
 
-On narrow pages, scale the illustration independently of the heading. Stack evidence copy and exercise sheet, preserve target/typed labels and underline, and keep controls reachable. Reflow wide dashboard/chart previews as contained illustrations. Adapt the 50/50 auth layout to a single readable form with reduced illustration at narrow widths. English keystrokes and keyboard geometry remain LTR in either interface language. The ten frames include one mobile dashboard; other responsive compositions are implementation requirements.
+On narrow pages, scale the illustration independently of the heading. Stack evidence copy and exercise sheet, preserve target/typed labels and underline, and keep controls reachable. Reflow wide dashboard/chart previews as contained illustrations. Adapt the 50/50 auth layout to a single readable form with reduced illustration at narrow widths. English keystrokes and keyboard geometry remain LTR in either interface language. Use the mobile landing, registration, dashboard and guest references for these layouts. Verify other widths in the browser.
 
 **Navigation boundary:** anonymous Start learning follows the agreed registration/onboarding flow; an authenticated Student gets Continue learning through the real owned destination; an Admin gets the appropriate admin destination. Pending identity must not display a fabricated student or guess their course resume target. Auth redirects, route registration and public certificate data stay with their feature owners; agree component props before changing shared header/auth/router files.
 
@@ -636,7 +672,7 @@ Copy is brief, direct and encouraging: “Continue practice”, “Review these 
 
 Use the ten frame links in section 9 and the components/variables in `00 Foundations`. Keep the existing routing and one shared typing engine. Reuse the selected TypeFlow logo, key faces, button instances, glyph states and the actual illustration layers. Export individual decorative vectors where appropriate; keep headings, instructions, actions, tables and exercise text semantic and selectable. Decorative art is hidden from assistive technology. Provide text for instructional content conveyed by artwork.
 
-The prototype has 45 linked elements across the ten frames: landing 16, login 2, register 1, dashboard 8, course 5, exercise 2, result 3, progress 6, admin 0 and mobile dashboard 2. Preserve the demonstrated flows (section scrolling, public entry, current lesson → exercise, matched journal row → result, result → next activity or progress). Bind links to actual owned resources. For example, a saved journal entry opens its own session result; the current lesson uses the eligible assignment. The static dashboard showcase inside the landing page is a preview. Admin navigation, verification, auth and server scoring still require real application behaviour even when no prototype link exists.
+Preserve the demonstrated flows (section scrolling, public entry, current lesson → exercise, matched journal row → result, result → next activity or progress). Bind links to actual owned resources. For example, a saved journal entry opens its own session result; the current lesson uses the eligible assignment. The static dashboard showcase inside the landing page is a preview. Admin navigation, verification, auth and server scoring still require real application behaviour even when no prototype link exists.
 
 Implement against one reference frame at a time. Compare at reference width and normal reading size, including the main hero drill strip, evidence sheet, course key housings, account split and mobile journal. Verify viewport scrolling, focus, non-color state cues, persistent preferences, real loading/empty/error states and reduced motion. Capture differences and resolve them against the frame and SRS.
 

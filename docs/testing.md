@@ -168,3 +168,14 @@ Added focused-practice guidance, four native FAQ disclosures, and a full-width f
 - Updated the existing routed `AuthModal` with a branded header, start-aligned copy, larger labelled fields, password visibility, registration guidance, verification notice and a separated account-switch action. Shared tokens cover both themes; email/password entry remains LTR in Arabic. No auth routes, schemas, request shapes or backend code changed.
 - Build and lint passed. Four account browser checks passed across English/Arabic and Light/Dark with intercepted API fixtures, covering invalid credentials, confirmation mismatch/focus, show/hide, mode switching, registration notice/reset, Escape, 320px reflow and automated dialog accessibility. No real accounts were created. Desktop login and mobile registration screenshots were reviewed using fallback fonts.
 - The existing public keyboard/focus test initially timed out on page loading; its isolated retry passed. Five targeted checks therefore passed across two runs, not the entire browser suite. Existing bundle-size warning remains; Arabic copy still needs team wording review.
+
+## Figma journey acceptance
+
+Planned browser and integration checks:
+
+- Enter as a guest from landing, login and registration. Browse the course, finish a desktop attempt, inspect the attempt metrics, replay and return. Check that no sign-in guard blocks these steps and no account history, XP or mastery is written. On mobile, check course browsing and desktop-keyboard guidance.
+- After verification, take placement and compare the provisional level, reason, suggested course and eligible starting lesson to actual assessment data. Skip to the home row. A returning learner should reach their own dashboard without repeating placement.
+- Open both landing menus using pointer and keyboard. Move from trigger to item, switch menus, dismiss with Escape and restore focus. Check the touch alternative.
+- Exercise all four hand-guide/reduced-pressure combinations mid-passage. Assert identical input, focus position, elapsed time and scoring. Check the active key and error underline in light, dark and Arabic UI with LTR English text.
+- Simulate a slow save, a lost response and retry. Preserve the passage and attempt ID and verify one official result and one reward application. Check the difference between a guest summary, a worked example and an account result.
+- Compare the main screens and supplemental frames with the [design guide](../DESIGN.md). Check chart labels on neutral surfaces, full-width account artwork, map states, CTA padding, desktop/mobile reflow and non-color cues.
