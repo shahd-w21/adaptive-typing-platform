@@ -451,10 +451,12 @@
     "account": "Account information",
     "displayName": "Display name",
     "email": "Email address",
+    "timezone": "Time zone",
     "saveAccount": "Save account details",
     "saving": "Saving…",
     "saved": "Saved to your account",
     "saveFailed": "We could not save your account details. Check your connection and retry.",
+    "invalidTimezone": "Enter a valid IANA time zone, such as Africa/Cairo.",
     "appearanceLanguage": "Appearance and interface language",
     "colorMode": "Color mode",
     "interfaceLanguage": "Interface language",
@@ -480,7 +482,9 @@
     "confirmPassword": "Confirm new password",
     "passwordChanged": "Password updated. Log in again with your new password.",
     "passwordChangeFailed": "We could not update your password. Check the current password and try again.",
+    "invalidCurrentPassword": "The current password is incorrect.",
     "passwordMismatch": "The new passwords do not match.",
+    "lastAdmin": "Create another active administrator before deleting this account.",
     "updatingPassword": "Updating password?"
   },
   "courses": {

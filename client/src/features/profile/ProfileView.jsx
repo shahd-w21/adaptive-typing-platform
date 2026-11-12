@@ -5,10 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../context/preferences.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { SunIcon, MoonIcon, MonitorIcon, AlertCircleIcon } from '../../components/ui/Icons.jsx';
-import { changeMyPassword, deleteMyAccount, updateMyProfile } from '../../api/users.js';
+import { changeMyPassword, deleteMyAccount } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { changePasswordSchema } from '@typeflow/shared';
 import { queryKeys } from '../../lib/queryKeys.js';
+import { useProfile } from './hooks/useProfile.js';
 
 export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
   const { csrfToken, updateUser, clearSession } = useAuth();
@@ -25,9 +26,11 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
   } = usePreferences();
   const { t } = useTranslation();
   const deleteCancelRef = useRef(null);
+  const { saveProfile: saveProfileRequest } = useProfile({ csrfToken, updateUser });
 
   const [targetWpm, setTargetWpm] = useState(user?.targetWpm ?? 60);
   const [displayName, setDisplayName] = useState(user?.name ?? '');
+  const [timezone, setTimezone] = useState(user?.timezone ?? 'UTC');
   const [profileStatus, setProfileStatus] = useState('idle');
   const [profileError, setProfileError] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -44,18 +47,24 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
     setProfileStatus('saving');
     setProfileError('');
     try {
-      const { user: updatedUser } = await updateMyProfile({ name: displayName.trim() || null, targetWpm }, csrfToken);
-      updateUser(updatedUser);
+      const updatedUser = await saveProfileRequest({
+        name: displayName.trim() || null,
+        targetWpm,
+        timezone: timezone.trim(),
+      });
       // Profile targets affect dashboard/reward displays. Refresh only this
       // account's cached summaries after the server confirms the saved values.
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(user.id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.gamification(user.id) });
       setDisplayName(updatedUser.name ?? '');
       setTargetWpm(updatedUser.targetWpm);
+      setTimezone(updatedUser.timezone);
       setProfileStatus('saved');
-    } catch {
+    } catch (error) {
       setProfileStatus('error');
-      setProfileError(t('profile.saveFailed'));
+      setProfileError(error.code === 'INVALID_REQUEST'
+        ? t('profile.invalidTimezone')
+        : t('profile.saveFailed'));
     }
   };
 
@@ -79,9 +88,11 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
       setPasswordStatus('saved');
       await clearSession();
       onPasswordChanged?.();
-    } catch {
+    } catch (error) {
       setPasswordStatus('error');
-      setPasswordError(t('profile.passwordChangeFailed'));
+      setPasswordError(error?.code === 'INVALID_PASSWORD'
+        ? t('profile.invalidCurrentPassword')
+        : t('profile.passwordChangeFailed'));
     }
   };
 
@@ -92,9 +103,13 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
       await deleteMyAccount(deletePassword, csrfToken);
       onAccountDeleted?.();
       await clearSession();
-    } catch {
+    } catch (error) {
       setDeleteStatus('error');
-      setDeleteError(t('profile.deleteFailed'));
+      setDeleteError(error?.code === 'LAST_ADMIN'
+        ? t('profile.lastAdmin')
+        : error?.code === 'INVALID_PASSWORD'
+          ? t('profile.invalidCurrentPassword')
+          : t('profile.deleteFailed'));
     }
   };
 
@@ -118,6 +133,10 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
           <div>
             <label className="block text-[13px] font-bold mb-1.5" htmlFor="profile-email">{t('profile.email')}</label>
             <input id="profile-email" type="email" disabled className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] opacity-70" value={user?.email ?? ''} readOnly />
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold mb-1.5" htmlFor="profile-timezone">{t('profile.timezone')}</label>
+            <input id="profile-timezone" type="text" required value={timezone} onChange={(event) => setTimezone(event.target.value)} placeholder="Africa/Cairo" className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]" />
           </div>
         </div>
 
@@ -238,8 +257,8 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
           <input
             type="range"
             id="target-wpm"
-            min="20"
-            max="120"
+            min="10"
+            max="250"
             step="5"
             value={targetWpm}
             onChange={(e) => setTargetWpm(Number(e.target.value))}
