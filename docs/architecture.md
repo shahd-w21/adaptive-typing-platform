@@ -928,3 +928,9 @@ Publishing validates graph/content/feasibility and immutable policy references b
 Defer optional sound effects, reminder emails, charts beyond the required evaluation table and a production Dockerfile when unnecessary. Keep the required accessibility options, public verification, audit records and core admin capabilities. Google sign-in, leaderboards and coaching notes are already outside scope. Dropping forum, certificates or required administration needs an explicit SRS change.
 
 This structure intentionally avoids a separate scoring implementation per mode, LLM calls inside transactions, runtime settings hidden in pure modules and a scheduler that silently loses work while the host sleeps.
+
+## Public practice and first learning entry
+
+The target guest flow reuses the English QWERTY study UI and applicable scoring logic with public course content. Keep the guest attempt separate from authenticated queries, learner progress and reward writes. Boundaries for guest storage and transport remain open in the [API contract](api-contract.md#guest-practice-integration-boundary). Normal registration and verification lead to optional placement on first learning entry. Compatible saved evidence drives later recommendations.
+
+Hand guide and Reduced pressure are independent presentation controls. Change visibility without remounting the recorder, resetting focus or restarting the timer. Runtime navigation should implement the two landing menus as header states and the save/retry views as states of one attempt. Figma frame duplication does not imply separate application routes.
