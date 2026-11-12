@@ -2084,3 +2084,7 @@ Requirement allocation for issue/evidence tracking (each ID still needs a specif
 8. Sign out and prove revocation; demonstrate account deletion through its linked records/artifacts.
 
 Also demonstrate lost-response retry, a rejected invalid submission, an LLM outage and publication of a successor course version. Check phone access to non-typing functions and guidance that prevents a scored touch session.
+
+### Figma parity work for implementation
+
+Track the public course and guest drill/result route separately from authenticated practice. Cover first verified entry through placement and its skip path, independent typing preferences, server-confirmed saving/retry, responsive account forms and desktop navigation menus. Use the [screen handoff](../DESIGN.md#linked-journeys-and-screen-treatments) and [journey acceptance checks](testing.md#figma-journey-acceptance) when implementing. Prototype completion does not close these runtime tasks.

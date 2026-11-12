@@ -185,3 +185,9 @@ Decision and boundaries:
 Why / alternative / tradeoff:
 Consequences / verification / replacement if superseded:
 ```
+
+## 0010 — Guest exploration and the Figma learning journeys
+
+Accepted, 12 November 2026. Visitors may explore courses, try a desktop lesson, inspect a guest result and replay before creating an account. Signed-in first entry recommends optional placement and explains provisional level, course and lesson. Subsequent recommendations distinguish evidence from this attempt from patterns across compatible saved sessions. Preserve account ownership and once-only reward rules from the SRS.
+
+[DESIGN.md](../DESIGN.md) records the consolidated component masters, theme swaps, desktop menus, mobile and Arabic studies, independent hand/pressure controls and recovery states. These are implementation targets. Guest transport, persistence and any conversion of guest activity into account history remain unspecified.

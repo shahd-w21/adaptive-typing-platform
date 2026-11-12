@@ -10,7 +10,7 @@ Foundation snapshot: 15 October 2026. Visual handoff updated 9 November 2026. Ke
 | Architecture/API | Target architecture and draft endpoint contracts; not implementation evidence |
 | Onboarding | README defines the intended clone/configure/database/run workflow; foundations must implement/verify root scripts, environment examples and Compose services |
 | Runtime verification | No application/database execution verified by this Markdown revision |
-| Design | [Current Figma handoff](../../DESIGN.md#main-screen-references): ten frames and 45 prototype links; implementation, dark/RTL rendering and browser acceptance remain separate |
+| Design | [Current Figma handoff](../../DESIGN.md#main-screen-references): ten main screens plus linked guest, placement, adaptive, mobile, Arabic/dark, menu and recovery states; browser and service acceptance remain separate |
 
 ## Next steps
 
