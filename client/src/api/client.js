@@ -27,6 +27,7 @@ import {
   idSchema,
   emptyRequestSchema,
   publicCertificateSchema,
+  emailChangeSchema,
 } from '@typeflow/shared';
 
 const API_BASE_URL = (
@@ -117,6 +118,7 @@ const contracts = {
     true,
   ],
   'DELETE /users/me': [deleteAccountSchema, acknowledgementSchema, true],
+  'POST /users/me/email': [emailChangeSchema, acknowledgementSchema, true],
   'GET /certificates/verify/:code': [null, publicCertificateSchema],
   'POST /sessions': [startSessionSchema, sessionAssignmentSchema, true],
   'POST /sessions/start': [startSessionSchema, sessionAssignmentSchema, true],

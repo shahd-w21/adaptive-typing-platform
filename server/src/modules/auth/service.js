@@ -44,10 +44,21 @@ export function createAuthService({ database, config, sendMail, now = () => new 
       return { message: 'Check your email to verify your account' };
     },
     async verify({ email, token }) {
-      await consumeToken(token, 'verify', async (tx, userId) => {
+      let purpose = 'verify';
+      try {
+        await consumeToken(token, 'verify', async (tx, userId) => {
+          const user = await tx.user.findUnique({ where: { id: userId } });
+          if (!user || user.email !== email) throw invalidLink();
+          return tx.user.update({ where: { id: userId }, data: { emailVerifiedAt: now() } });
+        });
+      } catch (error) {
+        if (error.code !== 'INVALID_TOKEN') throw error;
+        purpose = 'email-change';
+      }
+      if (purpose === 'email-change') await consumeToken(token, 'email-change', async (tx, userId) => {
         const user = await tx.user.findUnique({ where: { id: userId } });
-        if (!user || user.email !== email) throw invalidLink();
-        return tx.user.update({ where: { id: userId }, data: { emailVerifiedAt: now() } });
+        if (!user || user.pendingEmail !== email) throw invalidLink();
+        await tx.user.update({ where: { id: userId }, data: { email, pendingEmail: null } });
       });
       return { message: 'Email verified. You can now log in.' };
     },

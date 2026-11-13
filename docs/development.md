@@ -288,6 +288,18 @@ Verified on 22 October 2026 before the seed password change: two `npm run db:see
 
 Before deployment, add verified provider/release commands, secret owners, backup/restore evidence, maintenance catch-up and rollback steps here. Hosting, operational/audit/backup retention and final performance environment remain open decisions.
 
+### FE-29 browser acceptance evidence — 13 November 2026
+
+Run the focused account and preference checks with:
+
+```powershell
+npm run test:ui --workspace=client -- tests/e2e/account.spec.js tests/e2e/preferences.spec.js
+```
+
+The run passed **4 tests** in Chrome using the isolated Vite origin on 13 November 2026. It uses intercepted API fixtures intentionally: no developer database rows, cookies or account preferences are created. The covered flows are generic login failure messaging, authenticated Dashboard/Logout navigation, logout cleanup, visitor/account preference precedence, failed-save retry, Arabic RTL, Light/Dark themes, keyboard focus, axe accessibility checks and 390px reflow.
+
+This is browser acceptance of the frontend state transitions, not evidence that the fixture responses are a live API. Pair it with `npm run test:integration` for PostgreSQL ownership/authentication persistence and perform final human screen-reader/cross-browser review before release.
+
 ### Development ports
 
 Run only one copy of the applications. If another terminal is already running them, keep using it or press `Ctrl+C` there before starting again. The port check never stops existing processes or silently moves the website to another origin. Availability can change after the check, so the applications still handle binding failures themselves.

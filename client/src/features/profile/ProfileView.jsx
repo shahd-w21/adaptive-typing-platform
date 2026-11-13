@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePreferences } from '../../context/preferences.js';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { SunIcon, MoonIcon, MonitorIcon, AlertCircleIcon } from '../../components/ui/Icons.jsx';
-import { changeMyPassword, deleteMyAccount } from '../../api/users.js';
+import { changeMyPassword, deleteMyAccount, requestEmailChange } from '../../api/users.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { changePasswordSchema } from '@typeflow/shared';
 import { queryKeys } from '../../lib/queryKeys.js';
@@ -31,6 +31,9 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
   const [targetWpm, setTargetWpm] = useState(user?.targetWpm ?? 60);
   const [displayName, setDisplayName] = useState(user?.name ?? '');
   const [timezone, setTimezone] = useState(user?.timezone ?? 'UTC');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailStatus, setEmailStatus] = useState('idle');
+  const [emailError, setEmailError] = useState('');
   const [profileStatus, setProfileStatus] = useState('idle');
   const [profileError, setProfileError] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -96,6 +99,24 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
     }
   };
 
+  const saveEmail = async event => {
+    event.preventDefault();
+    setEmailStatus('saving');
+    setEmailError('');
+    try {
+      await requestEmailChange({ currentPassword, newEmail }, csrfToken);
+      setEmailStatus('saved');
+      setNewEmail('');
+    } catch (error) {
+      setEmailStatus('error');
+      setEmailError(error?.code === 'EMAIL_REGISTERED'
+        ? t('profile.emailRegistered')
+        : error?.code === 'INVALID_PASSWORD'
+          ? t('profile.invalidCurrentPassword')
+          : t('profile.emailChangeFailed'));
+    }
+  };
+
   const removeAccount = async () => {
     setDeleteStatus('deleting');
     setDeleteError('');
@@ -138,6 +159,19 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
             <label className="block text-[13px] font-bold mb-1.5" htmlFor="profile-timezone">{t('profile.timezone')}</label>
             <input id="profile-timezone" type="text" required value={timezone} onChange={(event) => setTimezone(event.target.value)} placeholder="Africa/Cairo" className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]" />
           </div>
+          <form onSubmit={saveEmail} className="mt-4 flex flex-wrap items-end gap-3" noValidate>
+            <div className="min-w-60 flex-1">
+              <label className="mb-1.5 block text-[13px] font-bold" htmlFor="email-change-password">{t('profile.currentPassword')}</label>
+              <input id="email-change-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
+            </div>
+            <div className="min-w-60 flex-1">
+              <label className="mb-1.5 block text-[13px] font-bold" htmlFor="new-email">{t('profile.newEmail')}</label>
+              <input id="new-email" type="email" required value={newEmail} onChange={event => setNewEmail(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
+            </div>
+            <button type="submit" disabled={emailStatus === 'saving'} className="rounded-full bg-action-primary px-5 py-3 font-bold text-action-foreground disabled:opacity-60">{emailStatus === 'saving' ? t('profile.sendingEmail') : t('profile.changeEmail')}</button>
+            {emailStatus === 'saved' && <span role="status" className="text-success-text">{t('profile.emailChangeSent')}</span>}
+            {emailError && <span role="alert" className="text-error-text">{emailError}</span>}
+          </form>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">

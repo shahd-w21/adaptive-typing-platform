@@ -60,6 +60,10 @@ export const changePasswordSchema = z
 export const deleteAccountSchema = z.object({
   password: z.string().min(1).max(256),
 });
+export const emailChangeSchema = z.object({
+  currentPassword: z.string().min(1),
+  newEmail: email,
+});
 // PATCH fields are optional so omitted values remain unchanged on the server.
 // Reject unknown keys at both levels and reject an entirely empty patch.
 export const profileSchema = z

@@ -179,3 +179,15 @@ Planned browser and integration checks:
 - Exercise all four hand-guide/reduced-pressure combinations mid-passage. Assert identical input, focus position, elapsed time and scoring. Check the active key and error underline in light, dark and Arabic UI with LTR English text.
 - Simulate a slow save, a lost response and retry. Preserve the passage and attempt ID and verify one official result and one reward application. Check the difference between a guest summary, a worked example and an account result.
 - Compare the main screens and supplemental frames with the [design guide](../DESIGN.md). Check chart labels on neutral surfaces, full-width account artwork, map states, CTA padding, desktop/mobile reflow and non-color cues.
+
+## FE-29 account/public/preferences browser evidence — 13 November 2026
+
+The focused FE-29 suite passed with Chrome through the existing isolated Playwright/Vite setup:
+
+```powershell
+npm run test:ui --workspace=client -- tests/e2e/account.spec.js tests/e2e/preferences.spec.js
+```
+
+Result: **4 passed in 8.3 seconds**. The checks cover generic invalid-login messaging without account disclosure, successful authenticated Dashboard/Logout actions, logout cleanup, keyboard focus containment and axe checks on a 390px viewport, visitor preference restoration, account preference precedence at sign-in, failed partial preference save with explicit retry, Arabic RTL, Light/Dark themes, and mobile no-overflow validation.
+
+The browser/version is the Playwright `channel: 'chrome'` configured in [client/playwright.config.js](../client/playwright.config.js); the run date is 13 November 2026. API requests are intercepted by the tests, so these checks prove UI state transitions and request boundaries without writing developer accounts or preferences. Real PostgreSQL authentication and persistence remain covered by the server integration suite; cross-browser and human screen-reader review remain open.
