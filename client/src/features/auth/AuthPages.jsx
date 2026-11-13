@@ -1,5 +1,6 @@
 // Existing public screens; authentication modal delegates keyboard and focus behavior to Dialog.
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Dialog } from '../../components/ui/Dialog.jsx';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +8,7 @@ import { loginSchema, registerSchema } from '@typeflow/shared';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { BrandLogo } from '../../components/ui/BrandLogo.jsx';
 import { ShieldIcon, XIcon } from '../../components/ui/Icons.jsx';
+import { verifyCertificate } from '../../api/certificates.js';
 
 // Preserve the router's existing import while keeping marketing separate from forms.
 export { LandingPage } from './LandingPage.jsx';
@@ -102,7 +104,9 @@ export function AuthModal({
       describedBy="auth-dialog-description"
       className="auth-dialog"
     >
-      <div className="auth-dialog-brand"><BrandLogo /></div>
+      <Link to="/" aria-label={t('navigation.homeLabel')} className="auth-dialog-brand">
+        <BrandLogo />
+      </Link>
       <div className="auth-dialog-body">
         <header className="auth-introduction">
           <h2 id="auth-dialog-title">
@@ -226,16 +230,30 @@ export function AuthModal({
   );
 }
 
-export function PublicCertificateVerification({ onBack }) {
-  const { t } = useTranslation();
-  const [code, setCode] = useState('');
+export function PublicCertificateVerification({ onBack, initialCode = '' }) {
+  const [code, setCode] = useState(initialCode);
   const [lookupResult, setLookupResult] = useState(null);
+  const [lookupError, setLookupError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     if (!code) return;
 
-    setLookupResult({ unavailable: true });
+    setLookupError('');
+    setLookupResult(null);
+    setIsVerifying(true);
+    try {
+      setLookupResult(await verifyCertificate(code));
+    } catch (error) {
+      setLookupError(
+        error?.code === 'NOT_FOUND'
+          ? 'No valid certificate was found for this code.'
+          : 'Certificate verification is temporarily unavailable.',
+      );
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -268,10 +286,16 @@ export function PublicCertificateVerification({ onBack }) {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
-          <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none py-0 px-6 shrink-0">
-            Verify
+          <button type="submit" disabled={isVerifying} className="inline-flex items-center justify-center gap-2 h-12 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none py-0 px-6 shrink-0">
+            {isVerifying ? 'Checking...' : 'Verify'}
           </button>
         </form>
+
+        {lookupError && (
+          <p role="alert" className="mb-7 rounded-card border border-warning-accent bg-warning-soft p-4 text-start text-warning-text">
+            {lookupError}
+          </p>
+        )}
 
         {lookupResult?.code && (
           <div
@@ -310,7 +334,6 @@ export function PublicCertificateVerification({ onBack }) {
             </p>
           </div>
         )}
-        {lookupResult?.unavailable && <p className="rounded-control border border-warning-accent/40 bg-warning-soft p-4 text-start text-sm text-warning-text" role="status">{t('common.certificateUnavailable')}</p>}
       </div>
     </div>
   );

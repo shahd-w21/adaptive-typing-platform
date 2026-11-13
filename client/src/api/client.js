@@ -26,6 +26,7 @@ import {
   sessionAbandonmentSchema,
   idSchema,
   emptyRequestSchema,
+  publicCertificateSchema,
 } from '@typeflow/shared';
 
 const API_BASE_URL = (
@@ -116,6 +117,7 @@ const contracts = {
     true,
   ],
   'DELETE /users/me': [deleteAccountSchema, acknowledgementSchema, true],
+  'GET /certificates/verify/:code': [null, publicCertificateSchema],
   'POST /sessions': [startSessionSchema, sessionAssignmentSchema, true],
   'POST /sessions/start': [startSessionSchema, sessionAssignmentSchema, true],
   'GET /sessions': [null, sessionHistorySchema],
@@ -140,6 +142,10 @@ function contractFor(path, method) {
       throw failure('INVALID_REQUEST');
     }
     path = `/sessions/:id${session[2] || ''}`;
+  }
+  const certificate = path.match(/^\/certificates\/verify\/([^/]+)$/);
+  if (certificate) {
+    path = '/certificates/verify/:code';
   }
   return contracts[`${method} ${path}`];
 }
