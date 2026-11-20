@@ -202,7 +202,7 @@ The detailed task catalog and sprint matrices cover the complete current deliver
 
 | Area | Catalog size | Remaining sprint coverage | Result |
 | --- | ---: | ---: | --- |
-| Frontend tasks | 34 FE tasks | 16 remaining FE tasks assigned once | Complete |
+| Frontend tasks | 35 FE tasks | 17 remaining FE tasks assigned once | Complete |
 | Backend tasks | 25 BE tasks | 25 BE tasks assigned once | Complete |
 | Two-sprint plan | 2 weeks | 5 developers active in both sprints | Complete |
 
@@ -214,11 +214,11 @@ No additional FE or BE task ID is missing from the sprint plan. Already complete
 
 | Developer | Frontend tasks | Backend tasks | Main reviewer |
 | --- | --- | --- | --- |
-| Dev 1 | FE-11, FE-13, FE-18 | BE-01, BE-02 | Dev 5 |
-| Dev 2 | FE-16, FE-30 | BE-03, BE-04 | Dev 3 |
-| Dev 3 | FE-17, FE-21, FE-22 | BE-05 | Dev 2 |
-| Dev 4 | FE-27, FE-32 | BE-11, BE-12, BE-13 | Dev 1 |
-| Dev 5 | FE-23, FE-28 | BE-10, BE-19, BE-20 | Dev 4 |
+| Dev 1 | None | BE-01, BE-02, BE-04 | Dev 5 |
+| Dev 2 | FE-34 | BE-06, BE-07, BE-13 | Dev 3 |
+| Dev 3 | FE-11, FE-16, FE-21, FE-31 | BE-17, BE-18 | Dev 2 |
+| Dev 4 | FE-22, FE-27, FE-35 | BE-14, BE-15 | Dev 1 |
+| Dev 5 | FE-18, FE-23, FE-33 | BE-20, BE-24 | Dev 4 |
 
 Week-one dependencies:
 
@@ -234,12 +234,27 @@ Week-one dependencies:
 | Developer | Frontend tasks | Backend tasks | Main reviewer |
 | --- | --- | --- | --- |
 | Dev 1 | None | BE-09, BE-21, BE-22 | Dev 5 |
-| Dev 2 | FE-34 typing/frontend reconnection | BE-06, BE-08, BE-23 | Dev 3 |
-| Dev 3 | FE-31 dashboard/frontend reconnection | BE-07, BE-16, BE-17, BE-18 | Dev 2 |
-| Dev 4 | FE-35 course/frontend reconnection | BE-14, BE-15 | Dev 1 |
-| Dev 5 | FE-33 supporting/admin frontend reconnection | BE-24, BE-25 | Dev 4 |
+| Dev 2 | FE-30 | BE-03, BE-08, BE-23 | Dev 3 |
+| Dev 3 | None | BE-05, BE-16 | Dev 2 |
+| Dev 4 | FE-17, FE-32 | BE-11, BE-12 | Dev 1 |
+| Dev 5 | FE-13, FE-26, FE-28 | BE-10, BE-19, BE-25 | Dev 4 |
 
 This matrix completes the backend catalog across the two sprints. Shared course/transaction tasks may have an implementation owner and a named integration reviewer.
+
+### Estimated workload balance
+
+The table combines frontend hours and backend developer-days converted to eight-hour days.
+
+| Developer | Sprint 1 workload | Sprint 2 workload | Total |
+| --- | ---: | ---: | ---: |
+| Dev 1 | 64 h | 72 h | 136 h |
+| Dev 2 | 77 h | 75 h | 152 h |
+| Dev 3 | 59 h | 56 h | 115 h |
+| Dev 4 | 56 h | 55 h | 111 h |
+| Dev 5 | 78 h | 78 h | 156 h |
+| Total | 334 h | 336 h | 670 h |
+
+The sprint totals differ by only 2 hours. Actual workloads may change after dependency review and reviewer/defect work.
 
 ### Sprint completion rules
 
@@ -1158,6 +1173,37 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** draft content/settings schemas; no approval of numerical defaults.
 
+#### FE-26 — Implement the DESIGN.md visual and interaction parity
+
+- **Owner:** Dev 5
+- **Reviewer:** Dev 1
+- **Estimate:** 6 h
+- **Dependencies:** FE-03, FE-24, FE-30, FE-32.
+- **Requirements:** SYS-53–56; DESIGN sections 1–12.
+
+**Files to work in**
+
+- Coordinate `DESIGN.md` reference work across `client/src/index.css`, `client/src/components/layout/`, `client/src/features/`, and existing route shells.
+- Update `docs/testing.md` and `docs/development.md` with actual visual and interaction evidence.
+
+**Steps**
+
+1. Compare the implemented landing, account, dashboard, study, result, progress, course, admin and mobile compositions against the reference frames and section 9.3 landing order.
+2. Apply the documented colour, typography, spacing, shape, elevation and motion rules through existing Tailwind semantic utilities. Keep `client/src/index.css` as the only styling entry point.
+3. Verify Light/Dark, English/Arabic, English/LTR exercise text, 1440/1280/1024/768/390/320 widths and 200% text/zoom behavior.
+4. Check keyboard-only navigation, skip-to-content, visible focus, dialog focus return, screen-reader states, forced-colour alternatives and reduced motion/pressure.
+5. Review loading, empty, unavailable, error, offline, permission, save-retry and confirmation states against section 10.
+
+**Done when**
+
+- Every anchor composition has reference-width evidence and a named stress state.
+- Landing sections follow their handoff order and do not invent efficacy, testimonials or progress.
+- Long Arabic labels, mixed-direction values and English typing passages remain readable without layout overflow.
+- No new mock, duplicate screen, second styling entry point or unsupported touch typing mode is added.
+- Any unresolved visual difference is linked to a specific frame/requirement and reviewed defect, not silently accepted.
+
+**Contract/schema note:** design work consumes implemented/live contracts and explicitly unavailable states; visual examples and policy TBD values remain non-authoritative.
+
 #### FE-28 — Complete admin moderation, certificate revocation and audit UI
 
 - **Owner:** Dev 5
@@ -1191,7 +1237,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 - **Owner:** Dev 5
 - **Reviewer:** Dev 1
 - **Estimate:** 6 h
-- **Dependencies:** FE-03, FE-08, FE-13, FE-18, FE-23, FE-28.
+- **Dependencies:** FE-03, FE-08, FE-13, FE-18, FE-23, FE-26, FE-28.
 - **Requirements:** SYS-38–45, 53–55.
 
 **Files to work in**
