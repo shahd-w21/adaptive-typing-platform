@@ -1,4 +1,4 @@
-// Existing development-fixture admin sections; shared navigation reflows without removing actions.
+// Existing admin sections; shared navigation reflows without removing actions.
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { useAdminPing } from './hooks/useAdmin.js';

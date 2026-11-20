@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { useMyCourses, useCourses } from '../hooks/useCourses.js';
-import {
-  setCourseReviewScenario,
-  getCourseReviewScenario,
-} from '../../../api/courses.js';
 import { Loading } from '../../../components/Loading.jsx';
 import { EmptyState } from '../../../components/EmptyState.jsx';
 import { ErrorMessage } from '../../../components/ErrorMessage.jsx';
@@ -23,7 +19,6 @@ export function MyCoursesPage() {
   const navigate = useNavigate();
 
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'in_progress' | 'completed'
-  const [scenario, setScenario] = useState(() => getCourseReviewScenario());
 
   const {
     data: myCoursesData,
@@ -37,13 +32,7 @@ export function MyCoursesPage() {
 
   const enrollments = myCoursesData?.enrollments || [];
   const courses = catalogData?.courses || [];
-  const isFixture = myCoursesData?.isFixture ?? true;
 
-  const handleScenarioChange = (newScenario) => {
-    setScenario(newScenario);
-    setCourseReviewScenario(newScenario);
-    refetchEnrollments();
-  };
 
   // Filter enrollments based on tab
   const filteredEnrollments = enrollments.filter((enr) => {
@@ -82,52 +71,6 @@ export function MyCoursesPage() {
         </button>
       </div>
 
-      {/* Fixture Notice */}
-      {isFixture && (
-        <div
-          role="note"
-          className="mb-6 rounded-card border border-warning-accent/40 bg-warning-soft/70 p-3.5 text-xs text-warning-text flex items-center justify-between"
-        >
-          <span>{t('courses.fixtureNotice')}</span>
-          <span className="rounded-control bg-warning-accent/20 px-2 py-0.5 font-mono font-bold uppercase text-[10px]">
-            {t('courses.frontendOnlyTag')}
-          </span>
-        </div>
-      )}
-
-      {/* Review Scenario Switcher */}
-      <div className="mb-6 rounded-control border border-dashed border-learning-accent/40 bg-learning-soft/30 p-3 text-xs">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="font-bold text-learning-strong flex items-center gap-1.5">
-            <span>🛠️</span>
-            <span>{t('courses.reviewScenarioTitle')}:</span>
-          </span>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleScenarioChange('default')}
-              className={`rounded-control px-2.5 py-1 font-semibold transition-colors ${
-                scenario === 'default'
-                  ? 'bg-learning-accent text-learning-foreground'
-                  : 'bg-surface text-ink border border-border-subtle hover:bg-subtle'
-              }`}
-            >
-              {t('courses.scenarioDefault')} ({enrollments.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => handleScenarioChange('empty_enrollments')}
-              className={`rounded-control px-2.5 py-1 font-semibold transition-colors ${
-                scenario === 'empty_enrollments'
-                  ? 'bg-learning-accent text-learning-foreground'
-                  : 'bg-surface text-ink border border-border-subtle hover:bg-subtle'
-              }`}
-            >
-              {t('courses.scenarioEmptyEnrollments')}
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Metrics Summary Strip */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

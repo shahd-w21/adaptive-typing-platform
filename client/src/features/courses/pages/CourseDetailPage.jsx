@@ -35,7 +35,6 @@ export function CourseDetailPage() {
   const enrollMutation = useEnrollCourse();
 
   const course = courseData?.course;
-  const isFixture = courseData?.isFixture ?? true;
   const enrollments = myCoursesData?.enrollments || [];
   const existingEnrollment = enrollments.find(
     (e) => e.courseId === course?.id || e.courseId === courseId,
@@ -128,18 +127,6 @@ export function CourseDetailPage() {
         </button>
       </div>
 
-      {/* Fixture Notice */}
-      {isFixture && (
-        <div
-          role="note"
-          className="mb-6 rounded-card border border-warning-accent/40 bg-warning-soft/70 p-3.5 text-xs text-warning-text flex items-center justify-between"
-        >
-          <span>{t('courses.fixtureNotice')}</span>
-          <span className="rounded-control bg-warning-accent/20 px-2 py-0.5 font-mono font-bold uppercase text-[10px]">
-            {t('courses.frontendOnlyTag')}
-          </span>
-        </div>
-      )}
 
       {/* Main Grid: Overview (2/3) + Sticky Action Sidebar (1/3) */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

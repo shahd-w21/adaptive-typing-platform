@@ -94,7 +94,6 @@ export function ForumView({ api }) {
         )}
       </div>
 
-      {forum.source === 'development-fixture' && <p role="note" className="mb-5 rounded-control border border-warning-accent/40 bg-warning-soft p-3 text-sm text-warning-text">{t('forum.fixtureNotice')}</p>}
       {notice && <p role="status" className="mb-5 rounded-control bg-success-soft p-3 text-success-text">{t(notice)}</p>}
 
       {!selection.threadId && forum.source !== 'unavailable' && <ForumFilters forum={forum} />}

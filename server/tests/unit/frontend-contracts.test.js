@@ -26,8 +26,8 @@ import {
   sessionResult,
   sessionSubmission,
   sessionHistoryResponse,
-} from '../../../client/src/mocks/sessions.js';
-import { studentUser } from '../../../client/src/mocks/users.js';
+} from '../../../client/tests/fixtures/data.js';
+import { studentUser } from '../../../client/tests/fixtures/data.js';
 import { QueryClient } from '@tanstack/react-query';
 import { fetchDashboard } from '../../../client/src/api/dashboard.js';
 import en from '../../../client/src/i18n/dictionaries/en.json' with { type: 'json' };

@@ -68,24 +68,6 @@ const VIEW_PATHS = {
   login: '/login',
   register: '/register',
 };
-const PROTECTED_PATHS = new Set([
-  '/dashboard',
-  '/learning-path',
-  '/path',
-  '/practice',
-  '/review',
-  '/tests',
-  '/progress',
-  '/achievements',
-  '/certificates',
-  '/forum',
-  '/admin',
-  '/profile',
-  '/typing',
-  '/courses',
-  '/my-courses',
-]);
-
 function routeForView(view) {
   return VIEW_PATHS[view] ?? '/';
 }
@@ -446,7 +428,6 @@ function AppRoutes() {
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth,
   );
-  const [fixtureSession, setFixtureSession] = useState(null);
   const assignment = session.assignment;
   const activeSessionConfig =
     assignment || session.result
@@ -456,9 +437,7 @@ function AppRoutes() {
           assignedText: assignment?.text ?? '',
           source: 'server',
         }
-      : fixtureSession?.ownerId === user?.id
-        ? fixtureSession
-        : null;
+      : null;
   const [deviceGuidanceOpen, setDeviceGuidanceOpen] = useState(false);
 
   useEffect(() => {
@@ -469,8 +448,6 @@ function AppRoutes() {
 
   const onNavigate = (view) => {
     const path = routeForView(view);
-    if (!PROTECTED_PATHS.has(path) && path !== '/typing')
-      setFixtureSession(null);
     navigate(path);
   };
 
@@ -488,22 +465,14 @@ function AppRoutes() {
       }
       return;
     }
-    setFixtureSession({
-      ownerId: user?.id,
-      sessionId: `fixture-${Date.now()}`,
-      mode: config.mode || 'Sample Practice',
-      assignedText:
-        config.assignedText ||
-        'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
-      source: 'development-fixture',
-    });
-    navigate('/typing');
+    if (await session.controller.startPractice()) {
+      navigate('/typing');
+    }
   };
 
   /** Local logout always clears private state, even if server revocation fails. */
   const handleLogout = async () => {
     session.controller.clear();
-    setFixtureSession(null);
     navigate('/', { replace: true });
     try {
       await signOut();
@@ -572,7 +541,6 @@ function AppRoutes() {
               <AuthenticatedLayout
                 activeSessionConfig={activeSessionConfig}
                 session={session}
-                onClearSession={() => setFixtureSession(null)}
                 onNavigate={onNavigate}
                 onLogout={handleLogout}
                 onRetrySession={restartSession}

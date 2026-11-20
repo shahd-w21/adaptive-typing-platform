@@ -199,7 +199,7 @@ Persistence practices are in [development](development.md#database-workflow); Fi
 
 The tree below records the frontend scaffold and includes reserved future modules. App routing/providers, authentication, preferences, the shared Fetch transport and several data hooks now have implementations; other files remain comment-only placeholders. Preserve existing teammate screens, styles, translations, icons and typing behavior. Inspect a module before importing it; a listed filename does not guarantee usable exports. `tests/e2e/` remains a reservation, not evidence of executable browser coverage. Section 6 explains current real-API and fixture flows.
 
-Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies. Add formatting helpers, schema-valid development fixtures or browser-only schemas when concrete implementation needs them, not as empty parallel layers.
+Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies or runtime mock fallbacks.
 
 ```text
 client/
@@ -361,7 +361,6 @@ client/
 │   │   └── useTranslation.js
 │   ├── lib/
 │   │   └── queryKeys.js
-│   ├── mocks/                      # unwired synthetic DTOs; see mocks/README.md
 │   │   ├── dashboard.js
 │   │   ├── errors.js
 │   │   ├── gamification.js
