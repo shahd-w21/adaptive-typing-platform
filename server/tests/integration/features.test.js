@@ -240,7 +240,8 @@ test('registration, single-use verification, CSRF, logout and reset revocation',
   assert.equal((await database.user.findUnique({ where: { email } })).role, 'STUDENT');
   await agent.post('/api/v1/auth/login').send({ email, password }).expect(403);
   const token = emailToken(inbox.at(-1));
-  await agent.post('/api/v1/auth/verify-email').send({ token }).expect(200);
+  await agent.post('/api/v1/auth/verify-email').send({ email: `wrong-${email}`, token }).expect(400);
+  await agent.post('/api/v1/auth/verify-email').send({ email, token }).expect(200);
   await agent.post('/api/v1/auth/verify-email').send({ token }).expect(400);
   const signedIn = await agent.post('/api/v1/auth/login').send({ email, password }).expect(200);
   const cookie = signedIn.headers['set-cookie'][0].split(';')[0];
@@ -250,7 +251,7 @@ test('registration, single-use verification, CSRF, logout and reset revocation',
   const relogin = await agent.post('/api/v1/auth/login').send({ email, password }).expect(200);
   const resetCookie = relogin.headers['set-cookie'][0].split(';')[0];
   await agent.post('/api/v1/auth/forgot-password').send({ email }).expect(200);
-  await agent.post('/api/v1/auth/reset-password').send({ token: emailToken(inbox.at(-1)), password: 'ChangedPass123' }).expect(200);
+  await agent.post('/api/v1/auth/reset-password').send({ token: emailToken(inbox.at(-1)), password: 'ChangedPass123', confirmPassword: 'ChangedPass123' }).expect(200);
   await agent.get('/api/v1/auth/me').set('Cookie', resetCookie).expect(401);
 }));
 

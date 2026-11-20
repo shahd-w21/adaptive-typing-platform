@@ -8,7 +8,7 @@ import {
   registerSchema,
   loginSchema,
   emailSchema,
-  tokenSchema,
+  verifyEmailSchema,
   resetPasswordSchema,
   profileSchema,
   changePasswordSchema,
@@ -26,6 +26,8 @@ import {
   sessionAbandonmentSchema,
   idSchema,
   emptyRequestSchema,
+  publicCertificateSchema,
+  emailChangeSchema,
 } from '@typeflow/shared';
 
 const API_BASE_URL = (
@@ -102,8 +104,7 @@ const failure = (code, options) =>
 // These rules describe client validation, not server access-control enforcement.
 const contracts = {
   'POST /auth/register': [registerSchema, acknowledgementSchema],
-  'POST /auth/verify-email': [tokenSchema, acknowledgementSchema],
-  'POST /auth/resend-verification': [emailSchema, acknowledgementSchema],
+  'POST /auth/verify-email': [verifyEmailSchema, acknowledgementSchema],
   'POST /auth/login': [loginSchema, authResponseSchema],
   'GET /auth/me': [null, authResponseSchema],
   'POST /auth/logout': [emptyRequestSchema, acknowledgementSchema, true],
@@ -117,6 +118,8 @@ const contracts = {
     true,
   ],
   'DELETE /users/me': [deleteAccountSchema, acknowledgementSchema, true],
+  'POST /users/me/email': [emailChangeSchema, acknowledgementSchema, true],
+  'GET /certificates/verify/:code': [null, publicCertificateSchema],
   'POST /sessions': [startSessionSchema, sessionAssignmentSchema, true],
   'POST /sessions/start': [startSessionSchema, sessionAssignmentSchema, true],
   'GET /sessions': [null, sessionHistorySchema],
@@ -141,6 +144,10 @@ function contractFor(path, method) {
       throw failure('INVALID_REQUEST');
     }
     path = `/sessions/:id${session[2] || ''}`;
+  }
+  const certificate = path.match(/^\/certificates\/verify\/([^/]+)$/);
+  if (certificate) {
+    path = '/certificates/verify/:code';
   }
   return contracts[`${method} ${path}`];
 }

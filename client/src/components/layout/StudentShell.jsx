@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
@@ -108,9 +109,9 @@ export function StudentShell({
         className="max-lg:hidden sticky top-0 z-40 flex h-dvh w-[var(--sidebar-width)] shrink-0 flex-col border-e border-e-border-subtle bg-surface/95 shadow-[1px_0_0_color-mix(in_srgb,var(--tf-color-border-subtle)_35%,transparent)] backdrop-blur"
       >
         {/* Brand */}
-        <button type="button" className="flex h-[var(--header-height)] items-center gap-2.5 border-0 border-b border-b-border-subtle bg-transparent px-5 text-start" onClick={() => onNavigate(role === 'admin' ? 'admin' : 'dashboard')}>
+        <Link to="/" aria-label={t('navigation.homeLabel')} className="flex h-[var(--header-height)] items-center gap-2.5 border-0 border-b border-b-border-subtle bg-transparent px-5 text-start">
           <BrandLogo />
-        </button>
+        </Link>
 
         {/* Nav Links */}
         <nav aria-label={navigationLabel} className="py-4 px-3 flex-1 overflow-y-auto">
@@ -188,7 +189,9 @@ export function StudentShell({
         className="m-0 me-auto h-dvh w-[min(20rem,90vw)] p-4"
       >
         <div className="mb-4 flex items-center justify-between">
-          <BrandLogo />
+          <Link to="/" aria-label={t('navigation.homeLabel')} className="shrink-0">
+            <BrandLogo />
+          </Link>
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(false)}

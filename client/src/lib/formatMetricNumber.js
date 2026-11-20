@@ -1,6 +1,7 @@
 /** Display-only metric formatting shared by result cards and session history. */
 const metricNumberFormatter = new Intl.NumberFormat('en-US', {
-  maximumFractionDigits: 2,
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
   useGrouping: false,
 });
 

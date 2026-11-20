@@ -59,7 +59,7 @@ export function OfficialResult({
       {/* 4 Distinct Metrics Row */}
       <div className="grid grid-cols-[repeat(auto-fit,_minmax(170px,_1fr))] gap-4 mb-8">
         {/* Net WPM */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.netWpm')}
           </div>
@@ -70,7 +70,7 @@ export function OfficialResult({
         </div>
 
         {/* Gross WPM */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.grossWpm')}
           </div>
@@ -81,7 +81,7 @@ export function OfficialResult({
         </div>
 
         {/* Raw Accuracy */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-success-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.rawAccuracy')}
           </div>
@@ -101,7 +101,7 @@ export function OfficialResult({
         </div>
 
         {/* Final Accuracy */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.finalAccuracy')}
           </div>

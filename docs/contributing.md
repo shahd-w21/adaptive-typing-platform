@@ -63,7 +63,7 @@ The course model is approved in [decision 0008](decisions.md#0008), and frontend
 | Generation and authoring | Validated cache/LLM/fallback with course constraints; admin draft/preview/validate/publish/archive and version compatibility demonstrated |
 | Integration/evaluation | Second course proves evidence transfer with separate progress; retry/concurrency, rewards, privacy, certificates distinction, accessibility and simulation checks |
 
-Within each approved phase, the team can work in parallel on course/admin APIs, pure adaptive/generation logic, student/admin UI and acceptance/content tasks against agreed shared contracts. Coordinate Prisma/shared schemas, session submission and routing changes explicitly. Figma comes after the course flow is agreed and before page implementation; recheck the existing design rather than discarding teammate work. Keep live LLM integration behind validated fallback, and agree objectives before bulk-authoring courses.
+Within each approved phase, the team can work in parallel on course/admin APIs, pure adaptive/generation logic, student/admin UI and acceptance/content tasks against agreed shared contracts. Coordinate Prisma/shared schemas, session submission and routing changes explicitly. Use the ten existing Figma frames for page implementation and agree any additional course flows against the SRS. Keep live LLM integration behind validated fallback, and agree objectives before bulk-authoring courses.
 
 ## Definition of done
 
@@ -115,7 +115,7 @@ Contract-valid development mocks and synthetic fixtures remain allowed for paral
 
 ### Figma to the planned architecture
 
-Design foundations first, then keep screen design about one phase ahead of implementation. Use [DESIGN.md](../DESIGN.md) for current tokens, component states, Light/Dark, English/Arabic and responsive coverage; do not replace it with the older reference template.
+Start with the matching frame in the [Figma implementation reference](../DESIGN.md#main-screen-references). Read its linked composition and semantic tokens before mapping components. Compare Light/English desktop and the mobile dashboard with Figma. Validate the required dark, Arabic and responsive adaptations separately.
 
 1. Identify the approved frame/node, appearance, language and viewport, plus its primary and edge states. Record a stable design link and destination feature.
 2. Map Figma variable/style names to the project's semantic styling tokens. Map existing Figma components to reusable UI components before generating another copy. Code Connect may be used where available and useful; it is not a new baseline dependency.

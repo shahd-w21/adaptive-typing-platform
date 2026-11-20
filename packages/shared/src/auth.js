@@ -34,16 +34,19 @@ export const emailSchema = z.object({ email });
 export const tokenSchema = z.object({
   token: z.string().regex(/^[a-f0-9]{64}$/),
 });
+export const verifyEmailSchema = z.object({
+  email,
+  token: tokenSchema.shape.token,
+});
 export const resetPasswordSchema = z
   .object({
     token: tokenSchema.shape.token,
     password,
-    confirmPassword: z.string().optional(),
+    confirmPassword: z.string(),
   })
   .refine(
-    (value) =>
-      value.confirmPassword === undefined ||
-      value.password === value.confirmPassword,
+    (value) => value.password === value.confirmPassword,
+    { path: ['confirmPassword'] },
   );
 // Authenticated password changes require both the old password and confirmation.
 export const changePasswordSchema = z
@@ -56,6 +59,10 @@ export const changePasswordSchema = z
 // Account deletion requires password confirmation, even with an active cookie.
 export const deleteAccountSchema = z.object({
   password: z.string().min(1).max(256),
+});
+export const emailChangeSchema = z.object({
+  currentPassword: z.string().min(1),
+  newEmail: email,
 });
 // PATCH fields are optional so omitted values remain unchanged on the server.
 // Reject unknown keys at both levels and reject an entirely empty patch.

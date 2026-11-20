@@ -92,7 +92,7 @@ These formulas are project conventions. The result screen must label gross WPM, 
 
 | User class | Privileges |
 | --- | --- |
-| Guest | View landing page; register, verify email, log in, reset password and verify a certificate |
+| Guest | Explore public pages and courses; try guest typing, view the attempt result and replay; register, verify email, log in, reset password and verify a certificate |
 | Student | Practise, take tests, view own progress, earn rewards/certificates, use the forum and manage own account |
 | Admin | Manage users, content, settings, moderation, certificates and platform statistics |
 
@@ -337,7 +337,9 @@ The owner approved multiple courses, each with its own learning path, and admin 
 
 **Shared skill, separate course progress.** Maintain one per-user key/pair evidence profile for the supported layout/language; do not reset it on enrollment or duplicate it per course. Enrollment records the course version and its own lesson progress, placement/exemption decisions and completion. Only compatible learning evidence transfers: practice against the same skill definitions may contribute to multiple objectives, but unrelated course lessons are not auto-completed. Evaluate any transferred eligibility against the selected course's captured targets and prerequisites. A published course's declared key set must be explicitly introduced or supported by eligible prior evidence; unrelated global unlocks must not silently widen an assignment's alphabet. Broad placement is an explicit assessment exception to ordinary locked-key practice restrictions. Due reviews stay user-level and can be recommended within a compatible course or through the existing Review activity.
 
-**Placement recommendation.** Offer one optional broad placement at the student's first learning entry, not on every website visit/login. Skipping starts at the selected course's beginner entry without fabricated evidence. On joining another course, reuse compatible evidence and show a suggested starting point; offer a targeted entry check only for missing/insufficient evidence. Students can decline and start at an available beginner entry; advanced courses with unmet safety/skill prerequisites remain locked and direct them to suitable beginner work. Reassessment is optional and rate-limited under a policy still to agree. Placement exemptions are distinct from mastery and completed learning, award no XP/certificate, preserve prerequisite order and use section 9.2 evidence rules. Reassessment does not erase earned progress or replace established learning evidence with sparse test samples. Stale/contradictory evidence can trigger a recommended check; its freshness policy is TBD.
+**Guest entry.** Landing and account pages offer Continue as a guest. Allow public course exploration, desktop practice, attempt-level speed/accuracy, replay and return to browsing before registration. Mobile visitors can browse and receive device guidance. Guest status is unauthenticated. Saved account history, enrollment, mastery, rewards and official results belong to the authenticated learner. The guest result offers account creation for future history. Guest progress transfer has no approved contract.
+
+**Placement recommendation.** Present a provisional starting level, recommended course and eligible first lesson with a readable reason. Lead with placement on first verified entry and keep Skip to the home row available. The adaptive walkthrough uses repeated D-for-F substitutions as an example of prior evidence informing a drill. Offer one optional broad placement at the student's first learning entry, not on every website visit/login. Skipping starts at the selected course's beginner entry without fabricated evidence. On joining another course, reuse compatible evidence and show a suggested starting point; offer a targeted entry check only for missing/insufficient evidence. Students can decline and start at an available beginner entry; advanced courses with unmet safety/skill prerequisites remain locked and direct them to suitable beginner work. Reassessment is optional and rate-limited under a policy still to agree. Placement exemptions are distinct from mastery and completed learning, award no XP/certificate, preserve prerequisite order and use section 9.2 evidence rules. Reassessment does not erase earned progress or replace established learning evidence with sparse test samples. Stale/contradictory evidence can trigger a recommended check; its freshness policy is TBD.
 
 **LLM and fallback.** Build the generation spec from the course-version lesson constraints plus the student's eligible skill state and captured settings. Reuse the existing validated cache/LLM/fallback pipeline, bounded retries and feasibility rules. Cache compatibility includes effective constraints and content/validation versions; never reuse text solely because two lessons have the same title. LLM output supplies practice text, not curriculum structure, prerequisite policy or official results. Curated introductory text and constrained drills remain valid when a narrow alphabet cannot support themed prose. Unavailable LLM service must not block an otherwise feasible course.
 
@@ -363,7 +365,7 @@ Use HTTPS, validated server inputs, ownership checks, CSRF protection, explicit 
 
 Support keyboard navigation, visible focus, adequate contrast, non-colour error indicators, large text and reduced-pressure mode. Do not capture typing outside the exercise. Test the exercise in current desktop Chrome, Edge and Firefox, recording actual versions at release.
 
-Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; large text and essential non-text indicators at least 3:1. Test actual foreground/background states, not only palette swatches. Non-typing content shall reflow at 320 CSS pixels without page-wide horizontal scrolling; genuinely two-dimensional data may scroll within an accessible region. Responsive controls should offer at least 44 × 44 CSS pixel hit areas. Verify keyboard, screen-reader, zoom and Arabic mixed-direction behaviour. [DESIGN.md](../DESIGN.md) owns proposed colours, typography, layout breakpoints and reference frames, not scoring thresholds.
+Light and Dark shall target WCAG 2.2 AA contrast: normal text at least 4.5:1; large text and essential non-text indicators at least 3:1. Test actual foreground/background states, not only palette swatches. Non-typing content shall reflow at 320 CSS pixels without page-wide horizontal scrolling; genuinely two-dimensional data may scroll within an accessible region. Responsive controls should offer at least 44 × 44 CSS pixel hit areas. Verify keyboard, screen-reader, zoom and Arabic mixed-direction behaviour. [DESIGN.md](../DESIGN.md) owns the Figma colours, typography, layout breakpoints and reference frames, not scoring thresholds.
 
 ### 10.3 Reliability and maintainability
 
@@ -409,6 +411,8 @@ The planning assumption is five students and 6–8 weeks; confirm the actual dea
 ```mermaid
 flowchart LR
     Guest --> Accounts[Register / verify / login / reset]
+    Guest --> Browse[Browse public courses]
+    Browse --> Try[Desktop guest practice and result]
     Guest --> Verify[Verify certificate]
     Student --> Placement[Placement and keyboard path]
     Student --> Learn[Lessons / adaptive practice / review]
@@ -455,7 +459,7 @@ Figure 3. Core conceptual relationships, not a complete database schema. A sessi
 | Profile/settings | Name, timezone, target, daily goal, accessibility, Appearance & language, deletion |
 | Admin | Analytics, users, content, settings, moderation, certificates and audit |
 
-This is a page inventory, not a prototype. Use [DESIGN.md](../DESIGN.md) for the proposed desktop/mobile and Light/Dark × English/Arabic screen brief; no Figma prototype or working UI is verified by these documents.
+This is a page inventory, not a prototype. Use [DESIGN.md](../DESIGN.md) for the ten existing Figma reference screens and required responsive, theme and locale coverage. Prototype links illustrate navigation; implementation and accessibility require browser verification.
 
 ## 13. Scenarios and use cases
 

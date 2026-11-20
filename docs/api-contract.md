@@ -135,13 +135,12 @@ All names are proposed; freeze routes and full shapes per phase, not all at once
 | Method/path (under base path) | Access | Input/output intent |
 | --- | --- | --- |
 | `POST /auth/register` | Public, rate-limited | Email/password → verification-needed acknowledgement |
-| `POST /auth/verify-email` | Public, rate-limited | One-time token → acknowledgement |
-| `POST /auth/resend-verification` | Public, rate-limited | Email → safe acknowledgement |
+| `POST /auth/verify-email` | Public, rate-limited | Registration email + one-time token → acknowledgement; both identify the same account |
 | `POST /auth/login` | Public, rate-limited | Email/password → public user DTO + cookie |
 | `POST /auth/logout` | Authenticated | Revoke current session, clear cookie |
 | `GET /auth/me` | Authenticated | Public user DTO including own presentation preferences |
 | `POST /auth/forgot-password` | Public, rate-limited | Email → same acknowledgement whether account exists or not |
-| `POST /auth/reset-password` | Public, rate-limited | Token/new password → acknowledgement; revoke sessions |
+| `POST /auth/reset-password` | Public, rate-limited | Token/new password/confirmation → acknowledgement; revoke sessions |
 | `PATCH /users/me` | Owner (Student or Admin) | Allowlisted profile/preferences fields → updated DTO; partial preference merge |
 | `DELETE /users/me` | Owner | Deletion confirmation contract TBD → completion/status |
 | `POST /sessions` | Student | Mode/options → server assignment |
@@ -334,3 +333,9 @@ Fill this for each phase and retain previous agreements when evolving the contra
 | Verification evidence | Not run |
 
 Before marking agreed, settle required/optional/null fields, time units, permission checks, error codes, pagination, duplicate/concurrent behaviour and matching mocks. A breaking change needs coordination and an updated decision/contract, not a silent field rename.
+
+## Guest practice integration boundary
+
+Approved public flows cover course exploration, guest typing and an attempt result with gross WPM and raw accuracy. No guest endpoint, identity mechanism, durable storage or guest-to-account import is specified by the Figma prototype. Keep existing authenticated assignment, submit, result and history contracts owner-scoped. A guest summary is separate from an official saved result. If server support is chosen for guest attempts, document inputs, abuse limits, lifetime and response authority before exposing it.
+
+For a signed-in save retry, reuse the original attempt identifier and payload. Render confirmed metrics and rewards only after the authoritative response. The Figma saving transition is illustrative, not a timeout-based success condition.

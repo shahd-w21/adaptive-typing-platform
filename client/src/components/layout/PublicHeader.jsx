@@ -5,16 +5,19 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
 import { MenuIcon, XIcon } from '../ui/Icons.jsx';
 import { BrandLogo } from '../ui/BrandLogo.jsx';
+import { useAuth } from '../../hooks/useAuth.js';
 
 /** Preserve FE-01 view callbacks while providing a keyboard-accessible mobile menu. */
 export function PublicHeader({ activeTab, onNavigate }) {
   const { t } = useTranslation();
+  const { status, user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
   const previousTab = useRef(activeTab);
@@ -68,9 +71,9 @@ export function PublicHeader({ activeTab, onNavigate }) {
       <a href="#main-content" className="skip-link">{t('navigation.skipToContent')}</a>
       <header className="site-header sticky top-0 z-50 flex min-h-[var(--header-height)] flex-wrap items-center justify-between gap-2 border-b border-border-subtle bg-surface/90 px-3 py-2 backdrop-blur-xl md:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3 lg:gap-6">
-          <button type="button" onClick={() => navigate('landing')} aria-label={t('navigation.homeLabel')} className="flex min-h-11 items-center gap-2 rounded-control text-ink">
+          <Link to="/" aria-label={t('navigation.homeLabel')} className="flex min-h-11 items-center gap-2 rounded-control text-ink">
             <BrandLogo />
-          </button>
+          </Link>
           <nav aria-label={t('navigation.public')} className="hidden items-center gap-2 md:flex">{renderLinks()}</nav>
         </div>
         <button type="button" className="flex size-11 items-center justify-center rounded-control text-ink hover:bg-subtle md:hidden" aria-label={t('nav.openMenu')} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(true)}>
@@ -79,8 +82,17 @@ export function PublicHeader({ activeTab, onNavigate }) {
         <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
           <LanguageSelector compact />
           <AppearanceSelector compact />
-          <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-subtle">{t('nav.login')}</button>
-          <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.register')}</button>
+          {status === 'authenticated' ? (
+            <>
+              <button type="button" onClick={() => navigate(user?.role === 'admin' ? 'admin' : 'dashboard')} className="min-h-11 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.dashboard')}</button>
+              <button type="button" onClick={() => signOut()} className="min-h-11 rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-subtle">{t('nav.logout')}</button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-subtle">{t('nav.login')}</button>
+              <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.register')}</button>
+            </>
+          )}
         </div>
       </header>
       <Dialog open={menuOpen} onClose={() => setMenuOpen(false)} id={menuId} label={t('navigation.public')} className="m-0 me-auto h-dvh w-[min(20rem,90vw)] p-4">
@@ -90,8 +102,17 @@ export function PublicHeader({ activeTab, onNavigate }) {
         </div>
         <nav aria-label={t('navigation.public')} className="flex flex-col gap-2">
           {renderLinks()}
-          <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.login')}</button>
-          <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-control bg-action-primary px-3 py-2 text-start font-bold text-action-foreground hover:bg-action-hover">{t('nav.register')}</button>
+          {status === 'authenticated' ? (
+            <>
+              <button type="button" onClick={() => navigate(user?.role === 'admin' ? 'admin' : 'dashboard')} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.dashboard')}</button>
+              <button type="button" onClick={() => signOut()} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.logout')}</button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.login')}</button>
+              <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-control bg-action-primary px-3 py-2 text-start font-bold text-action-foreground hover:bg-action-hover">{t('nav.register')}</button>
+            </>
+          )}
         </nav>
       </Dialog>
     </>

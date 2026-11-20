@@ -132,6 +132,10 @@ Frontend styling uses Tailwind CSS through the Vite plugin. Put component styles
 | Add words, themes or key groups | [Content guide](docs/content-guide.md) |
 | Accepted choices and unresolved questions | [Decisions](docs/decisions.md) |
 | Current task/phase handoff | [Current state](docs/context/current-state.md) |
-| Visual system and Figma screen brief | [DESIGN.md](DESIGN.md) |
+| Figma implementation reference, ten screen links and semantic palette | [DESIGN.md](DESIGN.md) |
 
 AI agents start with [AGENTS.md](AGENTS.md). Teammates do not need to read every document before contributing. Setup belongs here; numerical learning rules belong in the SRS; design proposals and draft API fields retain their own review status.
+
+## Current design handoff
+
+Use [DESIGN.md](DESIGN.md) for the Figma screen flows, shared components, light/dark palette and responsive behavior. Guest practice and the first-visit placement journey are approved product targets. Consult the [implemented API contract](docs/api-contract.md#teammate-backend-migration) for current service coverage.

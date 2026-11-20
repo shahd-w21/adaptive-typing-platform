@@ -13,6 +13,11 @@ export const changeMyPassword = (values, csrfToken) => request('/users/me/passwo
   csrfToken,
   body: JSON.stringify(values),
 });
+export const requestEmailChange = (values, csrfToken) => request('/users/me/email', {
+  method: 'POST',
+  csrfToken,
+  body: JSON.stringify(values),
+});
 
 export const deleteMyAccount = (password, csrfToken) => request('/users/me', {
   method: 'DELETE',

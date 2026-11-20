@@ -102,7 +102,7 @@ The client uses Tailwind CSS v4 with `@tailwindcss/vite`. Root workspace install
 
 Keep CSS limited to shared theme values, document defaults, focus/reduced-motion rules and keyframes. Avoid new screen-specific stylesheets or fixed inline styles. Inline widths remain only for values supplied by data, such as session progress and keyboard key widths. The retired `App.css`, `styles/index.css` and `styles/tokens.css` are consolidated into the single entry point.
 
-The owner's 19 October 2026 appearance update selects a shared Mint palette for Light and Dark modes. Light uses off-white/white surfaces and deep mint actions; Dark uses a black canvas, charcoal surfaces and bright mint actions. Both share green progress, blue links/focus and gold rewards, with shades tuned for contrast. Tokens remain in `client/src/index.css` and match the updated [design colour system](../DESIGN.md#3-proposed-typeflow-colour-system). The existing Light/Dark/System preference resolves to the same two themes; native controls follow the resolved colour scheme. Client lint, production build and 94 opaque contrast checks across both modes pass; this colour change does not verify API integration or broader feature readiness.
+Historical CSS baseline (19 October 2026): the Mint styling pass reported 94 opaque contrast checks. For new frontend work, map the [current Figma semantic palette](../DESIGN.md#3-typeflow-colour-system) into the existing styling entry point. Keep Light/Dark/System preference behaviour. Recheck rendered contrast after integration; the earlier checks apply only to that CSS revision.
 
 Migration checks: lint, unit tests and production build pass. Server-rendered screen/state checks cover English/Arabic, both typing text sizes and keyboard states, and verify their utilities exist in the compiled CSS. Browser layout verification remains outstanding because no browser is available in this session. Backend/API integration is outside this styling change.
 
@@ -287,6 +287,18 @@ Verified on 22 October 2026 before the seed password change: two `npm run db:see
 | A documented script is missing | Foundations have not supplied that part of the target workflow; implement it in the setup task rather than inventing a successful run |
 
 Before deployment, add verified provider/release commands, secret owners, backup/restore evidence, maintenance catch-up and rollback steps here. Hosting, operational/audit/backup retention and final performance environment remain open decisions.
+
+### FE-29 browser acceptance evidence — 13 November 2026
+
+Run the focused account and preference checks with:
+
+```powershell
+npm run test:ui --workspace=client -- tests/e2e/account.spec.js tests/e2e/preferences.spec.js
+```
+
+The run passed **4 tests** in Chrome using the isolated Vite origin on 13 November 2026. It uses intercepted API fixtures intentionally: no developer database rows, cookies or account preferences are created. The covered flows are generic login failure messaging, authenticated Dashboard/Logout navigation, logout cleanup, visitor/account preference precedence, failed-save retry, Arabic RTL, Light/Dark themes, keyboard focus, axe accessibility checks and 390px reflow.
+
+This is browser acceptance of the frontend state transitions, not evidence that the fixture responses are a live API. Pair it with `npm run test:integration` for PostgreSQL ownership/authentication persistence and perform final human screen-reader/cross-browser review before release.
 
 ### Development ports
 

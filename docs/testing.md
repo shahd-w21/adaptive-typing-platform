@@ -99,7 +99,7 @@ Owner Dev 5 and reviewer Dev 4 must still demonstrate the behavior together and 
 
 ## Appearance, interface language and responsive acceptance
 
-SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns proposed tokens, frame sizes and layouts. These checks are planned, not executed browser evidence.
+SRS SYS-53–56 and section 10.5 own behaviour; [DESIGN.md](../DESIGN.md) owns the Figma tokens, frame links, reference sizes and implementation layouts. These checks are planned, not executed browser evidence. For visual parity, use the [ten linked frames](../DESIGN.md#main-screen-references), including the flat navy hero/showcase join, sole curved transition into the course map, 50/50 account split and mobile journal order. Compare the light English screens first, then verify the required dark and Arabic adaptations.
 
 | Area | Required checks |
 | --- | --- |
@@ -141,7 +141,7 @@ Applied Open Sans to English UI roles, retained Noto Sans Arabic and IBM Plex Mo
 
 Client production build and client lint passed. The existing production bundle-size warning remains. The targeted shared-interface run passed all 18 browser checks with one worker: public/Student/Admin navigation in English/Arabic and Light/Dark at 320px; keyboard navigation and preference menus; increased-text Admin reflow; active session continuity across presentation/viewport/reduced-motion changes; and new Light/Dark checks for stable hover/press bounds, immediate keyboard feedback and live reduced-motion updates. Browser flows use explicit API fixtures and fallback fonts, not real accounts or database writes.
 
-All 70 runtime colour assignments still match DESIGN.md; `git diff --check` passed. These checks do not establish full application, backend, screen-reader or cross-browser acceptance. Remaining page compositions and optional overlay/milestone animations are separate work.
+At the time of that historical check, all 70 runtime colour assignments matched the then-current brief; `git diff --check` passed. These checks do not establish full application, backend, screen-reader or cross-browser acceptance. Remaining page compositions and optional overlay/milestone animations are separate work.
 
 Visual follow-up: the sandboxed external-font review timed out; repeating the review outside the sandbox loaded Open Sans (400/700/800) and Noto Sans Arabic (400/700/800). English desktop (1440px) and Arabic mobile (390px) screenshots were inspected in both themes with reduced motion enabled; no horizontal page overflow was detected. The landing page still has existing untranslated English copy and bidirectional punctuation in the Arabic shell. These content/direction defects remain for the landing phase; this foundation change does not claim complete landing localization. Monospace exercise font selection is preserved; no new glyph-legibility acceptance claim is made.
 
@@ -168,3 +168,26 @@ Added focused-practice guidance, four native FAQ disclosures, and a full-width f
 - Updated the existing routed `AuthModal` with a branded header, start-aligned copy, larger labelled fields, password visibility, registration guidance, verification notice and a separated account-switch action. Shared tokens cover both themes; email/password entry remains LTR in Arabic. No auth routes, schemas, request shapes or backend code changed.
 - Build and lint passed. Four account browser checks passed across English/Arabic and Light/Dark with intercepted API fixtures, covering invalid credentials, confirmation mismatch/focus, show/hide, mode switching, registration notice/reset, Escape, 320px reflow and automated dialog accessibility. No real accounts were created. Desktop login and mobile registration screenshots were reviewed using fallback fonts.
 - The existing public keyboard/focus test initially timed out on page loading; its isolated retry passed. Five targeted checks therefore passed across two runs, not the entire browser suite. Existing bundle-size warning remains; Arabic copy still needs team wording review.
+
+## Figma journey acceptance
+
+Planned browser and integration checks:
+
+- Enter as a guest from landing, login and registration. Browse the course, finish a desktop attempt, inspect the attempt metrics, replay and return. Check that no sign-in guard blocks these steps and no account history, XP or mastery is written. On mobile, check course browsing and desktop-keyboard guidance.
+- After verification, take placement and compare the provisional level, reason, suggested course and eligible starting lesson to actual assessment data. Skip to the home row. A returning learner should reach their own dashboard without repeating placement.
+- Open both landing menus using pointer and keyboard. Move from trigger to item, switch menus, dismiss with Escape and restore focus. Check the touch alternative.
+- Exercise all four hand-guide/reduced-pressure combinations mid-passage. Assert identical input, focus position, elapsed time and scoring. Check the active key and error underline in light, dark and Arabic UI with LTR English text.
+- Simulate a slow save, a lost response and retry. Preserve the passage and attempt ID and verify one official result and one reward application. Check the difference between a guest summary, a worked example and an account result.
+- Compare the main screens and supplemental frames with the [design guide](../DESIGN.md). Check chart labels on neutral surfaces, full-width account artwork, map states, CTA padding, desktop/mobile reflow and non-color cues.
+
+## FE-29 account/public/preferences browser evidence — 13 November 2026
+
+The focused FE-29 suite passed with Chrome through the existing isolated Playwright/Vite setup:
+
+```powershell
+npm run test:ui --workspace=client -- tests/e2e/account.spec.js tests/e2e/preferences.spec.js
+```
+
+Result: **4 passed in 8.3 seconds**. The checks cover generic invalid-login messaging without account disclosure, successful authenticated Dashboard/Logout actions, logout cleanup, keyboard focus containment and axe checks on a 390px viewport, visitor preference restoration, account preference precedence at sign-in, failed partial preference save with explicit retry, Arabic RTL, Light/Dark themes, and mobile no-overflow validation.
+
+The browser/version is the Playwright `channel: 'chrome'` configured in [client/playwright.config.js](../client/playwright.config.js); the run date is 13 November 2026. API requests are intercepted by the tests, so these checks prove UI state transitions and request boundaries without writing developer accounts or preferences. Real PostgreSQL authentication and persistence remain covered by the server integration suite; cross-browser and human screen-reader review remain open.
