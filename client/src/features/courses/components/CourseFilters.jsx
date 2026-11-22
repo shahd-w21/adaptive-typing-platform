@@ -14,8 +14,6 @@ import { RotateCcwIcon, XIcon } from '../../../components/ui/Icons.jsx';
  * @param {string} props.status Selected status ('all' | 'published' | 'archived')
  * @param {(val: string) => void} props.onStatusChange Status change handler
  * @param {() => void} props.onReset Reset handler
- * @param {string} [props.scenario] Active review scenario
- * @param {(scenario: string) => void} [props.onScenarioChange] Review scenario switch handler
  */
 export function CourseFilters({
   search,
@@ -27,8 +25,6 @@ export function CourseFilters({
   status,
   onStatusChange,
   onReset,
-  scenario = 'default',
-  onScenarioChange,
 }) {
   const { t, isRTL } = useTranslation();
 
@@ -138,7 +134,7 @@ export function CourseFilters({
               key={opt.id}
               type="button"
               onClick={() => onLevelChange(opt.id)}
-              className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-all ${
+              className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-colors ${
                 isActive
                   ? 'bg-learning-accent text-learning-foreground shadow-sm'
                   : 'bg-page text-muted hover:bg-subtle hover:text-ink border border-border-subtle'
@@ -150,38 +146,6 @@ export function CourseFilters({
         })}
       </div>
 
-      {/* Review & Fixture Verification Toolbar */}
-      {onScenarioChange && (
-        <div className="mt-3 rounded-control border border-dashed border-learning-accent/40 bg-learning-soft/30 p-3 text-xs">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-bold text-learning-strong flex items-center gap-1.5">
-              <span>🛠️</span>
-              <span>{t('courses.reviewScenarioTitle')}:</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {[
-                { id: 'default', label: t('courses.scenarioDefault') },
-                { id: 'empty_catalog', label: t('courses.scenarioEmptyCatalog') },
-                { id: 'conflict_enroll', label: t('courses.scenarioConflict') },
-                { id: 'error_enroll', label: t('courses.scenarioServerError') },
-              ].map((sc) => (
-                <button
-                  key={sc.id}
-                  type="button"
-                  onClick={() => onScenarioChange(sc.id)}
-                  className={`rounded-control px-2.5 py-1 font-semibold transition-colors ${
-                    scenario === sc.id
-                      ? 'bg-learning-accent text-learning-foreground'
-                      : 'bg-surface text-ink border border-border-subtle hover:bg-subtle'
-                  }`}
-                >
-                  {sc.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

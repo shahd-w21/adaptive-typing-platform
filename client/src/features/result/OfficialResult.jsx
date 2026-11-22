@@ -59,7 +59,7 @@ export function OfficialResult({
       {/* 4 Distinct Metrics Row */}
       <div className="grid grid-cols-[repeat(auto-fit,_minmax(170px,_1fr))] gap-4 mb-8">
         {/* Net WPM */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.netWpm')}
           </div>
@@ -70,7 +70,7 @@ export function OfficialResult({
         </div>
 
         {/* Gross WPM */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.grossWpm')}
           </div>
@@ -81,7 +81,7 @@ export function OfficialResult({
         </div>
 
         {/* Raw Accuracy */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-success-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.rawAccuracy')}
           </div>
@@ -101,7 +101,7 @@ export function OfficialResult({
         </div>
 
         {/* Final Accuracy */}
-        <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-5">
+        <div className="bg-surface border border-border-subtle rounded-card shadow-card transition-[translate,box-shadow,border-color] hover:-translate-y-0.5 hover:border-learning-accent hover:shadow-popover text-center p-5">
           <div className="text-[14px] leading-[22px] text-muted mb-1.5 font-bold">
             {t('typing.finalAccuracy')}
           </div>
@@ -176,7 +176,7 @@ export function OfficialResult({
           type="button"
           onClick={onContinue}
           disabled={busy}
-          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-8"
+          className="inline-flex items-center justify-center gap-2 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none h-12 py-0 px-8"
         >
           <span>{t('sessionFlow.returnToDashboard')}</span>
           <ArrowRightIcon

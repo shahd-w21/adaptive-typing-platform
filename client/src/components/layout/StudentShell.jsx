@@ -5,11 +5,13 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
 import { useGamification } from '../../features/gamification/hooks/useGamification.js';
 import { Dialog } from '../ui/Dialog.jsx';
+import { BrandLogo } from '../ui/BrandLogo.jsx';
 import {
   KeyboardIcon,
   FlameIcon,
@@ -107,16 +109,9 @@ export function StudentShell({
         className="max-lg:hidden sticky top-0 z-40 flex h-dvh w-[var(--sidebar-width)] shrink-0 flex-col border-e border-e-border-subtle bg-surface/95 shadow-[1px_0_0_color-mix(in_srgb,var(--tf-color-border-subtle)_35%,transparent)] backdrop-blur"
       >
         {/* Brand */}
-        <button type="button" className="flex h-[var(--header-height)] items-center gap-2.5 border-0 border-b border-b-border-subtle bg-transparent px-5 text-start" onClick={() => onNavigate(role === 'admin' ? 'admin' : 'dashboard')}>
-          <span className="flex size-9 items-center justify-center rounded-[10px] bg-learning-accent text-learning-foreground shadow-primary" aria-hidden="true">
-            <KeyboardIcon size={20} />
-          </span>
-          <span
-            className="font-display rtl:font-arabic text-[20px] font-extrabold text-ink tracking-[-0.5px]"
-          >
-            TypeFlow
-          </span>
-        </button>
+        <Link to="/" aria-label={t('navigation.homeLabel')} className="flex h-[var(--header-height)] items-center gap-2.5 border-0 border-b border-b-border-subtle bg-transparent px-5 text-start">
+          <BrandLogo />
+        </Link>
 
         {/* Nav Links */}
         <nav aria-label={navigationLabel} className="py-4 px-3 flex-1 overflow-y-auto">
@@ -182,7 +177,7 @@ export function StudentShell({
         </header>
 
         {/* Page Content */}
-        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-360 flex-1 px-4 py-7 sm:px-6 sm:py-9 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight [&_.shadow-card]:transition-[box-shadow,border-color,transform] [&_.shadow-card]:duration-200 [&_.shadow-card:hover]:-translate-y-0.5 [&_.shadow-card:hover]:border-learning-accent/35 [&_.shadow-card:hover]:shadow-popover">
+        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-360 flex-1 px-4 py-7 sm:px-6 sm:py-9 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight">
           {children}
         </main>
       </div>
@@ -194,7 +189,9 @@ export function StudentShell({
         className="m-0 me-auto h-dvh w-[min(20rem,90vw)] p-4"
       >
         <div className="mb-4 flex items-center justify-between">
-          <span className="font-display text-lg font-bold">TypeFlow</span>
+          <Link to="/" aria-label={t('navigation.homeLabel')} className="shrink-0">
+            <BrandLogo />
+          </Link>
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(false)}

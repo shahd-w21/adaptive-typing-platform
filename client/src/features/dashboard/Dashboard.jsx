@@ -156,7 +156,7 @@ export function Dashboard({
             onClick={onStartPractice}
             disabled={launchPending}
             aria-busy={launchPending}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-learning-accent px-7 font-bold text-learning-foreground shadow-node transition hover:-translate-y-0.5 hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-learning-accent px-7 font-bold text-learning-foreground shadow-node transition hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
           >
             <PlayIcon size={18} />
             <span>
@@ -388,7 +388,7 @@ export function Dashboard({
             aria-label={t('dashboard.dailyGoal')}
           >
             <div
-              className="h-full rounded-full bg-success-accent transition-[width] duration-300"
+              className="h-full rounded-full bg-success-accent"
               style={{ width: `${goalPercent}%` }}
             />
           </div>

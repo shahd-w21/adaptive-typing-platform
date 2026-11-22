@@ -1,6 +1,12 @@
+// Stable English passage feedback; presentation changes preserve the capture input.
 import { useRef, useEffect } from 'react';
 import { usePreferences } from '../../../context/preferences.js';
 
+/**
+ * Render assigned text and the current buffer with immediate character feedback.
+ * Input callbacks remain owned by the session; theme, text size and reduced motion
+ * only change presentation and never create or restart an attempt.
+ */
 export function TypingStage({
   assignedText = '',
   buffer = '',
@@ -50,7 +56,7 @@ export function TypingStage({
 
   return (
     <div
-      className="[transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! relative min-h-55 p-9 cursor-text bg-surface rounded-card shadow-card border-2 border-border-control outline-none flex flex-col justify-center"
+      className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! relative min-h-55 p-9 cursor-text bg-surface rounded-card shadow-card border-2 border-border-control outline-none flex flex-col justify-center"
       onClick={() => inputRef.current?.focus()}
     >
       {/* Hidden capture input */}
@@ -88,7 +94,7 @@ export function TypingStage({
               displayChar = entered === ' ' ? '␣' : entered;
             }
           } else if (index === bufferLen) {
-            charClass = "text-ink relative bg-[rgba(6,_102,_223,_0.12)] rounded-xs before:[content:''] before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-focus-ring before:rounded-xs before:[animation:caret-blink_1s_ease-in-out_infinite]";
+            charClass = "text-ink relative bg-learning-soft rounded-xs before:[content:''] before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-focus-ring before:rounded-xs";
           }
 
           return (

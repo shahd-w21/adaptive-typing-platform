@@ -28,7 +28,7 @@ typeflow/
 │   ├── jira-backlog.json            # generated planning manifest; no issue creation implied
 │   └── decisions.md                # history, open questions and record template
 ├── AGENTS.md                       # concise repository-wide agent guidance
-├── DESIGN.md                       # proposed visual system and Figma brief
+├── DESIGN.md                       # visual implementation reference and Figma frame index
 ├── .github/
 │   ├── workflows/ci.yml
 │   ├── pull_request_template.md
@@ -199,7 +199,7 @@ Persistence practices are in [development](development.md#database-workflow); Fi
 
 The tree below records the frontend scaffold and includes reserved future modules. App routing/providers, authentication, preferences, the shared Fetch transport and several data hooks now have implementations; other files remain comment-only placeholders. Preserve existing teammate screens, styles, translations, icons and typing behavior. Inspect a module before importing it; a listed filename does not guarantee usable exports. `tests/e2e/` remains a reservation, not evidence of executable browser coverage. Section 6 explains current real-API and fixture flows.
 
-Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies. Add formatting helpers, schema-valid development fixtures or browser-only schemas when concrete implementation needs them, not as empty parallel layers.
+Reuse existing screens in place instead of creating competing page copies. Auth account-recovery pages extend `AuthPages.jsx`; course pages reuse the existing learning-path/typing UI, including its keyboard map; gamification reuses `AchievementsView.jsx`; admin panels extend the existing `AdminView.jsx`. `src/index.css` remains the single Tailwind/theme stylesheet. No duplicate `styles/index.css`, generic utility/mock stubs or component-library config is required. Use shared formulas/contracts rather than browser copies or runtime mock fallbacks.
 
 ```text
 client/
@@ -361,7 +361,6 @@ client/
 │   │   └── useTranslation.js
 │   ├── lib/
 │   │   └── queryKeys.js
-│   ├── mocks/                      # unwired synthetic DTOs; see mocks/README.md
 │   │   ├── dashboard.js
 │   │   ├── errors.js
 │   │   ├── gamification.js
@@ -393,7 +392,7 @@ Do not let polling or dashboard rendering interfere with typing. Large-text and 
 
 ### Presentation, interface language and responsive layouts
 
-SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the proposed palette, fonts and layout matrix. Preference coordination is implemented; complete presentation/browser acceptance remains separate from implementation status.
+SRS SYS-53–56 and [decision 0002](decisions.md#0002) require Light/Dark appearance, English/Arabic UI and desktop/mobile non-typing pages. [DESIGN.md](../DESIGN.md) owns the current Figma palette, type roles, screen compositions and responsive requirements. Preference coordination is implemented; complete presentation/browser acceptance remains separate from implementation status.
 
 PreferencesContext coordinates stored appearance, resolved Light/Dark, UI locale/direction and accessibility preferences; TanStack Query owns the account DTO. Shared user schemas validate implemented `themePreference`/`uiLocale` fields. Account persistence uses owner-only `/users/me` partial updates without overwriting unrelated keys. Apply SRS section 10.5 defaults, visitor/account precedence, logout cleanup and failure recovery. These preferences are not immutable engine settings and do not enter scoring/generation.
 
@@ -928,3 +927,9 @@ Publishing validates graph/content/feasibility and immutable policy references b
 Defer optional sound effects, reminder emails, charts beyond the required evaluation table and a production Dockerfile when unnecessary. Keep the required accessibility options, public verification, audit records and core admin capabilities. Google sign-in, leaderboards and coaching notes are already outside scope. Dropping forum, certificates or required administration needs an explicit SRS change.
 
 This structure intentionally avoids a separate scoring implementation per mode, LLM calls inside transactions, runtime settings hidden in pure modules and a scheduler that silently loses work while the host sleeps.
+
+## Public practice and first learning entry
+
+The target guest flow reuses the English QWERTY study UI and applicable scoring logic with public course content. Keep the guest attempt separate from authenticated queries, learner progress and reward writes. Boundaries for guest storage and transport remain open in the [API contract](api-contract.md#guest-practice-integration-boundary). Normal registration and verification lead to optional placement on first learning entry. Compatible saved evidence drives later recommendations.
+
+Hand guide and Reduced pressure are independent presentation controls. Change visibility without remounting the recorder, resetting focus or restarting the timer. Runtime navigation should implement the two landing menus as header states and the save/retry views as states of one attempt. Figma frame duplication does not imply separate application routes.

@@ -7,7 +7,7 @@ import { PreferencesContext } from '../../src/context/preferences.js';
 import { AppearanceSelector } from '../../src/components/controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../../src/components/controls/LanguageSelector.jsx';
 import { ForumView } from '../../src/features/forum/ForumView.jsx';
-import { createForumFixture } from '../../src/mocks/forum.js';
+import { createForumFixture } from './forumData.js';
 import '../../src/index.css';
 
 const params = new URLSearchParams(window.location.search);

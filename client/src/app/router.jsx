@@ -27,6 +27,8 @@ import {
   PublicCertificateVerification,
 } from '../features/auth/AuthPages.jsx';
 import { VerifyEmailPage } from '../features/auth/pages/VerifyEmailPage.jsx';
+import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage.jsx';
+import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage.jsx';
 import { Dashboard } from '../features/dashboard/Dashboard.jsx';
 import { LearningPath } from '../features/learning-path/LearningPath.jsx';
 import { TypingSessionPage } from '../features/typing/pages/TypingSessionPage.jsx';
@@ -68,24 +70,6 @@ const VIEW_PATHS = {
   login: '/login',
   register: '/register',
 };
-const PROTECTED_PATHS = new Set([
-  '/dashboard',
-  '/learning-path',
-  '/path',
-  '/practice',
-  '/review',
-  '/tests',
-  '/progress',
-  '/achievements',
-  '/certificates',
-  '/forum',
-  '/admin',
-  '/profile',
-  '/typing',
-  '/courses',
-  '/my-courses',
-]);
-
 function routeForView(view) {
   return VIEW_PATHS[view] ?? '/';
 }
@@ -118,11 +102,17 @@ function PublicLayout({ activeTab, children }) {
 
 function LandingRoute() {
   const navigate = useNavigate();
+  const { status, user } = useAuth();
+  const destination = status === 'authenticated'
+    ? user?.role === 'admin'
+      ? '/admin'
+      : '/dashboard'
+    : '/register';
   return (
     <PublicLayout activeTab="landing">
       <LandingPage
-        onStartLearning={() => navigate('/register')}
-        onLogin={() => navigate('/login')}
+        onStartLearning={() => navigate(destination)}
+        onLogin={() => navigate(status === 'authenticated' ? destination : '/login')}
       />
     </PublicLayout>
   );
@@ -130,9 +120,13 @@ function LandingRoute() {
 
 function CertificateVerificationRoute() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   return (
     <PublicLayout activeTab="verify-cert">
-      <PublicCertificateVerification onBack={() => navigate('/')} />
+      <PublicCertificateVerification
+        initialCode={params.get('code') || ''}
+        onBack={() => navigate('/')}
+      />
     </PublicLayout>
   );
 }
@@ -183,10 +177,13 @@ function AuthRoute({ mode }) {
   const submit = async (credentials) => {
     if (mode === 'register') return signUp(credentials);
     const session = await signIn(credentials);
-    const destination = location.state?.from?.pathname;
+    const destination = location.state?.from;
+    const safeDestination = destination?.pathname?.startsWith('/')
+      ? `${destination.pathname}${destination.search || ''}${destination.hash || ''}`
+      : null;
     navigate(
-      destination?.startsWith('/')
-        ? destination
+      safeDestination
+        ? safeDestination
         : session.user.role === 'admin'
           ? '/admin'
           : '/dashboard',
@@ -213,6 +210,7 @@ function AuthRoute({ mode }) {
       <AuthModal
         mode={mode}
         onClose={() => navigate('/')}
+        onForgotPassword={() => navigate('/forgot-password')}
         onModeChange={(nextMode) =>
           navigate(routeForView(nextMode), { replace: true })
         }
@@ -458,38 +456,42 @@ function AppRoutes() {
 
   const onNavigate = (view) => {
     const path = routeForView(view);
-    if (!PROTECTED_PATHS.has(path) && path !== '/typing')
-      setFixtureSession(null);
     navigate(path);
   };
 
   /** Launch one desktop attempt; phone guidance returns without API or fixture creation. */
-  const launchTyping = async (config) => {
+  const launchTyping = async (config = {}) => {
     // Check the live viewport before any request. A guidance-only visit must not
     // allocate a server assignment; resizing an existing attempt keeps its state.
     if (window.innerWidth < 1024) {
       setDeviceGuidanceOpen(true);
       return;
     }
-    if (config.serverPractice || activeSessionConfig?.source === 'server') {
+    if (config?.serverPractice || activeSessionConfig?.source === 'server') {
       if (await session.controller.startPractice()) {
         navigate('/typing');
       }
       return;
     }
-    setFixtureSession({
-      ownerId: user?.id,
-      sessionId: `fixture-${Date.now()}`,
-      mode: config.mode || 'Sample Practice',
-      assignedText:
-        config.assignedText ||
-        'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
-      source: 'development-fixture',
-      courseId: config.courseId,
-      lessonId: config.lessonId,
-      enrollmentId: config.enrollmentId,
-    });
-    navigate('/typing');
+    if (config?.courseId || config?.mode || config?.assignedText) {
+      setFixtureSession({
+        ownerId: user?.id,
+        sessionId: `fixture-${Date.now()}`,
+        mode: config.mode || 'Sample Practice',
+        assignedText:
+          config.assignedText ||
+          'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
+        source: 'development-fixture',
+        courseId: config.courseId,
+        lessonId: config.lessonId,
+        enrollmentId: config.enrollmentId,
+      });
+      navigate('/typing');
+      return;
+    }
+    if (await session.controller.startPractice()) {
+      navigate('/typing');
+    }
   };
 
 
@@ -540,6 +542,22 @@ function AppRoutes() {
           element={<Navigate to="/verify-certificate" replace />}
         />
         <Route path="/verify-email" element={<EmailVerificationRoute />} />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicLayout activeTab="landing">
+              <ForgotPasswordPage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicLayout activeTab="landing">
+              <ResetPasswordPage />
+            </PublicLayout>
+          }
+        />
         <Route path="/login" element={<AuthRoute mode="login" />} />
         <Route path="/register" element={<AuthRoute mode="register" />} />
 
@@ -549,7 +567,6 @@ function AppRoutes() {
               <AuthenticatedLayout
                 activeSessionConfig={activeSessionConfig}
                 session={session}
-                onClearSession={() => setFixtureSession(null)}
                 onNavigate={onNavigate}
                 onLogout={handleLogout}
                 onRetrySession={restartSession}

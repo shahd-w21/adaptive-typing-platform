@@ -4,12 +4,14 @@ import { userRoutes } from './modules/users/routes.js';
 import { sessionRoutes } from './modules/sessions/routes.js';
 import { createAuthMiddleware, requireRole } from './middleware/auth.js';
 import { createPathService } from './modules/path/service.js';
+import { certificateRoutes } from './modules/certificates/routes.js';
 
 export function createRoutes(deps) {
   const router = Router();
   router.use('/auth', authRoutes(deps));
   router.use('/users', userRoutes(deps));
   router.use('/sessions', sessionRoutes(deps));
+  router.use('/certificates', certificateRoutes(deps));
   const authenticate = createAuthMiddleware(deps);
   const path = createPathService(deps);
   for (const endpoint of ['/path', '/path/keyboard', '/dashboard', '/progress', '/gamification']) {

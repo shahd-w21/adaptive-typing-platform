@@ -367,10 +367,10 @@ export function TypingSessionPage({
           )}
         </div>
 
-        {/* Progress Bar */}
+        {/* Immediate progress feedback must not lag behind recorded input. */}
         <div className="h-1.5 bg-border-subtle rounded-[3px] mb-5 overflow-hidden">
           <div
-            className="h-full bg-learning-accent [transition:width_100ms_ease-out]"
+            className="h-full bg-learning-accent"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -449,7 +449,7 @@ export function TypingSessionPage({
               <button
                 type="button"
                 onClick={togglePause}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_translate_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:hover:-translate-y-px enabled:active:bg-action-pressed enabled:active:translate-y-0.5 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full"
               >
                 <PlayIcon size={18} />
                 <span>{t('typing.resume')}</span>

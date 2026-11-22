@@ -184,6 +184,14 @@ test('typing assignment and entered characters survive theme, RTL and viewport c
   const text = await passage.textContent();
   const correctCount = await passage.locator('span.text-success-text').count();
   expect(correctCount).toBe(3);
+
+  // Motion preferences may change mid-attempt without replacing the input or passage.
+  const caret = passage.locator('span.relative').last();
+  expect(await caret.evaluate(element => getComputedStyle(element, '::before').animationName)).toBe('none');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(passage).toHaveText(text);
+  expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.getByRole('button', { name: 'Appearance: Light' }).click();
   await page.getByRole('menuitemradio', { name: 'Dark' }).click();
   await page.getByRole('button', { name: 'Language: English' }).click();
@@ -343,3 +351,152 @@ test('existing profile and forum dialogs contain focus and restore their opener'
   await page.keyboard.press('Escape');
   await expect(discussionButton).toBeFocused();
 });
+
+// Shared foundations are exercised through the actual page, with API fixtures above.
+for (const theme of ['light', 'dark']) {
+  test(`typography and motion foundations preserve control geometry in ${theme}`, async ({ page }) => {
+    await mockApi(page, { theme });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    const hero = page.locator('.landing-hero');
+    await expect(hero).toBeVisible();
+    const action = hero.getByRole('button').first();
+    const bounds = await action.boundingBox();
+
+    // Hover and press may change colour, but cannot move the target under the pointer.
+    await action.hover();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.down();
+    expect(await action.boundingBox()).toEqual(bounds);
+    await page.mouse.move(0, 0);
+    await page.mouse.up();
+
+    // Keyboard feedback is instant even when pointer colour feedback has a duration.
+    await action.focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(action).toBeFocused();
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await page.locator('html').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Open Sans');
+
+    // Changing the OS preference while mounted also disables decorative animation.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await action.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+    expect(await hero.evaluate(element => getComputedStyle(element).backgroundImage)).toBe('none');
+    await expectReflow(page);
+  });
+}
+// Starter landing uses anonymous HTTP fixtures; these checks never create an account.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`starter landing works in ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.goto('/');
+      const main = page.locator('#main-content');
+      await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+        locale === 'ar' ? 'تعلّم لوحة المفاتيح. وطوّر دقّتك.' : 'Learn the keyboard. Build accuracy.',
+      );
+      await expect(main.locator('.landing-passage')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-keyboard')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-course-status')).toContainText(
+        locale === 'ar' ? 'ليست قائمة دورات' : 'not a live course listing',
+      );
+
+      const firstQuestion = main.locator('.landing-faq summary').first();
+      await firstQuestion.focus();
+      await page.keyboard.press('Enter');
+      await expect(main.locator('.landing-faq details').first()).toHaveAttribute('open', '');
+      await expect(main.locator('.landing-faq details').first().locator('p')).toBeVisible();
+      await expect(main.locator('footer nav')).toHaveCount(2);
+
+      // Real section navigation moves keyboard focus without a scripted scroll animation.
+      await main.locator('.landing-hero a[href="#how-it-works"]').click();
+      await expect(page.locator('#how-it-works')).toBeFocused();
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('desktop-landing.png'), fullPage: true });
+
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      for (const width of [320, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expectReflow(page);
+        await expect(main.getByRole('heading', { level: 1 })).toBeVisible();
+      }
+      await page.setViewportSize({ width: 320, height: 900 });
+      await expectAccessible(page, '#main-content');
+      // Reset the viewport so sticky navigation is captured at its real page-top position.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.screenshot({ path: testInfo.outputPath('mobile-landing.png'), fullPage: true });
+
+      await main.locator('.landing-hero').getByRole('button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+      await main.locator('.landing-closing').getByRole('button').last().click();
+      await expect(page).toHaveURL(/\/login$/);
+      await page.keyboard.press('Escape');
+      await main.locator('footer a[href="/verify-certificate"]').click();
+      await expect(page).toHaveURL(/\/verify-certificate$/);
+    });
+  }
+}
+
+// Account presentation checks use intercepted responses, never real account writes.
+for (const locale of ['en', 'ar']) {
+  for (const theme of ['light', 'dark']) {
+    test(`account design supports ${locale}/${theme}`, async ({ page }, testInfo) => {
+      await mockApi(page, { locale, theme });
+      await page.route('**/api/v1/auth/login', route => route.fulfill({
+        status: 401,
+        json: { error: { code: 'INVALID_CREDENTIALS' } },
+      }));
+      await page.route('**/api/v1/auth/register', route => route.fulfill({
+        status: 201,
+        json: { message: 'Account created. Check your email.' },
+      }));
+      await page.goto('/login');
+      const dialog = page.getByRole('dialog');
+      const email = page.locator('#auth-email');
+      const password = page.locator('#auth-password');
+      await expect(email).toBeFocused();
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'text');
+      await dialog.locator('.auth-password-toggle').click();
+      await expect(password).toHaveAttribute('type', 'password');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('alert')).toContainText(
+        locale === 'en' ? 'Email or password is incorrect.' : 'البريد الإلكتروني أو كلمة المرور',
+      );
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('login-desktop.png') });
+
+      await dialog.locator('.auth-switch button').click();
+      await expect(page).toHaveURL(/\/register$/);
+      await expect(password).toHaveValue('');
+      await email.fill('design@example.test');
+      await password.fill('Example123');
+      const confirmation = page.locator('#auth-confirm-password');
+      await confirmation.fill('Example456');
+      await dialog.locator('button[type="submit"]').click();
+      await expect(confirmation).toHaveAttribute('aria-invalid', 'true');
+      await expect(confirmation).toBeFocused();
+      await confirmation.fill('Example123');
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-desktop.png') });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width: 320, height: 640 });
+      await expectReflow(page);
+      await expectAccessible(page, 'dialog[open]');
+      await page.screenshot({ path: testInfo.outputPath('register-mobile.png') });
+      await dialog.locator('button[type="submit"]').click();
+      await expect(dialog.getByRole('status')).toBeVisible();
+      await expect(password).toHaveValue('');
+      await page.keyboard.press('Escape');
+      await expect(page).toHaveURL(/\/$/);
+    });
+  }
+}

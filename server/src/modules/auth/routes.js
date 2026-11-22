@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authLimiter } from '../../middleware/rateLimit.js';
-import { registerSchema, loginSchema, emailSchema, tokenSchema, resetPasswordSchema } from '@typeflow/shared';
+import { registerSchema, loginSchema, emailSchema, verifyEmailSchema, resetPasswordSchema } from '@typeflow/shared';
 import { parse } from '../../middleware/validate.js';
 import { csrf, createAuthMiddleware } from '../../middleware/auth.js';
 import { createAuthService } from './service.js';
@@ -13,7 +13,7 @@ export function authRoutes(deps) {
   const authenticate = createAuthMiddleware(deps);
   const limit = authLimiter();
   router.post(['/register', '/signup'], limit, async (req, res) => res.status(201).json(await service.register(parse(registerSchema, req.body))));
-  router.post('/verify-email', limit, async (req, res) => res.json(await service.verify(parse(tokenSchema, req.body))));
+  router.post('/verify-email', limit, async (req, res) => res.json(await service.verify(parse(verifyEmailSchema, req.body))));
   router.post('/resend-verification', limit, async (req, res) => res.json(await service.resend(parse(emailSchema, req.body))));
   router.post('/login', limit, async (req, res) => {
     const { token, ...body } = await service.login(parse(loginSchema, req.body));

@@ -10,12 +10,12 @@ import {
   dashboardResponse,
   newStudentDashboardResponse,
   pathResponse,
-} from '../../../client/src/mocks/dashboard.js';
+} from '../../../client/tests/fixtures/data.js';
 import {
   sessionAssignment,
   sessionSubmission,
   sessionResult,
-} from '../../../client/src/mocks/sessions.js';
+} from '../../../client/tests/fixtures/data.js';
 
 /** Controllable I/O lets tests resolve stale requests after ownership changes. */
 function deferred() {

@@ -1,9 +1,9 @@
 # TypeFlow project plan
 
-- **Updated:** 16 October 2026
+- **Updated:** 20 November 2026
 - **Team:** five developers
-- **Frontend deadline:** 23 October 2026
-- **Next milestone:** complete the frontend, then finish and connect the remaining backend features.
+- **Schedule:** two one-week sprints
+- **Next milestone:** complete the remaining frontend, then finish and connect the backend features.
 
 This plan uses the supplied **`Whats Done (16-10).md`** progress report, the repository instructions and the existing requirements. It separates finished setup, working features that need adjustment, and features that still need implementation. Suggestions and quoted instructions in the report are reference material; they do not approve new policies or replace the [SRS](srs.md).
 
@@ -15,7 +15,7 @@ Read the status and team allocation first, then your own frontend task group. Ba
 - [Milestones](#2-delivery-milestones)
 - [Five-developer allocation](#3-five-developer-allocation)
 - [Shared-file coordination](#4-how-the-team-works-together)
-- [Frontend week](#5-frontend-schedule-19-23-october)
+- [Two-sprint plan](#5-two-sprint-delivery-plan)
 - [Detailed frontend tasks](#6-detailed-frontend-tasks)
 - [Backend plan](#7-backend-roadmap-after-frontend-acceptance)
 - [Schema changes](#8-schema-change-plan)
@@ -76,7 +76,7 @@ Much of the application still uses demonstration data. Finishing the frontend me
 | Completion simulates verification using `setTimeout` | Submit the recorded event log and display the saved response | FE-10, FE-25 |
 | Browser code calls a calculated result official | Keep live values provisional; use the server result as authoritative | FE-15, FE-25 |
 | Recorder builds `finishTime` with extra metadata | Adapt to the server's strict `events` / `finishTimeMs` body | FE-05 |
-| Several views display sample statistics/content | Connect feature hooks and APIs; isolate development fixtures for missing APIs | FE-02, FE-06 through FE-28 as applicable |
+| Several views display sample statistics/content | Connect feature hooks and APIs; use backend responses | FE-02, FE-06 through FE-28 as applicable |
 | Preferences primarily use local storage | Add account persistence, login precedence, save recovery and logout cleanup | FE-14, FE-19 |
 | Missing evidence can display perfect accuracy | Use shared formulas and unavailable values; align timing semantics | FE-15, FE-31, FE-34 |
 
@@ -121,22 +121,22 @@ Some status documents describe an earlier phase. This section is the consolidate
 | Milestone | Target | What the team demonstrates |
 | --- | --- | --- |
 | Agree boundaries and preserve the baseline | Before dependent frontend work | Existing work saved; current vs draft APIs identified; course data contract and schema questions documented |
-| Complete frontend | **23 October 2026** | All required screens, interactions and failure states; existing APIs connected; future APIs represented honestly |
+| Complete remaining frontend | End of Sprint 1 | The remaining screens, interactions and failure states pass; existing APIs connect and missing APIs fail closed |
 | Finish backend learning loop | After frontend acceptance | Real placement/learning/review/tests with correct server scoring and persistence |
 | Finish real course loop | After agreed schema, objectives and shared engine boundaries | Register/login, enroll, start lesson, submit, save official result and course progress, resume |
 | Complete required supporting features | Following core/course integration | Generation, rewards/badges, forum, certificates and full administration |
 | Accept and release the product | After full-system verification | Real-service journeys, privacy/security checks, measured performance, evaluation and recovery evidence |
 
-For 23 October, record two statuses separately:
+At each sprint end, record two statuses separately:
 
-- **Frontend complete:** screens, forms, navigation, loading/empty/error/retry states, Light/Dark, English/Arabic and required responsive/accessibility behavior pass review. Existing endpoints are used where available. Missing endpoints can use clearly identified, schema-valid development fixtures; production must not claim fixture persistence.
+- **Frontend complete:** screens, forms, navigation, loading/empty/error/retry states, Light/Dark, English/Arabic and required responsive/accessibility behavior pass review. Existing endpoints are used; missing endpoints remain unavailable rather than falling back to mock data.
 - **Backend integration complete:** the same flow passes against real API/database services. Course/forum/certificate/admin workflows cannot claim this until those services exist.
 
 The first full course demonstration is the report's proposed common goal: **register/login → enroll in one course → start a lesson → submit typing → save the official result and course progress**. Until the course backend is implemented, the earlier real practice loop is the integration baseline. Forum and certificates remain required later phases.
 
 ## 3. Five-developer allocation
 
-Developer numbers are planning labels, not assignments to named teammates. Everyone contributes frontend work before 23 October, then follows the backend allocation. Match actual people to these areas based on the existing teammate's ownership and strengths.
+Developer numbers are planning labels, not assignments to named teammates. Match actual people to these areas based on existing ownership and strengths.
 
 | Developer | Frontend area | Backend area afterward | Main reviewer |
 | --- | --- | --- | --- |
@@ -148,13 +148,16 @@ Developer numbers are planning labels, not assignments to named teammates. Every
 
 Every developer writes meaningful tests and supplies verification for their own work. Dev 5 coordinates common acceptance; that does not make them responsible for all testing.
 
-| Developer | Frontend tasks | Estimated feature effort | Review/integration/buffer | Assumed capacity |
-| --- | --- | --- | --- | --- |
-| Dev 1 | FE-01, FE-04, FE-09, FE-14, FE-19, FE-24, FE-29 | 30 h | 10 h | 40 h |
-| Dev 2 | FE-05, FE-10, FE-15, FE-20, FE-25, FE-30, FE-34 | 31 h | 9 h | 40 h |
-| Dev 3 | FE-02, FE-06, FE-11, FE-16, FE-21, FE-26, FE-31 | 31 h | 9 h | 40 h |
-| Dev 4 | FE-07, FE-12, FE-17, FE-22, FE-27, FE-32, FE-35 | 32 h | 8 h | 40 h |
-| Dev 5 | FE-03, FE-08, FE-13, FE-18, FE-23, FE-28, FE-33 | 31 h | 9 h | 40 h |
+Sprint ownership is separated by delivery track:
+
+- **Sprint 1:** every developer has frontend or backend implementation work.
+- **Sprint 1 frontend:** Dev 1, Dev 2, Dev 3, Dev 4 and Dev 5 each finish allocated remaining screens or acceptance fixtures.
+- **Sprint 1 backend:** each developer starts one or more backend implementation tasks.
+- **Sprint 2:** every developer continues with frontend reconnection/acceptance and backend integration work.
+
+Frontend and backend loads are balanced across the five developers: each owner has implementation, reconnection or acceptance work in both sprints and exactly five backend task IDs across the plan.
+
+Backend load is balanced across the five developers: each owner has exactly five backend task IDs, assigned once across the two sprints.
 
 The forecast is **155 feature hours plus 45 team hours for review, integration, fixes and contingency**. It assumes five focused eight-hour days, reusable existing screens and prompt contract decisions. Availability has not been confirmed. Re-estimate after the first working demo; retain unresolved work openly rather than quietly dropping required features.
 
@@ -187,19 +190,78 @@ The most important shared design deliverable is the **course/enrollment/session 
 
 Use the existing Node server test runner and CI while resolving the SRS table's Vitest discrepancy with the team. Select executable frontend/browser tooling deliberately rather than replacing working server infrastructure as part of page integration.
 
-## 5. Frontend schedule: 19-23 October
+## 5. Two-sprint delivery plan
 
-These are proposed work blocks around the confirmed deadline. Available time on 16-18 October can bring preparation forward. Do not assume every teammate is available on every listed date.
+This replaces the earlier dated frontend-only schedule. Each sprint is one focused week for a five-developer team. Sprint 1 gives every developer both a frontend and backend assignment. Sprint 2 keeps every developer active in frontend reconnection/acceptance and backend integration.
 
-| Date | Team checkpoint | Main tasks |
-| --- | --- | --- |
-| 19 October | Baseline preserved; routing/transport/props and first course contracts agreed | FE-01, FE-02, FE-03, FE-05; begin FE-04, FE-07, FE-15, FE-26 |
-| 20 October | Real account → practice assignment → submit/result integration underway | FE-04, FE-09, FE-10, FE-15; dashboard/history/course/forum/certificate screens |
-| 21 October | All required page groups reachable, including admin authoring | Profile/preferences, modes/results, rewards/analytics, course editor and remaining admin forms |
-| 22 October | Feature freeze; fix failures and theme/language/device issues | Finish authoring/moderation, verify fixtures/transport, FE-24, FE-30, FE-32 |
-| **23 October** | Five owners demonstrate and accept their areas; backend handoff complete | FE-29, FE-31, FE-33, FE-34, FE-35 |
+The remaining frontend work is distributed across both sprints. Each remaining frontend task has one owner and is assigned to one sprint.
 
-Each developer follows the ordered tasks in their own group below. The typing integration depends on FE-01/FE-02, the account/session boundary, recorder alignment and the official-result response. Course work can proceed against agreed contracts while its backend remains pending.
+### Task coverage
+
+The detailed task catalog and sprint matrices cover the complete current delivery scope:
+
+| Area | Catalog size | Remaining sprint coverage | Result |
+| --- | ---: | ---: | --- |
+| Frontend tasks | 35 FE tasks | 17 remaining FE tasks assigned once | Complete |
+| Backend tasks | 25 BE tasks | 25 BE tasks assigned once | Complete |
+| Two-sprint plan | 2 weeks | 5 developers active in both sprints | Complete |
+
+No additional FE or BE task ID is missing from the sprint plan. Already completed FE tasks are not listed again in the sprint matrices.
+
+### Sprint 1 — Week 1: remaining frontend plus foundation backend
+
+**Frontend exit:** all five developers complete their Sprint 1 frontend assignments and pass the week-one integration journey using real APIs or explicit unavailable states.
+
+| Developer | Frontend tasks | Backend tasks | Main reviewer |
+| --- | --- | --- | --- |
+| Dev 1 | None | BE-01, BE-02, BE-04 | Dev 5 |
+| Dev 2 | FE-34 | BE-06, BE-07, BE-13 | Dev 3 |
+| Dev 3 | FE-11, FE-16, FE-21, FE-31 | BE-17, BE-18 | Dev 2 |
+| Dev 4 | FE-22, FE-27, FE-35 | BE-14, BE-15 | Dev 1 |
+| Dev 5 | FE-18, FE-23, FE-33 | BE-20, BE-24 | Dev 4 |
+
+Week-one dependencies:
+
+1. Dev 1 agrees remaining API/DTO boundaries and reviewed fixture shapes with the frontend owners.
+2. Dev 4 agrees course/enrollment/session ownership and publication interfaces used by the frontend.
+3. Dev 5 coordinates test discovery and the common acceptance run.
+4. Every developer integrates their Sprint 1 frontend and backend work against the shared contracts.
+
+### Sprint 2 — Week 2: backend completion plus full acceptance
+
+**Backend exit:** all remaining backend tasks below are implemented or explicitly accepted as deferred with an owner and blocker; the complete course/practice result flow is demonstrated.
+
+| Developer | Frontend tasks | Backend tasks | Main reviewer |
+| --- | --- | --- | --- |
+| Dev 1 | None | BE-09, BE-21, BE-22 | Dev 5 |
+| Dev 2 | FE-30 | BE-03, BE-08, BE-23 | Dev 3 |
+| Dev 3 | None | BE-05, BE-16 | Dev 2 |
+| Dev 4 | FE-17, FE-32 | BE-11, BE-12 | Dev 1 |
+| Dev 5 | FE-13, FE-26, FE-28 | BE-10, BE-19, BE-25 | Dev 4 |
+
+This matrix completes the backend catalog across the two sprints. Shared course/transaction tasks may have an implementation owner and a named integration reviewer.
+
+### Estimated workload balance
+
+The table combines frontend hours and backend developer-days converted to eight-hour days.
+
+| Developer | Sprint 1 workload | Sprint 2 workload | Total |
+| --- | ---: | ---: | ---: |
+| Dev 1 | 64 h | 72 h | 136 h |
+| Dev 2 | 77 h | 75 h | 152 h |
+| Dev 3 | 59 h | 56 h | 115 h |
+| Dev 4 | 56 h | 55 h | 111 h |
+| Dev 5 | 78 h | 78 h | 156 h |
+| Total | 334 h | 336 h | 670 h |
+
+The sprint totals differ by only 2 hours. Actual workloads may change after dependency review and reviewer/defect work.
+
+### Sprint completion rules
+
+- A sprint task requires a linked implementation, focused tests and an acceptance result in the relevant evidence section.
+- Frontend application code must not fall back to mock or in-memory sample data.
+- Backend work must preserve the existing auth/practice behavior and use additive Prisma migrations where data changes are approved.
+- Dev 5 coordinates the final cross-feature run but does not become the sole owner of all test evidence.
 
 ## 6. Detailed frontend tasks
 
@@ -368,7 +430,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Steps**
 
-1. Reuse landing/auth visual work, correct real auth-aware calls to action, direct recovery/verification links and certificate lookup.
+1. Implement the [current landing composition](../DESIGN.md#93-landing-page-show-the-learning-experience) and split account frames. Reuse existing feature wiring for auth-aware calls to action, recovery/verification links and certificate lookup.
 2. Host Dev 5's verification data/actions through agreed props/hooks without a second public verification implementation.
 3. Confirm phone navigation and anonymous states.
 
@@ -386,7 +448,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 - **Owner:** Dev 1
 - **Reviewer:** Dev 5
 - **Estimate:** 6 h
-- **Dependencies:** FE-04, FE-09, FE-14, FE-19, FE-24, FE-26.
+- **Dependencies:** FE-04, FE-09, FE-14, FE-19, FE-24.
 - **Requirements:** SYS-1–9, 48–49, 53–56.
 
 **Files to work in**
@@ -587,7 +649,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 - **Owner:** Dev 2
 - **Reviewer:** Dev 3
 - **Estimate:** 5 h
-- **Dependencies:** FE-10, FE-15, FE-20, FE-25, FE-30, FE-26.
+- **Dependencies:** FE-10, FE-15, FE-20, FE-25, FE-30.
 - **Requirements:** SYS-10–15, 30–32, 46–47, 50; SRS 10.1.
 
 **Files to work in**
@@ -755,42 +817,12 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** draft analytics DTO and filter contract, real aggregates BE-22.
 
-#### FE-26 — Supply schema-valid development fixtures and test execution
-
-- **Owner:** Dev 3
-- **Reviewer:** Dev 2
-- **Estimate:** 4 h
-- **Dependencies:** FE-02 and per-feature contracts; start early, finish after page contracts settle.
-- **Requirements:** contract consistency across all frontend features.
-
-**Files to work in**
-
-- Add `client/src/dev/fixtures.js`, `client/src/dev/fixtures.test.js` or feature fixtures when size warrants
-- Extend `client/package.json`, root `package.json`, lint config and CI only through Dev 1's shared-file queue
-- Add browser configuration after tooling agreement.
-
-**Steps**
-
-1. Create validated success/empty/error/permission/version-conflict/sparse-evidence fixtures for missing APIs.
-2. One explicit development adapter supplies them; feature components still use the real transport boundary.
-3. Test that production cannot enable fake authentication or silently serve fixture success.
-4. Arrange actual commands to discover/run added frontend/shared checks.
-
-**Done when**
-
-- Invalid fixture fails validation
-- Production build cannot activate fixture transport
-- Demonstrated live vs fixture flows are listed
-- New checks visibly execute rather than sitting in unreferenced files.
-
-**Contract/schema note:** schema consumers, no speculative database structure.
-
 #### FE-31 — Accept dashboard/progress/reward/analytics frontend flows
 
 - **Owner:** Dev 3
 - **Reviewer:** Dev 2
 - **Estimate:** 5 h
-- **Dependencies:** FE-06, FE-11, FE-16, FE-21, FE-26.
+- **Dependencies:** FE-06, FE-11, FE-16, FE-21.
 - **Requirements:** SYS-17–18, 22–23, 33–35, 44.
 
 **Files to work in**
@@ -979,7 +1011,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 - **Owner:** Dev 4
 - **Reviewer:** Dev 5
 - **Estimate:** 5 h
-- **Dependencies:** FE-07, FE-12, FE-17, FE-22, FE-27, FE-32, FE-26.
+- **Dependencies:** FE-07, FE-12, FE-17, FE-22, FE-27, FE-32.
 - **Requirements:** SYS-57–64; all frontend page inventory.
 
 **Files to work in**
@@ -1141,6 +1173,37 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** draft content/settings schemas; no approval of numerical defaults.
 
+#### FE-26 — Implement the DESIGN.md visual and interaction parity
+
+- **Owner:** Dev 5
+- **Reviewer:** Dev 1
+- **Estimate:** 6 h
+- **Dependencies:** FE-03, FE-24, FE-30, FE-32.
+- **Requirements:** SYS-53–56; DESIGN sections 1–12.
+
+**Files to work in**
+
+- Coordinate `DESIGN.md` reference work across `client/src/index.css`, `client/src/components/layout/`, `client/src/features/`, and existing route shells.
+- Update `docs/testing.md` and `docs/development.md` with actual visual and interaction evidence.
+
+**Steps**
+
+1. Compare the implemented landing, account, dashboard, study, result, progress, course, admin and mobile compositions against the reference frames and section 9.3 landing order.
+2. Apply the documented colour, typography, spacing, shape, elevation and motion rules through existing Tailwind semantic utilities. Keep `client/src/index.css` as the only styling entry point.
+3. Verify Light/Dark, English/Arabic, English/LTR exercise text, 1440/1280/1024/768/390/320 widths and 200% text/zoom behavior.
+4. Check keyboard-only navigation, skip-to-content, visible focus, dialog focus return, screen-reader states, forced-colour alternatives and reduced motion/pressure.
+5. Review loading, empty, unavailable, error, offline, permission, save-retry and confirmation states against section 10.
+
+**Done when**
+
+- Every anchor composition has reference-width evidence and a named stress state.
+- Landing sections follow their handoff order and do not invent efficacy, testimonials or progress.
+- Long Arabic labels, mixed-direction values and English typing passages remain readable without layout overflow.
+- No new mock, duplicate screen, second styling entry point or unsupported touch typing mode is added.
+- Any unresolved visual difference is linked to a specific frame/requirement and reviewed defect, not silently accepted.
+
+**Contract/schema note:** design work consumes implemented/live contracts and explicitly unavailable states; visual examples and policy TBD values remain non-authoritative.
+
 #### FE-28 — Complete admin moderation, certificate revocation and audit UI
 
 - **Owner:** Dev 5
@@ -1174,7 +1237,7 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 - **Owner:** Dev 5
 - **Reviewer:** Dev 1
 - **Estimate:** 6 h
-- **Dependencies:** FE-03, FE-08, FE-13, FE-18, FE-23, FE-28, FE-26.
+- **Dependencies:** FE-03, FE-08, FE-13, FE-18, FE-23, FE-26, FE-28.
 - **Requirements:** SYS-38–45, 53–55.
 
 **Files to work in**
@@ -1201,17 +1264,9 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 Start this phase after frontend acceptance, using the existing server and migrated services. Agree each feature's remaining policies and contracts before implementation. This document plans that work; it does not execute it.
 
-Each backend sprint is provisionally five working days with five developers. Estimates below are focused developer-days (one day = eight hours); remaining capacity is review, integration, defects and contingency. Exact calendar dates start after the confirmed frontend acceptance. External provider/hosting choices and software versions are researched when selected, not frozen by this plan.
+The backend delivery has been compressed into the two-sprint plan in section 5. The detailed sections below remain the task catalog and preserve estimates, dependencies and acceptance checks.
 
-| Sprint | Dev 1 | Dev 2 | Dev 3 | Dev 4 | Dev 5 | Exit demo |
-| --- | --- | --- | --- | --- | --- | --- |
-| B1: contracts/data/core | BE-01/02 coordination | BE-03; BE-06 interface design | Begin BE-05, content fixtures | BE-11 design/repository interfaces | BE-10 runner/acceptance foundation; BE-19 contract design | Reviewed contracts and non-destructive migrations; existing real practice preserved |
-| B2: adaptive learning | BE-09, begin BE-04 | BE-06, begin BE-07 | Finish BE-05, begin BE-16 | BE-11 implementation | BE-10 core acceptance; begin BE-19 after security contract | Shared evidence and adaptive practice; catalog/enrollment persisted; existing retries preserved |
-| B3: modes and course authoring | Finish BE-04, BE-21 | Finish BE-07, BE-08, begin BE-13 | Finish BE-16, BE-17, begin BE-18 | BE-12; BE-14 interface preparation | Finish BE-19; begin BE-20 after mode support | Placement/review/tests and draft/publication workflows; validated live/fallback text |
-| B4: atomic course loop and support | BE-22; BE-14 transaction review | Finish BE-13; course evidence cases and evaluation preparation | Finish BE-18; generation/jobs acceptance | BE-14, BE-15 | Finish BE-20; forum/certificate full-flow acceptance | Real course enroll → lesson → atomic resumable progress, rewards, forum, certificates and admin |
-| B5: acceptance/release | BE-22 security/privacy closeout | BE-23 evaluation | BE-24 jobs/dependency/performance work | BE-25 course/full-flow regression | BE-24/25 operations and acceptance | All requirements mapped, measured checks, recovery evidence and release decision |
-
-The five-sprint backend forecast is conditional, especially on approved course objectives, trained-model requirement and available providers. If the rubric needs model training, add an explicit approved workstream and re-estimate before BE-06/23; an LLM API call is not model training.
+The two-sprint backend forecast is conditional, especially on approved course objectives, trained-model requirements and available providers. If the rubric needs model training, add an explicit approved workstream and re-estimate before Sprint 2; an LLM API call is not model training.
 
 Backend primary estimates total 74 developer-days: Dev 1 has 17, Dev 2 has 18, Dev 3 has 12, Dev 4 has 11 and Dev 5 has 16. Remaining slots within the 125-day team capacity cover contract/schema review, real frontend API reconnection, cross-feature acceptance, evaluation support, defects and contingency. Dev 3 supports performance/jobs and reward/certificate integration; Dev 4 supports evidence-transfer tests, reviewed course content and frontend reconnection. Every owner reconnects their own frontend area as its APIs become available; FE-accepted tasks are not substitutes for these real-service checks. Unused contingency does not justify extra scope or delaying a finished phase.
 
@@ -2013,7 +2068,7 @@ Policy choices belong in the [single decision log](decisions.md#open-decisions).
 
 | Gate | Who obtains the decision | Needed before | Independent work that can continue |
 | --- | --- | --- | --- |
-| Working hours and actual developer assignments; 23 October due date is confirmed | Owner + Dev 1 | Capacity commitment and named owners | Existing-screen audit, task preparation and contract review |
+| Working hours and actual developer assignments; two-sprint calendar is confirmed | Owner + Dev 1 | Capacity commitment and named owners | Existing-screen audit, task preparation and contract review |
 | Incoming teammate frontend commits and design ownership | Dev 1 + frontend teammate | FE-01 shared-file integration | Read-only inventory and proposed interfaces |
 | Actual deadline/rubric, trained-model requirement | Owner + Dev 2 | Backend engine/evaluation commitment | Frontend against explicit draft contracts; existing behavior regression |
 | Default target/range/curriculum, reward/integrity settings | Owner + Dev 1, Dev 2 and Dev 3 | BE-04/06/18 acceptance | Pure test harnesses and current-policy compatibility |
@@ -2027,7 +2082,7 @@ The main delivery risks and responses are:
 
 - **Unconfirmed availability:** the frontend forecast assumes five focused working days per person. Confirm hours and re-estimate after the first demo.
 - **Shared-file conflicts:** coordinate routing, providers, contracts, Prisma and session submission through the named owners.
-- **Missing APIs or changing course rules:** distinguish reviewed development fixtures from live integration, and settle objectives/contracts before connecting pages.
+- **Missing APIs or changing course rules:** fail closed until the backend contract is implemented, and settle objectives/contracts before connecting pages.
 - **Placeholder imports or duplicated screens:** inspect existing implementations and reuse them; keep reserved files unwired until they work.
 - **Unsafe schema/content changes:** test upgrades with existing learner records and preserve assigned text, old settings and published versions.
 - **Incomplete verification:** prove new test files run, verify a fresh clone and remote CI separately, and record browser/security/performance evidence.
@@ -2084,3 +2139,7 @@ Requirement allocation for issue/evidence tracking (each ID still needs a specif
 8. Sign out and prove revocation; demonstrate account deletion through its linked records/artifacts.
 
 Also demonstrate lost-response retry, a rejected invalid submission, an LLM outage and publication of a successor course version. Check phone access to non-typing functions and guidance that prevents a scored touch session.
+
+### Figma parity work for implementation
+
+Track the public course and guest drill/result route separately from authenticated practice. Cover first verified entry through placement and its skip path, independent typing preferences, server-confirmed saving/retry, responsive account forms and desktop navigation menus. Use the [screen handoff](../DESIGN.md#linked-journeys-and-screen-treatments) and [journey acceptance checks](testing.md#figma-journey-acceptance) when implementing. Prototype completion does not close these runtime tasks.

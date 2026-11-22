@@ -45,7 +45,7 @@ export function CourseCard({
   const isEnrolled = Boolean(enrollment);
 
   return (
-    <article className="flex h-full flex-col justify-between rounded-card border border-border-subtle bg-surface p-6 shadow-card transition-all duration-200 hover:shadow-card-hover hover:border-learning-accent/40">
+    <article className="flex h-full flex-col justify-between rounded-card border border-border-subtle bg-surface p-6 shadow-card transition-colors hover:border-learning-accent/40">
       <div>
         {/* Header Badges */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -129,7 +129,7 @@ export function CourseCard({
               aria-valuemax="100"
             >
               <div
-                className="h-full bg-learning-accent transition-all duration-300"
+                className="h-full bg-learning-accent"
                 style={{ width: `${Math.min(100, Math.max(0, enrollment.progressPercent))}%` }}
               />
             </div>

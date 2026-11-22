@@ -73,7 +73,8 @@ The following matrix summarises existing requirements; it grants no additional a
 | --- | --- | --- | --- |
 | Public certificate verification | Yes, allowlisted fields | Same public view | Same public view |
 | Own account appearance/language preferences | Local visitor values only | Own account | Own account |
-| Placement/practice/tests and learner history | No | Own assignments/data | No implicit learner access |
+| Public course browsing and guest drill/result | Yes, guest attempt only | Public content available | Public content available |
+| Account placement, assigned practice/tests and learner history | No | Own assignments/data | No implicit learner access |
 | Accept a forum answer | No | Own thread only | No additional privilege specified |
 | Manage users/content/settings and moderate posts | No | No | Explicit protected admin actions |
 

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+// Next-key hints update immediately without lifting keys or animating feedback.
 // Standard English Desktop QWERTY Layout rows
 const KEYBOARD_ROWS = [
   [
@@ -117,8 +118,8 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
             const isShiftActive = isShiftNeeded && (item.key === 'ShiftLeft' || item.key === 'ShiftRight');
             const isMastered = masteredKeys.has(item.key.toLowerCase());
 
-            let keyClass = "flex flex-col items-center justify-center min-w-11 h-11 p-1 bg-surface border-2 border-border-control rounded-lg font-mono text-[15px] font-medium text-ink shadow-[0_2px_0_var(--tf-color-border-control)] select-none [transition:all_var(--motion-fast)]";
-            if (isTarget || isShiftActive) keyClass += " bg-learning-soft! border-learning-accent! text-learning-strong! -translate-y-0.5! shadow-[0_4px_0_var(--tf-color-learning-lip)]!";
+            let keyClass = "flex flex-col items-center justify-center min-w-11 h-11 p-1 bg-surface border-2 border-border-control rounded-lg font-mono text-[15px] font-medium text-ink shadow-[0_2px_0_var(--tf-color-border-control)] select-none";
+            if (isTarget || isShiftActive) keyClass += " bg-learning-soft! border-learning-accent! text-learning-strong! shadow-[0_4px_0_var(--tf-color-learning-lip)]!";
             else if (isMastered) keyClass += " border-success-accent! bg-success-soft! text-success-text!";
 
             return (
