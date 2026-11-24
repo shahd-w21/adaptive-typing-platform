@@ -1,13 +1,13 @@
 /** Browser UI/failure fixtures only; the real API loop is tested separately in PostgreSQL. */
 import { test, expect } from '../support/browser.js';
 import AxeBuilder from '@axe-core/playwright';
-import { studentUser } from '../../src/mocks/users.js';
+import { studentUser } from '../fixtures/data.js';
 import {
   dashboardResponse,
   newStudentDashboardResponse,
   pathResponse,
-} from '../../src/mocks/dashboard.js';
-import { sessionAssignment, sessionResult } from '../../src/mocks/sessions.js';
+} from '../fixtures/data.js';
+import { sessionAssignment, sessionResult } from '../fixtures/data.js';
 
 /** Intercept every request: presentation tests never write to a developer's database. */
 async function setup(

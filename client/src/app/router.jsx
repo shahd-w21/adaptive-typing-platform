@@ -38,6 +38,8 @@ import { AchievementsView } from '../features/achievements/AchievementsView.jsx'
 import { CertificatesView } from '../features/certificates/CertificatesView.jsx';
 import { ForumView } from '../features/forum/ForumView.jsx';
 import { AdminView } from '../features/admin/AdminView.jsx';
+import { AdminCoursesPage } from '../features/admin/courses/pages/AdminCoursesPage.jsx';
+import { CourseEditorPage } from '../features/admin/courses/pages/CourseEditorPage.jsx';
 import { ProfileView } from '../features/profile/ProfileView.jsx';
 import { CourseLibraryPage } from '../features/courses/pages/CourseLibraryPage.jsx';
 import { CourseDetailPage } from '../features/courses/pages/CourseDetailPage.jsx';
@@ -59,6 +61,8 @@ const VIEW_PATHS = {
   certificates: '/certificates',
   forum: '/forum',
   admin: '/admin',
+  'admin-courses': '/admin/courses',
+  adminCourses: '/admin/courses',
   profile: '/profile',
   courses: '/courses',
   'my-courses': '/my-courses',
@@ -68,23 +72,6 @@ const VIEW_PATHS = {
   login: '/login',
   register: '/register',
 };
-const PROTECTED_PATHS = new Set([
-  '/dashboard',
-  '/learning-path',
-  '/path',
-  '/practice',
-  '/review',
-  '/tests',
-  '/progress',
-  '/achievements',
-  '/certificates',
-  '/forum',
-  '/admin',
-  '/profile',
-  '/typing',
-  '/courses',
-  '/my-courses',
-]);
 
 function routeForView(view) {
   return VIEW_PATHS[view] ?? '/';
@@ -446,7 +433,6 @@ function AppRoutes() {
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth,
   );
-  const [fixtureSession, setFixtureSession] = useState(null);
   const assignment = session.assignment;
   const activeSessionConfig =
     assignment || session.result
@@ -456,9 +442,7 @@ function AppRoutes() {
           assignedText: assignment?.text ?? '',
           source: 'server',
         }
-      : fixtureSession?.ownerId === user?.id
-        ? fixtureSession
-        : null;
+      : null;
   const [deviceGuidanceOpen, setDeviceGuidanceOpen] = useState(false);
 
   useEffect(() => {
@@ -469,8 +453,6 @@ function AppRoutes() {
 
   const onNavigate = (view) => {
     const path = routeForView(view);
-    if (!PROTECTED_PATHS.has(path) && path !== '/typing')
-      setFixtureSession(null);
     navigate(path);
   };
 
@@ -488,22 +470,14 @@ function AppRoutes() {
       }
       return;
     }
-    setFixtureSession({
-      ownerId: user?.id,
-      sessionId: `fixture-${Date.now()}`,
-      mode: config.mode || 'Sample Practice',
-      assignedText:
-        config.assignedText ||
-        'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
-      source: 'development-fixture',
-    });
-    navigate('/typing');
+    if (await session.controller.startPractice()) {
+      navigate('/typing');
+    }
   };
 
   /** Local logout always clears private state, even if server revocation fails. */
   const handleLogout = async () => {
     session.controller.clear();
-    setFixtureSession(null);
     navigate('/', { replace: true });
     try {
       await signOut();
@@ -572,7 +546,6 @@ function AppRoutes() {
               <AuthenticatedLayout
                 activeSessionConfig={activeSessionConfig}
                 session={session}
-                onClearSession={() => setFixtureSession(null)}
                 onNavigate={onNavigate}
                 onLogout={handleLogout}
                 onRetrySession={restartSession}
@@ -682,6 +655,12 @@ function AppRoutes() {
             </Route>
             <Route element={<RequireRole role="admin" />}>
               <Route path="/admin" element={<AdminView />} />
+              <Route path="/admin/courses" element={<AdminCoursesPage />} />
+              <Route path="/admin/courses/new" element={<CourseEditorPage />} />
+              <Route
+                path="/admin/courses/:courseId/edit"
+                element={<CourseEditorPage />}
+              />
             </Route>
             <Route element={<RequireRole role={['student', 'admin']} />}>
               <Route

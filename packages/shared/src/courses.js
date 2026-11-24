@@ -45,3 +45,55 @@ export const courseDetailSchema = courseSummarySchema.extend({
 export const courseCatalogResponseSchema = z.object({
   courses: z.array(courseSummarySchema),
 });
+
+/** Admin unit authoring schema within course drafts */
+export const adminUnitAuthoringSchema = z.object({
+  id: z.string().min(1),
+  unitIndex: z.number().int().nonnegative(),
+  title: z.string().min(1, 'Unit title is required'),
+  description: z.string().default(''),
+  lessonCount: z.number().int().nonnegative().default(0),
+  lessons: z.array(z.any()).optional().default([]),
+});
+
+/** Admin course metadata schema (SYS-58, SYS-62) */
+export const adminCourseMetadataSchema = z.object({
+  id: z.string().min(1),
+  versionId: z.string().min(1),
+  versionLabel: z.string().min(1, 'Version label is required'),
+  slug: z
+    .string()
+    .min(1, 'Slug is required')
+    .regex(/^[a-z0-9-]+$/, 'Slug must consist of lowercase letters, numbers, and hyphens'),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().default(''),
+  level: courseLevelSchema,
+  topic: courseTopicSchema,
+  status: courseStatusSchema,
+  estimatedHours: z.number().positive('Estimated hours must be a positive number'),
+  keyFocus: z.string().min(1, 'Key focus is required'),
+  prerequisites: z.array(z.string().min(1)).default([]),
+  objectives: z.array(z.string().min(1)).min(1, 'At least one learning objective is required'),
+  revision: z.number().int().nonnegative().default(1),
+  updatedAt: z.string().optional(),
+  author: z.string().optional(),
+});
+
+/** Admin full course authoring schema including ordered units */
+export const adminCourseDetailSchema = adminCourseMetadataSchema.extend({
+  units: z.array(adminUnitAuthoringSchema).default([]),
+  totalUnits: z.number().int().nonnegative().optional(),
+  totalLessons: z.number().int().nonnegative().optional(),
+});
+
+/** Admin courses list item */
+export const adminCourseSummarySchema = adminCourseMetadataSchema.extend({
+  totalUnits: z.number().int().nonnegative(),
+  totalLessons: z.number().int().nonnegative(),
+});
+
+/** Admin courses list response */
+export const adminCourseListResponseSchema = z.object({
+  courses: z.array(adminCourseSummarySchema),
+});
+

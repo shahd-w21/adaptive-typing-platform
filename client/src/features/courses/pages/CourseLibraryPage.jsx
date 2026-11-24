@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../../i18n/useTranslation.js';
 import { useCourses, useMyCourses, useEnrollCourse } from '../hooks/useCourses.js';
-import {
-  setCourseReviewScenario,
-  getCourseReviewScenario,
-} from '../../../api/courses.js';
 import { CourseCard } from '../components/CourseCard.jsx';
 import { CourseFilters } from '../components/CourseFilters.jsx';
 import { Loading } from '../../../components/Loading.jsx';
@@ -25,7 +21,6 @@ export function CourseLibraryPage() {
   const [level, setLevel] = useState('all');
   const [topic, setTopic] = useState('all');
   const [status, setStatus] = useState('all');
-  const [scenario, setScenario] = useState(() => getCourseReviewScenario());
   const [enrollFeedback, setEnrollFeedback] = useState(null);
 
   const {
@@ -41,7 +36,6 @@ export function CourseLibraryPage() {
 
   const courses = catalogData?.courses || [];
   const enrollments = myCoursesData?.enrollments || [];
-  const isFixture = catalogData?.isFixture ?? true;
 
   const handleResetFilters = () => {
     setSearch('');
@@ -50,12 +44,6 @@ export function CourseLibraryPage() {
     setStatus('all');
   };
 
-  const handleScenarioChange = (newScenario) => {
-    setScenario(newScenario);
-    setCourseReviewScenario(newScenario);
-    setEnrollFeedback(null);
-    refetchCatalog();
-  };
 
   const handleEnroll = async (courseId) => {
     setEnrollFeedback(null);
@@ -108,18 +96,6 @@ export function CourseLibraryPage() {
         </button>
       </div>
 
-      {/* Explicit Frontend Fixture Notice */}
-      {isFixture && (
-        <div
-          role="note"
-          className="mb-6 rounded-card border border-warning-accent/40 bg-warning-soft/70 p-3.5 text-xs text-warning-text flex items-center justify-between"
-        >
-          <span>{t('courses.fixtureNotice')}</span>
-          <span className="rounded-control bg-warning-accent/20 px-2 py-0.5 font-mono font-bold uppercase text-[10px]">
-            {t('courses.frontendOnlyTag')}
-          </span>
-        </div>
-      )}
 
       {/* Enrollment Result Feedback Alert */}
       {enrollFeedback && (
@@ -159,8 +135,6 @@ export function CourseLibraryPage() {
         status={status}
         onStatusChange={setStatus}
         onReset={handleResetFilters}
-        scenario={scenario}
-        onScenarioChange={handleScenarioChange}
       />
 
       {/* Main Content States */}
@@ -191,8 +165,8 @@ export function CourseLibraryPage() {
               icon={KeyboardIcon}
               title={t('courses.emptyCatalogTitle')}
               description={t('courses.emptyCatalogDescription')}
-              actionLabel={t('courses.scenarioDefault')}
-              onAction={() => handleScenarioChange('default')}
+              actionLabel={t('courses.resetFilters')}
+              onAction={handleResetFilters}
             />
           )}
         </div>
