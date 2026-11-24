@@ -1,10 +1,109 @@
 import { useState } from 'react';
-import { PlayIcon, CheckIcon, LockIcon } from '../../components/ui/Icons.jsx';
+import { useNavigate } from 'react-router-dom';
+import { PlayIcon, CheckIcon, LockIcon, ArrowRightIcon } from '../../components/ui/Icons.jsx';
 import { KeyboardGuide } from '../typing/components/KeyboardGuide.jsx';
 import { useLearningPath } from './useLearningPath.js';
+import { useMyCourses } from '../courses/hooks/useCourses.js';
+import { useCoursePath } from '../courses/hooks/useCoursePath.js';
+import { CoursePath } from '../courses/components/CoursePath.jsx';
+import { Loading } from '../../components/Loading.jsx';
+
+function EnrolledCoursePathSection({ onStartExercise }) {
+  const navigate = useNavigate();
+  const { data: myCoursesData, isPending: isMyCoursesPending } = useMyCourses();
+  const enrollments = myCoursesData?.enrollments ?? [];
+
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
+  const activeCourseId =
+    selectedCourseId || enrollments[0]?.courseId || 'c-foundations-01';
+  const { path, isPending: isPathPending } = useCoursePath(activeCourseId);
+
+  if (isMyCoursesPending) {
+    return <Loading message="Loading enrolled course paths…" size="md" />;
+  }
+
+  if (enrollments.length === 0) {
+    return (
+      <div className="rounded-card border border-border-subtle bg-surface p-8 text-center shadow-card">
+        <h3 className="font-display text-lg font-bold mb-2 text-ink">
+          No Enrolled Courses
+        </h3>
+        <p className="text-muted text-sm mb-6 max-w-md mx-auto">
+          Enroll in structured curricula to follow dedicated unit and lesson paths alongside your global typing progress.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/courses')}
+          className="rounded-full bg-action-primary text-action-foreground font-bold px-6 py-2.5 shadow-primary hover:bg-action-hover"
+        >
+          Browse Course Library
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Course Selector Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface border border-border-subtle rounded-card p-4 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+            Course:
+          </span>
+          {enrollments.map((enr) => (
+            <button
+              key={enr.id}
+              type="button"
+              onClick={() => setSelectedCourseId(enr.courseId)}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                activeCourseId === enr.courseId
+                  ? 'bg-learning-accent text-learning-foreground shadow-xs'
+                  : 'bg-subtle text-ink hover:bg-surface border border-border-subtle'
+              }`}
+            >
+              {enr.courseId === 'c-foundations-01'
+                ? 'Touch Typing Foundations'
+                : enr.courseId === 'c-speed-02'
+                  ? 'Speed & Fluency'
+                  : enr.courseId}{' '}
+              ({enr.progressPercent}%)
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate(`/courses/${activeCourseId}/path`)}
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-learning-strong hover:underline"
+        >
+          <span>Open Dedicated Course Path Page</span>
+          <ArrowRightIcon size={14} className="rtl:rotate-180" />
+        </button>
+      </div>
+
+      {isPathPending ? (
+        <Loading message="Loading course path…" size="md" />
+      ) : (
+        <CoursePath
+          units={path?.units ?? []}
+          onStartLesson={(lesson, unit) => {
+            if (typeof onStartExercise === 'function') {
+              onStartExercise(lesson, {
+                courseId: activeCourseId,
+                lessonId: lesson.id,
+                unitId: unit?.id,
+              });
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 export function LearningPath({ onStartExercise }) {
-  const [activeTab, setActiveTab] = useState('path'); // 'path' | 'map'
+  const [activeTab, setActiveTab] = useState('path'); // 'path' | 'map' | 'courses'
   const [selectedKey, setSelectedKey] = useState('f');
 
   const pathQuery = useLearningPath();
@@ -53,7 +152,7 @@ export function LearningPath({ onStartExercise }) {
   return (
     <div className="max-w-240 my-0 mx-auto">
       {/* View Switcher Tabs */}
-      <div className="flex justify-between items-center mb-7">
+      <div className="flex justify-between items-center mb-7 flex-wrap gap-4">
         <div>
           <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-1">
             Curriculum & Mastery Map
@@ -64,7 +163,7 @@ export function LearningPath({ onStartExercise }) {
         </div>
 
         <div
-          className="flex bg-subtle p-1 rounded-full border border-border-subtle"
+          className="flex bg-subtle p-1 rounded-full border border-border-subtle flex-wrap"
         >
           <button
             type="button"
@@ -86,10 +185,23 @@ export function LearningPath({ onStartExercise }) {
           >
             Keyboard Map
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('courses')}
+            className={[
+              "py-2 px-4.5 rounded-full border-0 cursor-pointer font-bold text-[14px]",
+              activeTab === 'courses' ? 'bg-surface text-ink shadow-card' : 'bg-transparent text-muted shadow-none',
+            ].filter(Boolean).join(' ')}
+          >
+            Course Paths
+          </button>
         </div>
       </div>
 
-      {activeTab === 'path' ? (
+      {activeTab === 'courses' ? (
+        <EnrolledCoursePathSection onStartExercise={onStartExercise} />
+      ) : activeTab === 'path' ? (
+
         /* Duolingo-style Vertical Learning Path */
         <div className="flex flex-col gap-8">
           {groups.map((group) => (
