@@ -75,10 +75,11 @@ export function StudentShell({
     { id: 'certificates', label: t('nav.certificates'), icon: ShieldIcon },
     { id: 'forum', label: t('nav.forum'), icon: AlertCircleIcon },
     { id: 'admin', label: t('nav.admin'), icon: AlertCircleIcon },
+    { id: 'admin-courses', label: t('nav.adminCourses'), icon: KeyboardIcon },
   ];
   const visibleNavItems = role === 'admin'
-    ? navItems.filter(item => item.id === 'admin')
-    : role === 'student' ? navItems.filter(item => item.id !== 'admin') : [];
+    ? navItems.filter(item => item.id === 'admin' || item.id === 'admin-courses')
+    : role === 'student' ? navItems.filter(item => item.id !== 'admin' && item.id !== 'admin-courses') : [];
 
   const renderNav = () => (
     <ul className="m-0 list-none p-0">

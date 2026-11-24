@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { useAdminPing } from './hooks/useAdmin.js';
+import { AdminCoursesPage } from './courses/pages/AdminCoursesPage.jsx';
 
 export function AdminView() {
   const { isRTL, t } = useTranslation();
@@ -46,6 +47,7 @@ export function AdminView() {
         <nav aria-label={t('navigation.adminSections')} className="flex max-w-full flex-wrap gap-2">
           {[
             { id: 'overview', label: t('adminNav.overview') },
+            { id: 'courses', label: t('adminNav.courses') || 'Courses & Drafts' },
             { id: 'users', label: t('adminNav.users') },
             { id: 'settings', label: t('adminNav.settings') },
             { id: 'moderation', label: t('adminNav.moderation') },
@@ -110,6 +112,10 @@ export function AdminView() {
             </p>
           </div>
         </div>
+      )}
+
+      {activeTab === 'courses' && (
+        <AdminCoursesPage />
       )}
 
       {activeTab === 'users' && (

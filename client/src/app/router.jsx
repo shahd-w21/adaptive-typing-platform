@@ -38,6 +38,8 @@ import { AchievementsView } from '../features/achievements/AchievementsView.jsx'
 import { CertificatesView } from '../features/certificates/CertificatesView.jsx';
 import { ForumView } from '../features/forum/ForumView.jsx';
 import { AdminView } from '../features/admin/AdminView.jsx';
+import { AdminCoursesPage } from '../features/admin/courses/pages/AdminCoursesPage.jsx';
+import { CourseEditorPage } from '../features/admin/courses/pages/CourseEditorPage.jsx';
 import { ProfileView } from '../features/profile/ProfileView.jsx';
 import { CourseLibraryPage } from '../features/courses/pages/CourseLibraryPage.jsx';
 import { CourseDetailPage } from '../features/courses/pages/CourseDetailPage.jsx';
@@ -59,6 +61,8 @@ const VIEW_PATHS = {
   certificates: '/certificates',
   forum: '/forum',
   admin: '/admin',
+  'admin-courses': '/admin/courses',
+  adminCourses: '/admin/courses',
   profile: '/profile',
   courses: '/courses',
   'my-courses': '/my-courses',
@@ -68,6 +72,7 @@ const VIEW_PATHS = {
   login: '/login',
   register: '/register',
 };
+
 function routeForView(view) {
   return VIEW_PATHS[view] ?? '/';
 }
@@ -650,6 +655,12 @@ function AppRoutes() {
             </Route>
             <Route element={<RequireRole role="admin" />}>
               <Route path="/admin" element={<AdminView />} />
+              <Route path="/admin/courses" element={<AdminCoursesPage />} />
+              <Route path="/admin/courses/new" element={<CourseEditorPage />} />
+              <Route
+                path="/admin/courses/:courseId/edit"
+                element={<CourseEditorPage />}
+              />
             </Route>
             <Route element={<RequireRole role={['student', 'admin']} />}>
               <Route
