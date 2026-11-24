@@ -4,6 +4,12 @@
  * These are API shapes, not database models or authentication implementations.
  */
 import { z } from 'zod';
+export { profileSchema } from './settings.js';
+export {
+  publicUserSchema,
+  authResponseSchema,
+  profileResponseSchema,
+} from './user.js';
 
 const email = z.string().trim().toLowerCase().max(255).pipe(z.email());
 // bcrypt accepts at most 72 bytes. The byte check also covers multibyte input;
@@ -64,68 +70,6 @@ export const emailChangeSchema = z.object({
   currentPassword: z.string().min(1),
   newEmail: email,
 });
-// PATCH fields are optional so omitted values remain unchanged on the server.
-// Reject unknown keys at both levels and reject an entirely empty patch.
-export const profileSchema = z
-  .object({
-    name: z.string().trim().max(100).nullable().optional(),
-    // Validate an IANA time-zone name using the runtime's supported zones.
-    timezone: z
-      .string()
-      .max(80)
-      .refine((value) => {
-        try {
-          new Intl.DateTimeFormat('en', { timeZone: value });
-          return true;
-        } catch {
-          return false;
-        }
-      })
-      .optional(),
-    targetWpm: z.number().int().min(10).max(250).optional(),
-    dailyGoalMinutes: z.number().int().min(1).max(240).optional(),
-    largeText: z.boolean().optional(),
-    reducedPressure: z.boolean().optional(),
-    preferences: z
-      .object({
-        themePreference: z.enum(['light', 'dark', 'system']).optional(),
-        uiLocale: z.enum(['en', 'ar']).optional(),
-      })
-      .strict()
-      .optional(),
-  })
-  .strict()
-  .refine((value) => Object.keys(value).length > 0);
-
-// Current wire DTOs, not Prisma models. Object parsing strips extra response fields.
-// Only owner-visible fields belong here; hashes, auth records and tokens do not.
-export const publicUserSchema = z.object({
-  id: z.uuid(),
-  email: z.email(),
-  name: z.string().nullable(),
-  role: z.enum(['student', 'admin']),
-  timezone: z.string(),
-  targetWpm: z.number().int(),
-  dailyGoalMinutes: z.number().int(),
-  largeText: z.boolean(),
-  reducedPressure: z.boolean(),
-  xp: z.number().int().nonnegative(),
-  level: z.number().int().positive(),
-  streak: z.number().int().nonnegative(),
-  preferences: z.object({
-    themePreference: z.enum(['light', 'dark', 'system']),
-    uiLocale: z.enum(['en', 'ar']),
-  }),
-});
-// Login and session restoration return CSRF separately from the httpOnly JWT.
-// The browser keeps this value in the existing auth state, never localStorage.
-export const authResponseSchema = z.object({
-  user: publicUserSchema,
-  csrfToken: z.string().regex(/^[a-f0-9]{64}$/),
-});
-// Profile reads/updates do not create or replace the current auth session.
-export const profileResponseSchema = z.object({ user: publicUserSchema });
-
 // Current account actions return a message rather than a resource DTO.
 export const acknowledgementSchema = z.object({ message: z.string() });
 

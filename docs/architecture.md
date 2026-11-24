@@ -437,7 +437,7 @@ Use runtime constants or Zod enums in `enums.js`. The shared package exposes Jav
 
 ## 5. Data model and persistence invariants
 
-Account/practice persistence already has an implemented Prisma schema and migrations. The table below includes additional target concepts; it does not claim that every listed model exists. Review future model additions per phase without changing the current schema through frontend tasks.
+Account/practice persistence already has an implemented Prisma schema and migrations. Each `TypingSession.settingsId` now references an immutable `SettingVersion`; referenced settings cannot be deleted while sessions retain them. The table below includes additional target concepts; it does not claim that every listed model exists. Review future model additions per phase without changing the current schema through frontend tasks.
 
 | Area | Records and responsibilities |
 | --- | --- |
@@ -445,7 +445,7 @@ Account/practice persistence already has an implemented Prisma schema and migrat
 | Curriculum | KeyGroup and explicit ordered prerequisites |
 | Courses | Course, immutable CourseVersion, Unit, Lesson/prerequisites, Enrollment and LessonProgress/exemption evidence; exact schema pending |
 | Learning | KeyStat, PairStat, AdaptiveEvent |
-| Sessions | TypingSession, KeystrokeLog, PracticeText |
+| Sessions | TypingSession with captured SettingVersion relation, KeystrokeLog, PracticeText |
 | Generation | GenerationAttempt, content/validation version |
 | Rewards | XpEvent, DailyActivity, Badge, UserBadge |
 | Certificates | Certificate with issued/revoked status and captured policy |
@@ -456,7 +456,9 @@ Account/practice persistence already has an implemented Prisma schema and migrat
 
 Target constraints: one official result per session, one key/pair statistic per user and item, unique badge awards, deduplicated reward events, unique certificate codes and one certificate per qualifying session. Store accepted payload hashes separately from expiring raw logs. Session handling must distinguish created, completed, abandoned and expired; current practice stores the first three statuses and derives expiry from its timestamp, as explained in section 6.
 
-Completed results and settings versions are immutable during normal operation. Privacy deletion and retention remain allowed; “append-only” is not an exception to those requirements. Store the text actually assigned, not just a mutable content reference. Keep referenced settings versions available for retained results.
+Completed results and settings versions are immutable during normal operation. A database foreign key restricts deletion of a settings version referenced by any typing session, including retained results. Privacy deletion and retention remain allowed; “append-only” is not an exception to those requirements. Store the text actually assigned, not just a mutable content reference. Keep referenced settings versions available for retained results.
+
+Account deletion removes the user's forum posts and authored text in the same transaction as profile deletion. A thread with another contributor's posts remains as an anonymous structural record with no title; an empty/self-only thread is removed. The nullable thread-author foreign key uses `SET NULL`, so a failed deletion transaction cannot leave a redacted thread detached from an undeleted account.
 
 Protect updates from separate simultaneous sessions for the same student. Current submission uses a database-backed per-user row lock within a Serializable transaction and bounded retries. Future course/evidence writes must participate in that protection. Do not replace it with a process-local mutex, which fails across multiple server processes. Re-read current learning state under concurrency protection before applying the update.
 

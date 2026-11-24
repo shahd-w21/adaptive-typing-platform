@@ -1299,6 +1299,8 @@ Backend primary estimates total 74 developer-days: Dev 1 has 17, Dev 2 has 18, D
 
 **Contract/schema note:** contracts drive candidate data changes, never the reverse.
 
+**Coordination status (25 November 2026):** current auth/practice and implemented progress/dashboard/path/gamification/Admin-probe/public-certificate DTOs are inventoried with runtime status and fixture evidence in the [API contract phase record](api-contract.md#phase-agreement-record). The record is review-ready, not agreed. FE-35 handoff evidence, Dev 4 review and feature-owner decisions for future course/forum/admin/certificate-issuance contracts are still pending; do not mark BE-01 complete until the applicable owners record agreement or explicitly defer those boundaries.
+
 #### BE-02 — Review and evolve Prisma additively
 
 - **Owner:** Dev 1
@@ -2012,7 +2014,7 @@ This table is a design worklist, **not a final schema or instruction to generate
 | Identity | User, AuthSession, EmailToken | Preserve auth contracts/revocation; review first-admin creation and privacy metadata | Dev 1 / BE-02, 09 |
 | Keyboard curriculum | KeyGroup with one `prerequisiteId` and string keys | Decide how multiple prerequisites/stable skill IDs are represented; preserve old progress and unique membership | Dev 2 + Dev 1 / BE-02, 06 |
 | Shared skill | KeyStat; no PairStat model | Separate evidence counts, contributing sessions, review scheduling and tracked pair stats; accuracy units stay explicit | Dev 2 / BE-06, 08 |
-| Session record | TypingSession with text/rules/settingsId/result/hash | Preserve exact assignment and retry result; review explicit scoring/config/content references and optional course context; `settingsId` currently is not a Prisma relation | Dev 1 + Dev 2 / BE-02, 04 |
+| Session record | TypingSession with text/rules/settingsId/result/hash; `settingsId` now references immutable SettingVersion via BE-02 | Preserve exact assignment and retry result; review explicit scoring/config/content references and optional course context | Dev 1 + Dev 2 / BE-02, 04 |
 | Adaptive state | Some logic exists, no dedicated adaptive-event model | Explainable decisions, effective versions, difficulty/review state and safe reason parameters | Dev 2 / BE-06 |
 | Courses | Comment-only files; no course models | Stable Course, immutable published Version, ordered Unit/Lesson, same-version DAG prerequisites, Enrollment, lesson progress/exemption/evidence | Dev 4 / BE-11–14 |
 | Enrollment uniqueness | No existing constraint | Define one active enrollment per user/course or reviewed alternative; version/reenrollment/retry behavior before choosing a unique key | Dev 4 + Dev 1 / BE-01, 11 |

@@ -44,6 +44,11 @@ export function createUserService({ database, config, sendMail, now = () => new 
       }
       return { message: 'Check the new email address to confirm the change' };
     },
+    /**
+     * Deletes an account and its private data atomically, preserving only anonymous
+     * forum thread structure needed to retain posts from other contributors.
+     * A wrong password, changed account, or last active Admin is rejected before deletion.
+     */
     async remove(user, { password }) {
       if (!await bcrypt.compare(password, user.passwordHash)) throw new HttpError(400, 'INVALID_PASSWORD', 'Password is incorrect');
       await transaction(database, async tx => {
@@ -53,6 +58,34 @@ export function createUserService({ database, config, sendMail, now = () => new 
         if (current.role === 'ADMIN' && await tx.user.count({ where: { role: 'ADMIN', isActive: true, id: { not: user.id } } }) === 0) {
           throw new HttpError(400, 'LAST_ADMIN', 'Create another active admin before deleting this account');
         }
+
+        const authoredThreads = await tx.forumThread.findMany({
+          where: { userId: user.id },
+          select: {
+            id: true,
+            posts: {
+              select: { userId: true },
+            },
+          },
+        });
+
+        for (const thread of authoredThreads) {
+          const hasOtherAuthors = thread.posts.some(post => post.userId !== user.id);
+
+          if (hasOtherAuthors) {
+            // Keep the discussion structure for replies, but remove its author and title.
+            await tx.forumThread.update({
+              where: { id: thread.id },
+              data: { userId: null, title: null },
+            });
+          } else {
+            // A thread with no other contributors has no structure to preserve.
+            await tx.forumThread.delete({ where: { id: thread.id } });
+          }
+        }
+
+        // Authored posts contain user text and have no nested reply structure of their own.
+        await tx.forumPost.deleteMany({ where: { userId: user.id } });
         await tx.user.delete({ where: { id: user.id } });
       });
       return { message: 'Account and personal data deleted' };

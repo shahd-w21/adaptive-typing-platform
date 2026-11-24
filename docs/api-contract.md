@@ -12,6 +12,7 @@ Source: teammate work in commit `68d311f`. CommonJS/pg code has been relocated a
 | `/auth/verify-email`, `/resend-verification`, `/login`, `/logout`, `/me`, `/forgot-password`, `/reset-password` | Same suffixes under `/auth` | Auth service, hashed one-use email tokens, revocable sessions, SMTP integration |
 | `GET/PATCH/DELETE /profile` | `GET/PATCH/DELETE /users/me` | `modules/users/` |
 | `POST /profile/password` | `POST /users/me/password` | Password check/update and session revocation |
+| — | `POST /users/me/email` | Password-confirmed email-change request with one-use verification token |
 | `POST /sessions/start` | `POST /sessions` (`/sessions/start` alias) | Practice assignment, captured policy and owned session |
 | `POST /sessions/:id/submit` | Same suffix | Shared event schemas, replay, atomic persistence and safe retries |
 | `GET /keyboard` | `GET /path` or `/path/keyboard` | Groups, per-key statistics/status and recommendation |
@@ -21,10 +22,12 @@ Source: teammate work in commit `68d311f`. CommonJS/pg code has been relocated a
 
 Additional supporting routes: `GET /sessions`, `GET /sessions/:id`, `POST /sessions/:id/abandon`, `GET /gamification`. The old `/api` prefix is not mounted. IDs are now opaque UUID strings. Old SQL data is not automatically imported; account hashes remain bcrypt-compatible for a future reviewed data import if needed.
 
+**Compatibility transition:** clients must move to `/api/v1`; the old `/api` prefix is not supported. `POST /auth/signup` and `POST /sessions/start` remain aliases under `/api/v1`. The legacy `keystrokes: [{typed_char,t_ms}]` submission body is not accepted: callers must send `{events,finishTimeMs}` and use the server result. Existing account passwords are not reset by this route migration; importing legacy account rows/data requires a separately reviewed data migration. Legacy response fields and unversioned endpoints have no compatibility guarantee.
+
 Implemented request details:
 
-- Register/login/resend/forgot use `email` and password fields shown below; register and reset accept optional matching `confirmPassword`. Registration ignores a submitted role and creates Student.
-- Verification uses `{token}`. Reset uses `{token,password,confirmPassword?}`. Password change uses `{currentPassword,newPassword,confirmPassword}`. Deletion uses `{password}`.
+- Register/login/resend/forgot use email and password fields as applicable; registration accepts optional matching `confirmPassword` and ignores a submitted role, creating Student. Password reset requires `confirmPassword`.
+- Verification requires `{email,token}`; reset requires `{token,password,confirmPassword}`. Password change uses `{currentPassword,newPassword,confirmPassword}`. Email change uses `{currentPassword,newEmail}`. Deletion uses `{password}`.
 - Profiles use camelCase: `name`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, and partial `preferences` (`themePreference`, `uiLocale`). Replies contain `{user}`; login/me include only allowlisted public user fields. Roles in public DTOs are `student`/`admin`.
 - Login sets the httpOnly `token` cookie and returns `{user,csrfToken}`; `GET /auth/me` returns a fresh representation of the same session's CSRF token. Send cookies and `X-CSRF-Token` on authenticated POST/PATCH/DELETE calls. Logout revokes the server record; password reset/change revoke all sessions. Explicitly different browser Origins are rejected.
 - Start accepts `{mode:"practice"}` (or `{}`) and returns `{sessionId,mode,text,source,issuedAt,expiresAt,rules}`. Only practice was implemented in the teammate's server; other modes are not silently mapped to it.
@@ -43,16 +46,27 @@ The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned r
 | --- | --- | --- | --- |
 | `POST /auth/register` | `registerSchema` | `acknowledgementSchema` | Implemented; extra fields stripped, including role; server always creates Student |
 | `POST /auth/login`, `GET /auth/me` | `loginSchema` / no body | `authResponseSchema` | Implemented; real HTTP login/me schema checks passed |
-| Verify/resend/forgot/reset | `tokenSchema`, `emailSchema`, `resetPasswordSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained; frontend schema tests are not complete browser coverage |
+| Verify/resend/forgot/reset | `verifyEmailSchema`, `emailSchema`, `resetPasswordSchema` | `acknowledgementSchema` | Implemented; verification requires both email and token; reset requires confirmation |
 | `POST /auth/logout` | `emptyRequestSchema` | `acknowledgementSchema` | Implemented; real HTTP logout/revocation passed |
 | `GET/PATCH /users/me` | no body / `profileSchema` | `profileResponseSchema` | Implemented; real HTTP partial update, restoration and unknown-field rejection passed |
 | Password change / account deletion | `changePasswordSchema` / `deleteAccountSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained |
+| `POST /users/me/email` | `emailChangeSchema` | `acknowledgementSchema` | Implemented; current password required; email verification flow follows server service |
 | `POST /sessions` (practice only) | `startSessionSchema` | `sessionAssignmentSchema` | Implemented; real HTTP assignment checked |
 | `GET /sessions`, `GET /sessions/:id` | no body; UUID ID | `sessionHistorySchema`, `sessionDetailSchema` | Implemented; real HTTP empty/history and created/completed/abandoned DTO checks split across unit/integration tests |
 | Submit / abandon | `submissionSchema` / `emptyRequestSchema` | `sessionResultSchema` / `sessionAbandonmentSchema` | Implemented; real HTTP result/retrieval/abandon checks passed |
 | Error envelope | — | `apiErrorResponseSchema` | Current `{error:{code,message?}}`; requestId/retryable are not server fields |
-| Dashboard/path/progress/gamification/admin reads | — | Feature-owner DTO review pending | Existing endpoints pass through transport; no invented response schemas or future filters |
-| Courses/enrollments, analytics and future reward/progress extensions | Draft only | No new runtime modules | Unimplemented shapes remain pending feature-owner review |
+| `GET /dashboard` | — | `dashboardResponseSchema` | Implemented current DTO; server-backed FE-06 boundary; review/acceptance status is recorded below |
+| `GET /path` | — | `pathResponseSchema` | Implemented current DTO for key/group progress and recommendation; review/acceptance status is recorded below |
+| `GET /progress` | — | `progressResponseSchema` | Implemented bounded snapshot of completed practice sessions and key stats; no pagination/filtering |
+| `GET /gamification` | — | `gamificationResponseSchema` | Implemented XP/level/streak/daily-goal snapshot; badges and reward history are not part of this response |
+| `GET /admin/ping` | — | `adminPingResponseSchema` | Implemented Admin access probe only; it is not an Admin management contract |
+| `GET /certificates/verify/:code` | — | `publicCertificateSchema` | Implemented public verification; issuance/list/PDF contracts are not implemented |
+| Forum | — | No agreed runtime schema | No real forum routes; request/response, visibility and moderation policy remain to agree |
+| Courses/enrollments, analytics and reward/progress extensions | Draft only | Shared course/admin-course/enrollment DTO schemas exist, but there are no corresponding runtime server routes | Existing schemas are draft/fixture boundaries, not accepted API contracts; pagination, eligibility, uniqueness, retries and progress semantics remain pending BE-01/domain review |
+
+The client validates the listed current response DTOs with shared schemas; certificate verification is also parsed by the server service. Positive and invalid fixture parsing for progress, gamification, Admin access and certificate verification is covered by `server/tests/unit/frontend-contracts.test.js`; this checks DTO shape, not route authorization or database behavior. No current endpoint is recorded as team-agreed yet; implementation evidence does not constitute sign-off.
+
+**Status interpretation:** “Implemented” below the current boundary means a matching runtime route/schema exists. It does not mean a team has agreed the complete endpoint contract. Forum, course/enrollment, certificate issuance and full Admin-management rows remain draft or unimplemented.
 
 Current fields and units:
 
@@ -60,6 +74,22 @@ Current fields and units:
 - Assignment fields are `sessionId,mode,text,source,issuedAt,expiresAt,rules`. Current source is `fallback`, mode is `practice`; rules are `pauseAllowed,eventVersion,settingsVersion,targetWpm`. Dates are UTC ISO strings, event/active times are milliseconds. Draft `textSource`, `versions` and `canPause` are not current fields.
 - `sessionResultSchema` matches the implemented result list above, including server metrics with nullable unknown values, XP reward records, nullable problem-key average latency and `certificate:null`. No client score is accepted. Future certificate/reward variants require a coordinated schema change.
 - History is `{sessions:[{id,mode,status,netWpm,rawAccuracy,completedAt}]}` with nullable metrics/completion time and a maximum of 100 rows. No agreed pagination/filter parameters. Non-completed detail returns `sessionId,status,mode,text,expiresAt`; completed detail is the official result.
+- `GET /progress` returns at most 100 completed practice session summaries plus key statistics; it accepts no pagination, sort or filter parameters. `GET /gamification` returns `{xp,level,streak,dailyGoal:{goalMinutes,minutesToday,done}}`; goal values are minutes and streak is a day count. Badges and reward history are not included.
+- `GET /admin/ping` returns `{message}` after server-side Admin role enforcement; it is only an access probe. `GET /certificates/verify/:code` returns `{code,name,issueDate,netWpm,rawAccuracy}` for a valid, non-revoked record, or `404 NOT_FOUND` for invalid, missing or revoked codes. `issueDate` is an ISO calendar date and accuracy is a percentage. The verification route is limited to 30 requests per 15 minutes. It exposes no email or keystrokes; issuance and private certificate list/PDF remain unimplemented.
+
+Current runtime limits and error codes below describe code behavior; they do not approve prototype policy defaults for future modes or production use.
+
+| Area | Current behavior |
+| --- | --- |
+| Auth routes | Shared limiter: 10 requests per 15-minute window; rate-limit response is `429 RATE_LIMITED` |
+| Certificate verification | 30 requests per 15-minute window; invalid, missing and revoked certificates return `404 NOT_FOUND` |
+| JSON request body | Express rejects bodies over 512 KiB; malformed JSON returns `400 INVALID_REQUEST` |
+| Session submit | At most 5,000 events; schema/field failures return `400 INVALID_REQUEST`; replay/integrity failures return `422 INVALID_SUBMISSION` |
+| Session history / progress | At most 100 rows, newest first; no pagination, sort or filter query contract |
+| Identical session submit retry | Returns the saved result; a different payload for a completed session returns `409 SESSION_CONFLICT`; no automatic client write retry |
+| Session start retry | No server idempotency key; repeated explicit starts may create another assignment |
+
+Implemented server error codes include `INVALID_REQUEST`, `INVALID_CREDENTIALS`, `INVALID_TOKEN`, `INVALID_PASSWORD`, `EMAIL_REGISTERED`, `EMAIL_NOT_VERIFIED`, `ACCOUNT_INACTIVE`, `EMAIL_SAME`, `EMAIL_UNAVAILABLE`, `LAST_ADMIN`, `ACCOUNT_CHANGED`, `UNAUTHENTICATED`, `FORBIDDEN`, `CSRF_FAILED`, `ORIGIN_FORBIDDEN`, `NOT_FOUND`, `SESSION_CONFLICT`, `SESSION_UNAVAILABLE`, `INVALID_SUBMISSION`, `CONTENT_NOT_READY`, `RATE_LIMITED`, and `INTERNAL_ERROR`. This list is the current implementation surface, not a finalized exhaustive error taxonomy.
 
 Validation and transport rules:
 
@@ -130,38 +160,42 @@ Proposed statuses: 400 malformed input, 401 unauthenticated, 403 forbidden/CSRF 
 
 ## Route inventory
 
-All names are proposed; freeze routes and full shapes per phase, not all at once.
+This inventory includes mounted endpoints and future proposals. Current runtime contracts are described in the migration/FE-02 sections above; proposed rows are not mounted and must not be treated as available routes. Team agreement is tracked separately in the phase record below.
 
 | Method/path (under base path) | Access | Input/output intent |
 | --- | --- | --- |
-| `POST /auth/register` | Public, rate-limited | Email/password → verification-needed acknowledgement |
+| `POST /auth/register` (`/auth/signup` alias) | Public, rate-limited | Email/password → verification-needed acknowledgement |
 | `POST /auth/verify-email` | Public, rate-limited | Registration email + one-time token → acknowledgement; both identify the same account |
+| `POST /auth/resend-verification` | Public, rate-limited | Email → non-enumerating verification acknowledgement |
 | `POST /auth/login` | Public, rate-limited | Email/password → public user DTO + cookie |
 | `POST /auth/logout` | Authenticated | Revoke current session, clear cookie |
 | `GET /auth/me` | Authenticated | Public user DTO including own presentation preferences |
 | `POST /auth/forgot-password` | Public, rate-limited | Email → same acknowledgement whether account exists or not |
 | `POST /auth/reset-password` | Public, rate-limited | Token/new password/confirmation → acknowledgement; revoke sessions |
 | `PATCH /users/me` | Owner (Student or Admin) | Allowlisted profile/preferences fields → updated DTO; partial preference merge |
-| `DELETE /users/me` | Owner | Deletion confirmation contract TBD → completion/status |
-| `POST /sessions` | Student | Mode/options → server assignment |
+| `POST /users/me/password`, `POST /users/me/email` | Owner (Student or Admin) | Current password change/email change actions; see implemented request schemas above |
+| `DELETE /users/me` | Owner (Student or Admin) | Implemented `{password}` confirmation → acknowledgement; removes authored forum text, retains only needed anonymous discussion structure, and protects the last active Admin |
+| `POST /sessions` (`/sessions/start` alias) | Student | Implemented practice-only assignment; future mode/options remain draft |
 | `POST /sessions/:id/submit` | Owner | Events/finish time → official result |
 | `POST /sessions/:id/abandon` | Owner | Mark abandoned; no rewards |
 | `GET /sessions/:id` | Owner | Status or saved official result |
-| `GET /sessions` | Owner | Paginated history; filters TBD |
-| `GET /path` | Student | Keyboard state, due reviews and next activity/reason |
-| `GET /progress` | Student | Mode-aware trends and key heat map |
-| `GET /gamification` | Student | XP, level, goals, streak and badges |
+| `GET /sessions` | Student/owner | Current history capped at 100; pagination and filters are not implemented |
+| `GET /path`, `GET /path/keyboard` | Student | Current key/group state and recommendation; due-review contract is future work |
+| `GET /dashboard` | Student | Current profile summary, streak, daily goal, recommendation and recent practice sessions |
+| `GET /admin/ping` | Admin | Implemented role-protected access probe only |
+| `GET /progress` | Student | Current practice-session summaries and key statistics; trends/mode filters are future work |
+| `GET /gamification` | Student | Current XP, level, daily goal and streak; badges are future work |
 | `GET /certificates` | Owner | Certificate list |
 | `GET /certificates/:id/pdf` | Owner | Downloadable PDF |
-| `GET /certificates/verify/:code` | Public | Approved public fields/status only |
+| `GET /certificates/verify/:code` | Public | Implemented public fields for valid, non-revoked certificates; full policy sign-off remains pending |
 | `/forum/*` | Student; public reading TBD | Threads, posts, accepted answer and reports; exact routes TBD |
 | `/admin/*` | Admin | Users, content, settings, analytics, moderation, certificates and audit; exact routes TBD |
 
-Outside the base path: proposed `GET /health/live` and `GET /health/ready`. Placement, review and both test types share `/sessions`; mode selects behaviour. No Google-login endpoint.
+Outside `/api/v1`: implemented `GET /health/live` and database-backed `GET /health/ready`. Placement, review and both test types are not implemented; future session modes require an agreed contract. No Google-login endpoint.
 
 ## FE-08 forum development fixture boundary
 
-The forum routes, shared runtime schemas and public reading policy remain **Contract to agree**. FE-08 does not implement or call `/forum/*`, expose public reading, or approve a moderation policy. The existing authenticated `/forum` screen uses an explicitly labelled in-memory adapter only in Vite development. Production returns `FEATURE_UNAVAILABLE`; there is no API-error-to-fixture fallback. All reading, creation, replies, accepted answers and reports are fixtures. Changes disappear on leaving the screen or reloading.
+The forum routes, shared runtime schemas and public reading policy remain **Contract to agree**. FE-08 does not implement or call `/forum/*`, expose public reading, or approve a moderation policy. The current `createForumApi` boundary returns `FEATURE_UNAVAILABLE` without making a request. UI tests may inject presentation fixtures, but the API adapter itself does not provide in-memory forum data. There is no API-error-to-fixture fallback. No real forum reads or writes are available.
 
 The following feature-local shapes support UI review only; backend/DTO owners must agree them before real integration:
 
@@ -283,7 +317,7 @@ An identical accepted retry returns the same saved result without side effects; 
 
 ## Course expansion — draft boundary only
 
-The course behavior in [SRS section 9.6](srs.md#course-proposal) / [decision 0008](decisions.md#0008) is approved. Exact endpoint methods, JSON fields and error/retry schemas below remain draft and require phase agreement. Comment-only placeholders exist at the architecture's course paths; none of these routes or fields is implemented or mounted. The current migrated API remains as documented above.
+The course behavior in [SRS section 9.6](srs.md#course-proposal) / [decision 0008](decisions.md#0008) is approved. Exact endpoint methods, JSON fields and error/retry schemas below remain draft and require phase agreement. Shared course, admin-course and enrollment DTO schemas, plus client fixture adapters, exist for frontend work; no corresponding course/enrollment server routes are implemented or mounted. The current migrated API remains as documented above.
 
 | Proposed boundary | Intent |
 | --- | --- |
@@ -322,15 +356,15 @@ Fill this for each phase and retain previous agreements when evolving the contra
 
 | Field | Value |
 | --- | --- |
-| Phase / contract version | TBD |
-| Status | Draft |
-| Scope and SYS IDs | TBD |
-| Endpoint schemas and positive/error examples | TBD |
-| Auth/ownership, limits and retry rules | TBD |
-| Frontend/backend owners and reviewers | TBD |
-| Agreement date / decision link | TBD |
-| Compatibility/migration plan | TBD |
-| Verification evidence | Not run |
+| Phase / contract version | BE-01 current-runtime inventory, revision 1 (2026-11-24) |
+| Status | Review-ready draft; not team-agreed. FE-35 handoff acceptance is not recorded in the project docs. |
+| Scope and SYS IDs | Current auth/profile, practice session, dashboard/path/progress/gamification, Admin ping and public certificate-verification boundaries; future modes/features remain draft (SYS-1–64 as applicable). |
+| Endpoint schemas and positive/error examples | Current shared exports are listed in the FE-02 matrix; fixtures for auth/practice and progress/gamification/Admin/certificate DTOs are in `server/tests/unit/frontend-contracts.test.js`. Course/admin-course/enrollment shared DTO schemas exist but have no matching runtime API routes and remain draft; forum and certificate-issuance schemas are not implemented. |
+| Auth/ownership, limits and retry rules | Current route gates and runtime limits are documented above; start has no server idempotency key, history/progress are capped at 100, and course enrollment retries remain draft because no route is implemented. |
+| Frontend/backend owners and reviewers | Coordination: Dev 1; assigned reviewer: Dev 4. FE-35 owner Dev 4/reviewer Dev 5 handoff evidence and feature-owner contract sign-offs are pending. |
+| Agreement date / decision link | Pending human/team review; no acceptance decision recorded. |
+| Compatibility/migration plan | Move clients to `/api/v1`; keep the `/auth/signup` and `/sessions/start` aliases; replace legacy keystroke body with `{events,finishTimeMs}`. Legacy data import is separate and unapproved. |
+| Verification evidence | `npm test` (54 unit tests), `npm run lint`, `npm run build`, and `git diff --check` passed for the current implementation; live API/browser owner acceptance remains pending. |
 
 Before marking agreed, settle required/optional/null fields, time units, permission checks, error codes, pagination, duplicate/concurrent behaviour and matching mocks. A breaking change needs coordination and an updated decision/contract, not a silent field rename.
 

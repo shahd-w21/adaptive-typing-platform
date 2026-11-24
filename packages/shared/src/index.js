@@ -10,8 +10,15 @@ export const healthResponseSchema = z.object({
 export const emptyRequestSchema = z.object({}).strict();
 export * from './auth.js';
 export * from './session.js';
+export * from './enums.js';
+export * from './user.js';
+export * from './keystroke.js';
+export * from './modeRules.js';
+export * from './settings.js';
+export * from './path.js';
 export * from './metrics.js';
 export * from './courses.js';
 export * from './enrollments.js';
 export * from './dashboard.js';
+export * from './stats.js';
 export * from './certificates.js';

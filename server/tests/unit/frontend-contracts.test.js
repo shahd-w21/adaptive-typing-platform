@@ -20,12 +20,18 @@ import {
   sessionDetailSchema,
   sessionHistorySchema,
   publicUserSchema,
+  progressResponseSchema,
+  gamificationResponseSchema,
+  adminPingResponseSchema,
+  publicCertificateSchema,
 } from '@typeflow/shared';
 import {
   sessionAssignment,
   sessionResult,
   sessionSubmission,
   sessionHistoryResponse,
+  completedSessions,
+  keyStats,
 } from '../../../client/tests/fixtures/data.js';
 import { studentUser } from '../../../client/tests/fixtures/data.js';
 import { QueryClient } from '@tanstack/react-query';
@@ -343,6 +349,47 @@ test('current synthetic DTOs match runtime contracts; future modes are not silen
       ...sessionResult,
       clientScore: 100,
     }).success,
+    false,
+  );
+});
+
+test('current progress, gamification, admin and certificate DTO fixtures parse and reject invalid values', () => {
+  const progress = { sessions: completedSessions, keys: keyStats };
+  const gamification = {
+    xp: studentUser.xp,
+    level: studentUser.level,
+    streak: studentUser.streak,
+    dailyGoal: {
+      goalMinutes: studentUser.dailyGoalMinutes,
+      minutesToday: 0,
+      done: false,
+    },
+  };
+  const adminPing = { message: 'Welcome, admin' };
+  const certificate = {
+    code: 'TF-2026-A1B2C3D4',
+    name: 'Layla Hassan',
+    issueDate: '2026-10-19',
+    netWpm: 42.5,
+    rawAccuracy: 97.2,
+  };
+
+  assert.equal(progressResponseSchema.safeParse(progress).success, true);
+  assert.equal(gamificationResponseSchema.safeParse(gamification).success, true);
+  assert.equal(adminPingResponseSchema.safeParse(adminPing).success, true);
+  assert.equal(publicCertificateSchema.safeParse(certificate).success, true);
+
+  assert.equal(
+    progressResponseSchema.safeParse({ ...progress, sessions: [{ ...completedSessions[0], durationMs: -1 }] }).success,
+    false,
+  );
+  assert.equal(
+    gamificationResponseSchema.safeParse({ ...gamification, dailyGoal: { ...gamification.dailyGoal, minutesToday: -1 } }).success,
+    false,
+  );
+  assert.equal(adminPingResponseSchema.safeParse({ message: 7 }).success, false);
+  assert.equal(
+    publicCertificateSchema.safeParse({ ...certificate, rawAccuracy: 101 }).success,
     false,
   );
 });
