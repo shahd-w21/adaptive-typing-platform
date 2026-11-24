@@ -731,3 +731,189 @@ export const emptyCatalogResponse = { courses: [] };
 
 /** Empty enrollments fixture for new student demonstrations */
 export const emptyEnrollmentsResponse = { enrollments: [] };
+
+/**
+ * Admin course management fixtures (SYS-58, SYS-62).
+ * Includes drafts, published immutable versions, and archived courses.
+ * Distinct from student catalog fixtures.
+ */
+export const mockAdminCourses = [
+  // Published courses from student catalog enriched with admin metadata
+  {
+    ...mockCourses[0],
+    versionLabel: 'v1.0.0',
+    revision: 3,
+    author: 'Omar S.',
+    updatedAt: '2026-10-18T10:00:00.000Z',
+  },
+  {
+    ...mockCourses[1],
+    versionLabel: 'v1.0.0',
+    revision: 2,
+    author: 'Layla M.',
+    updatedAt: '2026-10-20T12:00:00.000Z',
+  },
+  {
+    ...mockCourses[2],
+    versionLabel: 'v1.0.0',
+    revision: 1,
+    author: 'Omar S.',
+    updatedAt: '2026-10-21T09:00:00.000Z',
+  },
+  {
+    ...mockCourses[3],
+    versionLabel: 'v1.0.0',
+    revision: 4,
+    author: 'Layla M.',
+    updatedAt: '2026-10-22T15:30:00.000Z',
+  },
+  // Draft courses (SYS-58, SYS-62)
+  {
+    id: 'c-draft-code-01',
+    versionId: 'cv-code-draft-v1',
+    versionLabel: 'v1.0.0-draft',
+    slug: 'code-syntax-fundamentals',
+    title: 'Code & Syntax Fundamentals',
+    description:
+      'Master programming syntax: curly brackets, colons, indentation and common operator sequences without looking down.',
+    level: 'intermediate',
+    topic: 'code_prose',
+    status: 'draft',
+    estimatedHours: 3.5,
+    totalUnits: 3,
+    totalLessons: 9,
+    keyFocus: 'Brackets ({[]}), Operators (+=*-) & Indentation',
+    prerequisites: [
+      'Completion of Touch Typing Foundations',
+      '35+ net WPM baseline',
+    ],
+    objectives: [
+      'Accurately type standard code symbols without looking down',
+      'Handle camelCase and snake_case variable shifts fluently',
+      'Maintain 96%+ accuracy on punctuation-heavy code syntax',
+    ],
+    revision: 2,
+    author: 'Layla M.',
+    updatedAt: '2026-10-23T11:20:00.000Z',
+    units: [
+      {
+        id: 'u-code-01',
+        unitIndex: 1,
+        title: 'Brackets & Delimiters',
+        description: 'Parentheses, curly braces, and square brackets positioning.',
+        lessonCount: 3,
+        lessons: [
+          { id: 'l-code-101', lessonIndex: 1, title: 'Parentheses & Semicolons', type: 'lesson' },
+          { id: 'l-code-102', lessonIndex: 2, title: 'Curly & Square Brackets', type: 'lesson' },
+          { id: 'l-code-103', lessonIndex: 3, title: 'Delimiter Checkpoint', type: 'checkpoint' },
+        ],
+      },
+      {
+        id: 'u-code-02',
+        unitIndex: 2,
+        title: 'Operators & Assignment',
+        description: 'Mathematical, logical, and assignment operator combinations.',
+        lessonCount: 3,
+        lessons: [
+          { id: 'l-code-201', lessonIndex: 4, title: 'Comparison Operators (==, !=, <=, >=)', type: 'lesson' },
+          { id: 'l-code-202', lessonIndex: 5, title: 'Arithmetic Shorthand (+=, -=, *=)', type: 'lesson' },
+          { id: 'l-code-203', lessonIndex: 6, title: 'Operator Checkpoint', type: 'checkpoint' },
+        ],
+      },
+      {
+        id: 'u-code-03',
+        unitIndex: 3,
+        title: 'Indentation & Language Keywords',
+        description: 'Combining code symbols with common control flow keywords.',
+        lessonCount: 3,
+        lessons: [
+          { id: 'l-code-301', lessonIndex: 7, title: 'If/Else & Loop Blocks', type: 'lesson' },
+          { id: 'l-code-302', lessonIndex: 8, title: 'Function Definitions & Returns', type: 'lesson' },
+          { id: 'l-code-303', lessonIndex: 9, title: 'Syntax Mastery Checkpoint', type: 'checkpoint' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'c-draft-speed-v2',
+    versionId: 'cv-speed-v2-draft',
+    versionLabel: 'v2.0.0-draft',
+    slug: 'speed-and-fluency-v2',
+    title: 'Speed & Fluency Masterclass (v2 Successor Draft)',
+    description:
+      'Successor draft incorporating high-frequency n-gram rhythm drills and endurance checkpoints.',
+    level: 'advanced',
+    topic: 'speed',
+    status: 'draft',
+    estimatedHours: 4.0,
+    totalUnits: 2,
+    totalLessons: 6,
+    keyFocus: 'Burst rhythm, digraph transitions, rhythm recovery',
+    prerequisites: ['Completion of Speed & Fluency or 45+ WPM benchmark'],
+    objectives: [
+      'Achieve 65+ WPM peak burst speeds',
+      'Reduce hesitation latency under 180ms on common digrams',
+    ],
+    revision: 1,
+    author: 'Omar S.',
+    updatedAt: '2026-10-23T14:45:00.000Z',
+    units: [
+      {
+        id: 'u-speedv2-01',
+        unitIndex: 1,
+        title: 'Burst Cadence Drills',
+        description: 'High-speed pacing over frequent trigrams.',
+        lessonCount: 3,
+        lessons: [
+          { id: 'l-sv2-101', lessonIndex: 1, title: 'Top 50 Common Trigrams', type: 'lesson' },
+          { id: 'l-sv2-102', lessonIndex: 2, title: 'Cadence Recovery', type: 'practice' },
+          { id: 'l-sv2-103', lessonIndex: 3, title: 'Cadence Checkpoint (55 WPM)', type: 'checkpoint' },
+        ],
+      },
+      {
+        id: 'u-speedv2-02',
+        unitIndex: 2,
+        title: 'Long Prose Endurance',
+        description: 'Sustained typing over full paragraphs with zero backspace reliance.',
+        lessonCount: 3,
+        lessons: [
+          { id: 'l-sv2-201', lessonIndex: 4, title: '2-Minute Continuous Run', type: 'practice' },
+          { id: 'l-sv2-202', lessonIndex: 5, title: 'Speed Fatigue Resistance', type: 'practice' },
+          { id: 'l-sv2-203', lessonIndex: 6, title: 'Fluency Mastery Checkpoint (65 WPM)', type: 'checkpoint' },
+        ],
+      },
+    ],
+  },
+  // Archived course
+  {
+    id: 'c-archived-legacy-01',
+    versionId: 'cv-legacy-v09',
+    versionLabel: 'v0.9.0-legacy',
+    slug: 'legacy-foundations-v0',
+    title: 'Legacy Typing Primer (Archived)',
+    description: 'Retired initial curriculum. Retained for historical enrollment integrity.',
+    level: 'beginner',
+    topic: 'foundations',
+    status: 'archived',
+    estimatedHours: 2.0,
+    totalUnits: 1,
+    totalLessons: 4,
+    keyFocus: 'Alpha keys',
+    prerequisites: ['None'],
+    objectives: ['Familiarity with keyboard layout'],
+    revision: 1,
+    author: 'System Root',
+    updatedAt: '2026-09-15T08:00:00.000Z',
+    units: [
+      {
+        id: 'u-leg-01',
+        unitIndex: 1,
+        title: 'Primer Exercises',
+        description: 'Basic introduction drills.',
+        lessonCount: 4,
+        lessons: [],
+      },
+    ],
+  },
+];
+

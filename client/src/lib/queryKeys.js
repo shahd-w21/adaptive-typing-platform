@@ -62,4 +62,12 @@ export const queryKeys = {
   },
   // Student owned enrollments
   myCourses: resource('my-courses'),
+  // Admin course management and draft authoring (owner-scoped)
+  adminCourses: (ownerId, filters = {}) => [...owner(ownerId), 'admin-courses', filters],
+  adminCourse: (ownerId, courseId) => {
+    if (typeof courseId !== 'string' || !courseId.trim()) {
+      throw new TypeError('A course ID is required');
+    }
+    return [...owner(ownerId), 'admin-course', courseId];
+  },
 };
