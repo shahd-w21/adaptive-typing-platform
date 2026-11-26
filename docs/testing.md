@@ -2,6 +2,19 @@
 
 **Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
 
+## FE-31 acceptance verification — 26 November 2026
+
+Verified dashboard/progress/reward/analytics frontend flows against current migrated API contracts and labelled future fixtures.
+
+| Check | Evidence / result |
+| --- | --- |
+| Contract & unit tests | `server/tests/unit/progress-contracts.test.js` (6 passed), `gamification-contracts.test.js` (5 passed), `admin-analytics-contracts.test.js` (21 passed): schema validation, zero-denominator `null` rules, owner-scoped query keys, reward deduplication, and English/Arabic key parity |
+| Browser acceptance specs | 11 passed in Playwright (`progress.spec.js`: 4, `rewards.spec.js`: 2, `analytics.spec.js`: 2, `achievements.spec.js`: 3) plus `admin-analytics.spec.js`: 3 passed |
+| Current vs future separation | `/progress` and `/gamification` consume real migrated DTOs without fixture notices; `GET /admin/analytics` (`404`, BE-22 pending) falls back to a validated payload explicitly labelled `Development fixture` |
+| Mode, denominator & filter checks | Learning vs assessment modes remain separated; locked keys/zero denominators display `Not available` rather than `0 ms` / `0.0 %` / `100.0 %`; accessible data tables and `axe-core` WCAG 2.1 AA checks pass; theme and language changes preserve active filters |
+| Rewards & active typing | Recovered/retried submissions do not double-celebrate; logout/account switch clears `RewardsContext` notifications; zero polling or background API requests occur during active typing (`refetchOnWindowFocus: false`, no `refetchInterval`) |
+| Static/build checks | Root `npm run lint` and `npm run build` passed (existing client >500 kB chunk-size warning remains) |
+
 ## FE-06 / FE-10 verification — 22 October 2026
 
 Implemented the existing dashboard and owned-practice boundaries; this is not acceptance of future courses or every typing mode.

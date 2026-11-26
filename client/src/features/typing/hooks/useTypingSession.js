@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../hooks/useAuth.js';
+import { useRewards } from '../../../hooks/useRewards.js';
 import * as api from '../../../api/sessions.js';
 import { queryKeys } from '../../../lib/queryKeys.js';
 import {
@@ -21,6 +22,7 @@ function tabStorage() {
 /** Bind ownership/cache refresh without mixing presentation into session identity. */
 export function useTypingSession() {
   const { user, csrfToken, status } = useAuth();
+  const { recordSessionRewards } = useRewards();
   const queryClient = useQueryClient();
   const ownerId = user?.id;
   const controller = useMemo(
@@ -30,7 +32,12 @@ export function useTypingSession() {
         csrfToken,
         api,
         storage: ownerId ? tabStorage() : undefined,
-        onResult: (result) => {
+        onResult: (result, meta) => {
+          recordSessionRewards(result, {
+            recovered: Boolean(meta?.recovered),
+            newRewards: meta?.newRewards ?? [],
+            mode: result.mode,
+          });
           queryClient.setQueryData(
             queryKeys.session(ownerId, result.sessionId),
             result,
@@ -54,7 +61,7 @@ export function useTypingSession() {
           }
         },
       }),
-    [ownerId, csrfToken, queryClient],
+    [ownerId, csrfToken, queryClient, recordSessionRewards],
   );
   const snapshot = useSyncExternalStore(
     controller.subscribe,
