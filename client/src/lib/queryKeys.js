@@ -1,3 +1,5 @@
+import { progressFiltersSchema } from '@typeflow/shared';
+
 /**
  * Central TanStack Query cache addresses, not API URLs or permission checks.
  * Protected data is grouped by account so users cannot share cached results.
@@ -26,6 +28,16 @@ function unfiltered(filters = {}) {
   }
   return {};
 }
+
+/** Validate and normalize draft progress filters so cache keys never collide. */
+function normalizeProgressFilters(filters = {}) {
+  const parsed = progressFiltersSchema.safeParse(filters);
+  if (!parsed.success) {
+    throw new TypeError('Invalid progress filter parameters');
+  }
+  return parsed.data;
+}
+
 /** Build a resource-specific factory: resource('progress')(userId, filters). */
 const resource = (name) => (ownerId, filters) => [
   ...owner(ownerId),
@@ -42,6 +54,12 @@ export const queryKeys = {
   dashboard: resource('dashboard'),
   path: resource('learning-path'),
   progress: resource('progress'),
+  // Owner-scoped cache key for future/draft filtered progress queries.
+  progressFiltered: (ownerId, filters = {}) => [
+    ...owner(ownerId),
+    'progress-filtered',
+    normalizeProgressFilters(filters),
+  ],
   gamification: resource('gamification'),
   adminAccess: resource('admin-access'),
   sessions: resource('sessions'),

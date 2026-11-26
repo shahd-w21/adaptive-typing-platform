@@ -15,3 +15,4 @@ export * from './courses.js';
 export * from './enrollments.js';
 export * from './dashboard.js';
 export * from './certificates.js';
+export * from './stats.js';
