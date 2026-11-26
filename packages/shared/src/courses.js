@@ -46,16 +46,6 @@ export const courseCatalogResponseSchema = z.object({
   courses: z.array(courseSummarySchema),
 });
 
-/** Query fields accepted by the public catalog; draft rows are never returned. */
-export const courseCatalogQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
-  level: z.union([courseLevelSchema, z.literal('all')]).optional(),
-  topic: z.union([courseTopicSchema, z.literal('all')]).optional(),
-  status: z.enum(['all', 'published', 'archived']).default('all'),
-});
-
-export const courseDetailResponseSchema = courseDetailSchema;
-
 /** Admin unit authoring schema within course drafts */
 export const adminUnitAuthoringSchema = z.object({
   id: z.string().min(1),

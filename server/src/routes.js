@@ -5,10 +5,6 @@ import { sessionRoutes } from './modules/sessions/routes.js';
 import { createAuthMiddleware, requireRole } from './middleware/auth.js';
 import { createPathService } from './modules/path/service.js';
 import { certificateRoutes } from './modules/certificates/routes.js';
-import { courseRoutes } from './modules/courses/routes.js';
-import { createCourseService } from './modules/courses/service.js';
-import { idSchema } from '@typeflow/shared';
-import { parse } from './middleware/validate.js';
 
 export function createRoutes(deps) {
   const router = Router();
@@ -16,15 +12,7 @@ export function createRoutes(deps) {
   router.use('/users', userRoutes(deps));
   router.use('/sessions', sessionRoutes(deps));
   router.use('/certificates', certificateRoutes(deps));
-  router.use('/courses', courseRoutes(deps));
   const authenticate = createAuthMiddleware(deps);
-  const courses = createCourseService(deps);
-  router.get('/users/me/enrollments', authenticate, requireRole('STUDENT'), async (req, res) => {
-    res.json(await courses.myEnrollments(req.user.id));
-  });
-  router.get('/enrollments/:id/path', authenticate, requireRole('STUDENT'), async (req, res) => {
-    res.json(await courses.ownedPath(req.user.id, parse(idSchema, req.params.id)));
-  });
   const path = createPathService(deps);
   for (const endpoint of ['/path', '/path/keyboard', '/dashboard', '/progress', '/gamification']) {
     router.get(endpoint, authenticate, requireRole('STUDENT'), async (req, res) => {

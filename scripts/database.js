@@ -28,14 +28,4 @@ function run(args, cwd) {
 }
 if (operation === 'seed') run(['prisma/seed.js'], server);
 else run([require.resolve('prisma/build/index.js'), ...commands[operation], '--config', 'prisma.config.mjs', ...extra], server);
-if (operation === 'test') {
-  run(
-    [
-      '--test',
-      'server/tests/integration/database.test.js',
-      'server/tests/integration/features.test.js',
-      'server/tests/integration/session-modes.test.js',
-    ],
-    root,
-  );
-}
+if (operation === 'test') run(['--test', 'server/tests/integration/database.test.js', 'server/tests/integration/features.test.js'], root);

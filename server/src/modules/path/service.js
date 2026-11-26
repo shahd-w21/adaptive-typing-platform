@@ -12,24 +12,8 @@ export function createPathService({ database, now = () => new Date() }) {
       select: { key: true, status: true, accuracy: true, avgMs: true, attempts: true, latencySamples: true, sessions: true } });
     const sessions = await tx.typingSession.findMany({ where: { userId: user.id, status: 'completed' }, orderBy: { completedAt: 'desc' }, take: 100,
       select: { id: true, mode: true, netWpm: true, grossWpm: true, rawAccuracy: true, finalAccuracy: true, durationMs: true, xpEarned: true, completedAt: true } });
-    const completedSessions = await tx.typingSession.count({
-      where: {
-        userId: user.id,
-        status: 'completed',
-        mode: { in: ['lesson', 'practice', 'review'] },
-      },
-    });
-    const instant = now();
-    const dueReviews = await tx.keyStat.findMany({
-      where: {
-        userId: user.id,
-        status: 'mastered',
-        nextReviewAt: { lte: instant },
-      },
-      orderBy: [{ nextReviewAt: 'asc' }, { key: 'asc' }],
-      select: { key: true, nextReviewAt: true, accuracy: true, avgMs: true, attempts: true, latencySamples: true, sessions: true, status: true },
-    });
-    const today = localDate(instant, current.timezone);
+    const completedSessions = await tx.typingSession.count({ where: { userId: user.id, status: 'completed' } });
+    const today = localDate(now(), current.timezone);
     const activity = await tx.dailyActivity.findUnique({ where: { userId_localDate: { userId: user.id, localDate: today } } });
     const minutesToday = (activity?.durationMs ?? 0) / 60000;
     const streak = [today, previousDate(today)].includes(current.lastPracticeDate) ? current.streak : 0;
@@ -37,13 +21,7 @@ export function createPathService({ database, now = () => new Date() }) {
       user: { name: current.name, email: current.email, xp: current.xp, level: current.level },
       groups, keys, sessions, recentSessions: sessions.slice(0, 5), streak,
       dailyGoal: { goalMinutes: current.dailyGoalMinutes, minutesToday, done: minutesToday >= current.dailyGoalMinutes },
-      recommendation: recommendNext({
-        placementDone: current.placementDone,
-        completedSessions,
-        keys,
-        targetWpm: current.targetWpm,
-        dueReviews,
-      }),
+      recommendation: recommendNext({ placementDone: current.placementDone, completedSessions, keys }),
     };
   });
 }

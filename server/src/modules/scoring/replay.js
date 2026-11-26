@@ -1,128 +1,41 @@
-// Replays accepted keystroke events against server-assigned text and derives metrics.
+// Migrated from the teammate's scoreSession: replay stays pure and server-owned.
 import { calculateMetrics } from '@typeflow/shared';
-import { ReplayValidationError, validateLog } from './logValidator.js';
-import { summarizeEvidence } from './evidence.js';
 
-/**
- * Replays a canonical event stream without consulting client scores or mutable state.
- * Untimed learning sessions must finish the passage; timed sessions score only
- * events before the captured deadline and retain the full selected duration.
- */
-export function replay(text, events, finishTimeMs, rules = {}) {
-  const policy = validateLog(text, events, finishTimeMs, rules);
-  const scoredEvents = policy.isTimed
-    ? events.filter((event) => event.t <= policy.durationMs)
-    : events;
+export function replay(text, events, finishTimeMs, { latencyCutoffMs = 2000 } = {}) {
   const buffer = [];
-  const observations = [];
-  let inserts = 0;
-  let correctInserts = 0;
-  let previous = null;
-  let pausedAt = null;
-  let pausedMs = 0;
-  let focusLossCount = 0;
-
-  for (const event of scoredEvents) {
-    if (buffer.length === text.length && event.type !== 'backspace') {
-      if (policy.isTimed && event.t > policy.durationMs) break;
-      throw new ReplayValidationError('EVENTS_AFTER_COMPLETION', 'Events follow passage completion');
-    }
-
+  const keyStats = {};
+  let inserts = 0, correctInserts = 0, previous = null, pausedAt = null, pausedMs = 0;
+  if (events[0]?.type !== 'insert' || events[0].t !== 0) throw new Error('The first event must be an insert at zero');
+  for (let index = 0; index < events.length; index++) {
+    const event = events[index];
+    if (event.seq !== index || (index && event.t < events[index - 1].t)) throw new Error('Events must be ordered');
+    if (buffer.length === text.length) throw new Error('Events follow passage completion');
     if (event.type === 'pause') {
-      if (pausedAt !== null) {
-        throw new ReplayValidationError('INVALID_PAUSE', 'Session is already paused');
-      }
-      pausedAt = event.t;
-      previous = null;
-      continue;
+      if (pausedAt !== null) throw new Error('Already paused');
+      pausedAt = event.t; previous = null; continue;
     }
     if (event.type === 'resume') {
-      if (pausedAt === null) {
-        throw new ReplayValidationError('INVALID_RESUME', 'Session is not paused');
-      }
-      pausedMs += event.t - pausedAt;
-      pausedAt = null;
-      previous = null;
-      continue;
+      if (pausedAt === null) throw new Error('Not paused');
+      pausedMs += event.t - pausedAt; pausedAt = null; previous = null; continue;
     }
-    if (event.type === 'focusLost') {
-      focusLossCount += 1;
-      previous = null;
-      continue;
-    }
-    if (pausedAt !== null) {
-      throw new ReplayValidationError('INPUT_WHILE_PAUSED', 'Input is not allowed while paused');
-    }
-    if (event.type === 'backspace') {
-      buffer.pop();
-      previous = null;
-      continue;
-    }
-
+    if (pausedAt !== null) throw new Error('Input while paused');
+    if (event.type === 'backspace') { buffer.pop(); previous = null; continue; }
     const position = buffer.length;
-    const expectedKey = text[position];
-    const correct = event.char === expectedKey;
+    const expected = text[position];
+    const correct = event.char === expected;
+    inserts++; if (correct) correctInserts++;
+    const stat = keyStats[expected] ??= { attempts: 0, errors: 0, totalMs: 0, timed: 0 };
+    stat.attempts++; if (!correct) stat.errors++;
     const delta = previous ? event.t - previous.t : null;
-    const adjacentPair = previous?.correct && previous.position + 1 === position
-      && isLetter(previous.expectedKey) && isLetter(expectedKey);
-    const hasLatency = correct && adjacentPair && delta > 0
-      && delta <= (rules.latencyCutoffMs ?? 2000);
-
-    inserts += 1;
-    if (correct) correctInserts += 1;
-    observations.push({
-      expectedKey,
-      correct,
-      pair: adjacentPair ? `${previous.expectedKey}${expectedKey}` : null,
-      latencyMs: hasLatency ? delta : null,
-    });
-    previous = {
-      correct,
-      position,
-      expectedKey,
-      t: event.t,
-    };
+    if (correct && previous?.correct && previous.position + 1 === position && expected !== ' ' && previous.char !== ' '
+        && delta > 0 && delta <= latencyCutoffMs) { stat.totalMs += delta; stat.timed++; }
+    previous = { correct, position, t: event.t, char: event.char };
     buffer.push(event.char);
-
-    if (policy.isTimed && buffer.length === text.length && event.t < policy.durationMs) {
-      throw new ReplayValidationError('CONTENT_FAILURE', 'Assigned text ended before the timed deadline');
-    }
   }
-
-  if (pausedAt !== null) {
-    throw new ReplayValidationError('INVALID_PAUSE', 'Session ended while paused');
-  }
-  if (!policy.isTimed && buffer.length !== text.length) {
-    throw new ReplayValidationError('INCOMPLETE_PASSAGE', 'Exercise is not finished');
-  }
-  const finalCorrect = buffer.reduce(
-    (sum, char, index) => sum + Number(char === text[index]),
-    0,
-  );
-  const activeDurationMs = policy.isTimed
-    ? policy.durationMs
-    : finishTimeMs - pausedMs;
-  const metrics = calculateMetrics({
-    inserts,
-    correctInserts,
-    bufferLength: buffer.length,
-    finalCorrect,
-    activeDurationMs,
-  });
-  const evidence = summarizeEvidence(observations);
-
-  return {
-    metrics,
-    keyStats: evidence.keyStats,
-    pairStats: evidence.pairStats,
-    focusLossCount,
-    inserts,
-    correctInserts,
-    finalCorrect,
-  };
-}
-
-/** Pair evidence covers English letters; punctuation and spaces break a pair. */
-function isLetter(character) {
-  return /^[a-z]$/i.test(character);
+  if (buffer.length !== text.length || pausedAt !== null) throw new Error('Exercise not finished');
+  if (finishTimeMs !== events.at(-1).t) throw new Error('Practice finish must match the completing insert');
+  const durationMs = finishTimeMs - pausedMs;
+  const finalCorrect = buffer.reduce((sum, char, index) => sum + Number(char === text[index]), 0);
+  return { metrics: calculateMetrics({ inserts, correctInserts, bufferLength: buffer.length, finalCorrect, activeDurationMs: durationMs }),
+    keyStats, inserts, finalCorrect };
 }

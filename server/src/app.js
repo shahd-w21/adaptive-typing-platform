@@ -18,7 +18,7 @@ export function createApp({ database, clientUrl, config = {}, sendMail, now, ran
   }
   app.disable('x-powered-by');
   app.use(cors({ origin: [...allowedOrigins], credentials: true }));
-  app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '512kb' }));
   app.use(cookieParser());
   app.use((request, _response, next) => {
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.get('Origin') && !allowedOrigins.has(request.get('Origin'))) {

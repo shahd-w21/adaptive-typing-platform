@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { courseSummarySchema } from './courses.js';
 
 export const enrollmentStatusSchema = z.enum(['active', 'completed', 'paused']);
 
@@ -14,7 +13,6 @@ export const enrollmentSummarySchema = z.object({
   progressPercent: z.number().min(0).max(100),
   completedLessonsCount: z.number().int().nonnegative(),
   totalLessonsCount: z.number().int().nonnegative(),
-  course: courseSummarySchema.optional(),
   currentUnit: z
     .object({
       id: z.string(),
@@ -35,10 +33,6 @@ export const enrollmentSummarySchema = z.object({
 
 export const myEnrollmentsResponseSchema = z.object({
   enrollments: z.array(enrollmentSummarySchema),
-});
-
-export const enrollCourseResponseSchema = z.object({
-  enrollment: enrollmentSummarySchema,
 });
 
 export const enrollCourseRequestSchema = z.object({

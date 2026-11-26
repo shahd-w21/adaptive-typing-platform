@@ -28,12 +28,6 @@ import {
   emptyRequestSchema,
   publicCertificateSchema,
   emailChangeSchema,
-  courseCatalogQuerySchema,
-  courseCatalogResponseSchema,
-  courseDetailResponseSchema,
-  enrollCourseRequestSchema,
-  enrollCourseResponseSchema,
-  myEnrollmentsResponseSchema,
 } from '@typeflow/shared';
 
 const API_BASE_URL = (
@@ -136,15 +130,6 @@ const contracts = {
     sessionAbandonmentSchema,
     true,
   ],
-  'GET /courses': [null, courseCatalogResponseSchema, false, courseCatalogQuerySchema],
-  'GET /users/me/enrollments': [null, myEnrollmentsResponseSchema],
-  'POST /courses/:courseId/enrollments': [
-    enrollCourseRequestSchema,
-    enrollCourseResponseSchema,
-    true,
-  ],
-  'GET /courses/:courseId': [null, courseDetailResponseSchema],
-  'GET /enrollments/:id/path': [null, null],
 };
 
 /**
@@ -164,14 +149,6 @@ function contractFor(path, method) {
   if (certificate) {
     path = '/certificates/verify/:code';
   }
-  const course = path.match(/^\/courses\/([^/]+)(\/enrollments)?$/);
-  if (course) {
-    path = course[2]
-      ? '/courses/:courseId/enrollments'
-      : '/courses/:courseId';
-  }
-  const enrollmentPath = path.match(/^\/enrollments\/([^/]+)\/path$/);
-  if (enrollmentPath) path = '/enrollments/:id/path';
   return contracts[`${method} ${path}`];
 }
 
@@ -210,7 +187,6 @@ export async function request(
     headers,
     requestSchema,
     responseSchema,
-    query,
     authenticated = false,
     available = true,
     fetchImpl = globalThis.fetch,
@@ -239,20 +215,6 @@ export async function request(
   }
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && !requestSchema) {
     throw failure('INVALID_REQUEST');
-  }
-
-  let queryString = '';
-  if (query !== undefined) {
-    const querySchema = contract?.[3];
-    if (!querySchema) throw failure('INVALID_REQUEST');
-    const parsedQuery = querySchema.safeParse(query);
-    if (!parsedQuery.success) throw failure('INVALID_REQUEST');
-    const parameters = new URLSearchParams();
-    for (const [key, value] of Object.entries(parsedQuery.data)) {
-      if (value !== undefined && value !== '') parameters.set(key, value);
-    }
-    const encoded = parameters.toString();
-    if (encoded) queryString = `?${encoded}`;
   }
 
   // Serialize parsed data, not the original UI object. Zod either strips extra
@@ -289,7 +251,7 @@ export async function request(
 
   let response;
   try {
-    response = await fetchImpl(`${API_BASE_URL}${path}${queryString}`, {
+    response = await fetchImpl(`${API_BASE_URL}${path}`, {
       ...options,
       method,
       body,
