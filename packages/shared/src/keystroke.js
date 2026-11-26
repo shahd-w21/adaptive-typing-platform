@@ -11,7 +11,7 @@ export const eventSchema = z.discriminatedUnion('type', [
       char: z.string().length(1).regex(/^[ -~]$/),
     })
     .strict(),
-  ...['backspace', 'pause', 'resume'].map((type) =>
+  ...['backspace', 'pause', 'resume', 'focusLost'].map((type) =>
     z
       .object({
         seq: z.number().int().nonnegative(),
@@ -25,7 +25,7 @@ export const eventSchema = z.discriminatedUnion('type', [
 // Client scores and correctness claims are excluded from the canonical payload.
 export const submissionSchema = z
   .object({
-    events: z.array(eventSchema).min(1).max(5000),
+    events: z.array(eventSchema).min(1).max(10000),
     finishTimeMs: z.number().finite().nonnegative(),
   })
   .strict();

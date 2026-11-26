@@ -98,8 +98,17 @@ test('FE-06/FE-10 real dashboard refresh and lost-response recovery preserve one
       advance(finishTimeMs + 1000);
       await controller.submit({ events, finishTimeMs });
       assert.equal(controller.getSnapshot().status, 'retry');
+      const committedAfterDroppedResponse = await call(`/sessions/${assignment.sessionId}`);
+      assert.equal(
+        committedAfterDroppedResponse.status,
+        'completed',
+        JSON.stringify({
+          committedAfterDroppedResponse,
+          controllerSnapshot: controller.getSnapshot(),
+        }),
+      );
       await controller.retry();
-      assert.equal(controller.getSnapshot().status, 'completed');
+      assert.equal(controller.getSnapshot().status, 'completed', JSON.stringify(controller.getSnapshot()));
       assert.equal(submits, 1);
       const dashboard = await readDashboard();
       assert.equal(dashboard.recentSessions.length, 1);
@@ -291,6 +300,14 @@ test('owned practice, atomic retries/concurrency, dashboard and progress', async
   const strangerAgent = request.agent(app);
   const strangerCsrf = await login(stranger, strangerAgent);
   await strangerAgent.post(`/api/v1/sessions/${assignments[0].sessionId}/submit`).set('X-CSRF-Token', strangerCsrf).send(payload(assignments[0])).expect(404);
+  const invalid = payload(assignments[1]);
+  invalid.events[1].seq = 7;
+  await agent.post(`/api/v1/sessions/${assignments[1].sessionId}/submit`).set('X-CSRF-Token', csrf).send(invalid).expect(422);
+  const rejectedSession = await database.typingSession.findUnique({ where: { id: assignments[1].sessionId } });
+  assert.equal(rejectedSession.status, 'created');
+  assert.equal(rejectedSession.result, null);
+  assert.equal(await database.keystrokeLog.count({ where: { sessionId: assignments[1].sessionId } }), 0);
+  assert.equal((await database.user.findUnique({ where: { id: person.id } })).xp, 0);
   advance(60000);
   const service = createSessionService({ database, now: () => new Date(Date.now() + 60000) });
   const results = await Promise.all(assignments.map(async assignment => ({ body: await service.submit(person.id, assignment.sessionId, payload(assignment)) })));

@@ -1,6 +1,6 @@
 # API contract
 
-**Status: target contract remains DRAFT; migrated endpoint details below describe current code.** Implemented does not imply team approval of every draft field or completion of every SRS requirement. Required behaviour comes from the [SRS](srs.md). The teammate's backend migration and its explicit differences are recorded below; other examples remain proposals.
+**Status: current auth/practice API boundary is recorded as Agreed in BE-01 revision 2; BE-04 now implements the shared lifecycle for the six SRS session modes.** Implementation does not imply approval of unrelated future endpoints or completion of every SRS requirement. Required behaviour comes from the [SRS](srs.md). The teammate's backend migration and its explicit differences are recorded below; other examples remain proposals.
 
 ## Teammate backend migration
 
@@ -13,12 +13,14 @@ Source: teammate work in commit `68d311f`. CommonJS/pg code has been relocated a
 | `GET/PATCH/DELETE /profile` | `GET/PATCH/DELETE /users/me` | `modules/users/` |
 | `POST /profile/password` | `POST /users/me/password` | Password check/update and session revocation |
 | — | `POST /users/me/email` | Password-confirmed email-change request with one-use verification token |
-| `POST /sessions/start` | `POST /sessions` (`/sessions/start` alias) | Practice assignment, captured policy and owned session |
+| `POST /sessions/start` | `POST /sessions` (`/sessions/start` alias) | Placement, lesson, practice, review, timed and certified assignment through one owned session service |
 | `POST /sessions/:id/submit` | Same suffix | Shared event schemas, replay, atomic persistence and safe retries |
 | `GET /keyboard` | `GET /path` or `/path/keyboard` | Groups, per-key statistics/status and recommendation |
 | `GET /dashboard` | `GET /dashboard` | Profile summary, XP/level/streak, daily goal, recommendation and recent sessions |
 | `GET /progress` | `GET /progress` | Completed practice history and per-key data |
 | `GET /admin/ping` | `GET /admin/ping` | Live server-side Admin check |
+| — | `GET /courses`, `GET /courses/:courseId`, `POST /courses/:courseId/enrollments` | Published catalog/detail and idempotent enrollment |
+| — | `GET /users/me/enrollments`, `GET /enrollments/:enrollmentId/path` | Owned enrollment list and captured course snapshot |
 
 Additional supporting routes: `GET /sessions`, `GET /sessions/:id`, `POST /sessions/:id/abandon`, `GET /gamification`. The old `/api` prefix is not mounted. IDs are now opaque UUID strings. Old SQL data is not automatically imported; account hashes remain bcrypt-compatible for a future reviewed data import if needed.
 
@@ -30,13 +32,13 @@ Implemented request details:
 - Verification requires `{email,token}`; reset requires `{token,password,confirmPassword}`. Password change uses `{currentPassword,newPassword,confirmPassword}`. Email change uses `{currentPassword,newEmail}`. Deletion uses `{password}`.
 - Profiles use camelCase: `name`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, and partial `preferences` (`themePreference`, `uiLocale`). Replies contain `{user}`; login/me include only allowlisted public user fields. Roles in public DTOs are `student`/`admin`.
 - Login sets the httpOnly `token` cookie and returns `{user,csrfToken}`; `GET /auth/me` returns a fresh representation of the same session's CSRF token. Send cookies and `X-CSRF-Token` on authenticated POST/PATCH/DELETE calls. Logout revokes the server record; password reset/change revoke all sessions. Explicitly different browser Origins are rejected.
-- Start accepts `{mode:"practice"}` (or `{}`) and returns `{sessionId,mode,text,source,issuedAt,expiresAt,rules}`. Only practice was implemented in the teammate's server; other modes are not silently mapped to it.
-- Submit uses the canonical `events`/`finishTimeMs` shape below. The old `{keystrokes:[{typed_char,t_ms}]}` wire shape is replaced, not accepted as authoritative scores. Practice must finish on its last completing insert; pause/resume are supported. Maximum 5000 events and 512 KiB JSON body.
+- Start accepts `{}`/`{mode:"practice"}`, `{mode:"placement"}`, `{mode:"lesson"}`, `{mode:"review"}`, `{mode:"timed",durationSeconds:60|180|300}`, or `{mode:"certified"}` and returns `{sessionId,mode,text,source,issuedAt,expiresAt,rules}`. Lesson currently means the next available shared key-group lesson; course enrollment/lesson linkage is not part of this contract. Review starts only when mastered keys are due (`409 NO_REVIEWS_DUE` otherwise). Timed text is sized for the captured accepted-speed ceiling and margin. Certified test sessions capture the BE-04 operational thresholds but do not issue a certificate. Placement completion stores assessment evidence and may put prerequisite-qualified groups in progress, but does not grant mastery or XP.
+- Submit uses the canonical `events`/`finishTimeMs` shape below. The old `{keystrokes:[{typed_char,t_ms}]}` wire shape is replaced, not accepted as authoritative scores. Untimed passages must finish on their last completing insert; permitted pause/resume is mode-specific. Maximum 10,000 events and 1 MiB JSON body.
 - Results contain `sessionId,status,metrics,passed,rewards,xpEarned,xp,level,leveledUp,streak,masteredKeys,unlockedKeys,problemKeys,certificate`. `certificate` is null. Metrics use SRS formulas; accuracy gating uses unrounded raw accuracy. Identical retries return the saved JSON; different payloads conflict. Current history returns at most 100 sessions; pagination/filter contracts remain draft.
 
 Preserved intent with deliberate corrections: no destructive schema bootstrap; pure generation/replay; all official scores derived server-side; current SRS formulas and mastery evidence replace old placeholders; raw accuracy gates mastery/unlocks; user row locks and bounded serialization retries protect concurrent updates; result/log/stat/reward writes share one transaction. Raw logs expire separately from results and retry hashes. Last-active-admin deletion remains protected. Email calls are outside transactions and tokens are not logged.
 
-The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned reward/integrity defaults are prototype migration policy, pending the open team decisions. Full pair statistics, placement/review/timed/certified modes, difficulty progression, AI text generation, badges, certificates, forum and full admin APIs remain unimplemented. Their existing schema concepts are retained, including the one-accepted-answer-per-thread index. This migration does not certify the entire SRS or approve the remaining draft contract.
+The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned reward/integrity defaults are prototype migration policy, pending the open team decisions. BE-03 computes pair evidence, but persisted pair statistics and difficulty progression remain unimplemented. BE-04 implements placement/review/timed/certified session lifecycles; certificate issuance remains separate. AI text generation, badges, forum and full Admin APIs remain unimplemented. Existing schema concepts are retained, including the one-accepted-answer-per-thread index. This migration does not certify the entire SRS or approve remaining draft contracts.
 
 ## FE-02 current frontend boundary — 22 October 2026
 
@@ -51,7 +53,7 @@ The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned r
 | `GET/PATCH /users/me` | no body / `profileSchema` | `profileResponseSchema` | Implemented; real HTTP partial update, restoration and unknown-field rejection passed |
 | Password change / account deletion | `changePasswordSchema` / `deleteAccountSchema` | `acknowledgementSchema` | Implemented; existing backend acceptance retained |
 | `POST /users/me/email` | `emailChangeSchema` | `acknowledgementSchema` | Implemented; current password required; email verification flow follows server service |
-| `POST /sessions` (practice only) | `startSessionSchema` | `sessionAssignmentSchema` | Implemented; real HTTP assignment checked |
+| `POST /sessions` (six SRS modes; mode-specific request fields) | `startSessionSchema` | `sessionAssignmentSchema` | Implemented by BE-04; focused authenticated start/submit checks are registered in the integration suite |
 | `GET /sessions`, `GET /sessions/:id` | no body; UUID ID | `sessionHistorySchema`, `sessionDetailSchema` | Implemented; real HTTP empty/history and created/completed/abandoned DTO checks split across unit/integration tests |
 | Submit / abandon | `submissionSchema` / `emptyRequestSchema` | `sessionResultSchema` / `sessionAbandonmentSchema` | Implemented; real HTTP result/retrieval/abandon checks passed |
 | Error envelope | — | `apiErrorResponseSchema` | Current `{error:{code,message?}}`; requestId/retryable are not server fields |
@@ -61,40 +63,43 @@ The recovered key groups, 40 WPM target, 10–250 profile bounds and versioned r
 | `GET /gamification` | — | `gamificationResponseSchema` | Implemented XP/level/streak/daily-goal snapshot; badges and reward history are not part of this response |
 | `GET /admin/ping` | — | `adminPingResponseSchema` | Implemented Admin access probe only; it is not an Admin management contract |
 | `GET /certificates/verify/:code` | — | `publicCertificateSchema` | Implemented public verification; issuance/list/PDF contracts are not implemented |
-| Forum | — | No agreed runtime schema | No real forum routes; request/response, visibility and moderation policy remain to agree |
-| Courses/enrollments, analytics and reward/progress extensions | Draft only | Shared course/admin-course/enrollment DTO schemas exist, but there are no corresponding runtime server routes | Existing schemas are draft/fixture boundaries, not accepted API contracts; pagination, eligibility, uniqueness, retries and progress semantics remain pending BE-01/domain review |
+| Forum | — | No runtime schema or routes in this phase | API design and fixture boundaries are deferred to the forum feature task |
+| Student course catalog/details, enroll, owned-enrollment list and owned path | Implemented; contract review and acceptance pending | `server/src/modules/courses/` routes/services, Prisma migration `20261126130000_course_catalog_enrollments`, and shared course/enrollment response schemas | Candidate DTOs are now used by the API and client; published versions only are listed, duplicate same-version enrollment is idempotent, and objective/session progress remains unimplemented |
+| Course authoring/publication, lesson session integration, objective completion and certificates | Draft / unimplemented | No runtime routes or transactional session linkage | Requires the named BE-12/13/14 work and still-open course objectives/content decisions |
 
-The client validates the listed current response DTOs with shared schemas; certificate verification is also parsed by the server service. Positive and invalid fixture parsing for progress, gamification, Admin access and certificate verification is covered by `server/tests/unit/frontend-contracts.test.js`; this checks DTO shape, not route authorization or database behavior. No current endpoint is recorded as team-agreed yet; implementation evidence does not constitute sign-off.
+The client validates the listed current response DTOs with shared schemas; certificate verification is also parsed by the server service. Positive and invalid fixture parsing for progress, gamification, Admin access and certificate verification is covered by `server/tests/unit/frontend-contracts.test.js`; this checks DTO shape, not route authorization or database behavior. The current implemented boundary is recorded as Agreed in the BE-01 phase record; implementation evidence alone is not sign-off for future endpoints.
 
-**Status interpretation:** “Implemented” below the current boundary means a matching runtime route/schema exists. It does not mean a team has agreed the complete endpoint contract. Forum, course/enrollment, certificate issuance and full Admin-management rows remain draft or unimplemented.
+**Status interpretation:** “Implemented” below the current boundary means a matching runtime route/schema exists. It does not mean a team has agreed the complete endpoint contract. Forum, course authoring/progress, certificate issuance and full Admin-management rows remain draft or unimplemented; student catalog/enrollment routes are implemented with contract review pending.
 
 Current fields and units:
 
 - `publicUserSchema`: UUID `id`, `email`, nullable `name`, lowercase `role`, `timezone`, `targetWpm`, `dailyGoalMinutes`, `largeText`, `reducedPressure`, `xp`, `level`, `streak`, and `preferences.{themePreference,uiLocale}`. No `displayName`, `emailVerified`, token, password hash or internal auth record. Login/me add a 64-character hexadecimal `csrfToken`; profile replies do not.
-- Assignment fields are `sessionId,mode,text,source,issuedAt,expiresAt,rules`. Current source is `fallback`, mode is `practice`; rules are `pauseAllowed,eventVersion,settingsVersion,targetWpm`. Dates are UTC ISO strings, event/active times are milliseconds. Draft `textSource`, `versions` and `canPause` are not current fields.
+- Assignment fields are `sessionId,mode,text,source,issuedAt,expiresAt,rules`. Source is `fallback`; rules capture `modePolicyVersion,pauseAllowed,eventVersion,scoringVersion,settingsVersion,targetWpm,timezone,maxKeystrokes`, plus `focusKeys` (each repeated at least three times) for practice/lesson, `durationMs` for timed/certified, `lessonGroupId` for standalone lessons, `reviewKeys` for review, and certified thresholds for certified tests. Practice text covers every currently unlocked key and weights its captured focus keys more heavily. Locked keys stay excluded until placement evidence or prerequisite mastery unlocks them. Database rows also capture the settings and engine versions. Dates are UTC ISO strings, event/active times and durations are milliseconds, target/speed are WPM and accuracy is a percentage. Draft `textSource`, `versions` and `canPause` are not wire fields.
+- The path recommendation reports `weakestKey` and up to five `focusKeys` selected from that user's least-sampled unlocked key, most-overdue review key and weakest unlocked keys. The browser refreshes dashboard/path data after a saved result; a failed API refresh leaves the previous recommendation unavailable/stale and shows its error state.
 - `sessionResultSchema` matches the implemented result list above, including server metrics with nullable unknown values, XP reward records, nullable problem-key average latency and `certificate:null`. No client score is accepted. Future certificate/reward variants require a coordinated schema change.
 - History is `{sessions:[{id,mode,status,netWpm,rawAccuracy,completedAt}]}` with nullable metrics/completion time and a maximum of 100 rows. No agreed pagination/filter parameters. Non-completed detail returns `sessionId,status,mode,text,expiresAt`; completed detail is the official result.
 - `GET /progress` returns at most 100 completed practice session summaries plus key statistics; it accepts no pagination, sort or filter parameters. `GET /gamification` returns `{xp,level,streak,dailyGoal:{goalMinutes,minutesToday,done}}`; goal values are minutes and streak is a day count. Badges and reward history are not included.
+- `GET /path` includes `recommendation.{activity,reason,weakestKey?,focusKeys?}`. Focus keys are derived from that owner's unlocked evidence: least-sampled key, most-overdue review when due, then highest weakness; each selected key is repeated in practice/lesson text while every currently unlocked key appears at least once.
 - `GET /admin/ping` returns `{message}` after server-side Admin role enforcement; it is only an access probe. `GET /certificates/verify/:code` returns `{code,name,issueDate,netWpm,rawAccuracy}` for a valid, non-revoked record, or `404 NOT_FOUND` for invalid, missing or revoked codes. `issueDate` is an ISO calendar date and accuracy is a percentage. The verification route is limited to 30 requests per 15 minutes. It exposes no email or keystrokes; issuance and private certificate list/PDF remain unimplemented.
 
-Current runtime limits and error codes below describe code behavior; they do not approve prototype policy defaults for future modes or production use.
+Current runtime limits and mode policies below describe implemented behavior; decision 0012 records the approved BE-04 operational defaults. They do not establish production calibration for general speed/integrity limits.
 
 | Area | Current behavior |
 | --- | --- |
 | Auth routes | Shared limiter: 10 requests per 15-minute window; rate-limit response is `429 RATE_LIMITED` |
 | Certificate verification | 30 requests per 15-minute window; invalid, missing and revoked certificates return `404 NOT_FOUND` |
-| JSON request body | Express rejects bodies over 512 KiB; malformed JSON returns `400 INVALID_REQUEST` |
-| Session submit | At most 5,000 events; schema/field failures return `400 INVALID_REQUEST`; replay/integrity failures return `422 INVALID_SUBMISSION` |
+| JSON request body | Express rejects bodies over 1 MiB; malformed JSON returns `400 INVALID_REQUEST` |
+| Session submit | At most 10,000 events; schema/field failures return `400 INVALID_REQUEST`; replay/integrity failures return `422 INVALID_SUBMISSION` |
 | Session history / progress | At most 100 rows, newest first; no pagination, sort or filter query contract |
 | Identical session submit retry | Returns the saved result; a different payload for a completed session returns `409 SESSION_CONFLICT`; no automatic client write retry |
 | Session start retry | No server idempotency key; repeated explicit starts may create another assignment |
 
-Implemented server error codes include `INVALID_REQUEST`, `INVALID_CREDENTIALS`, `INVALID_TOKEN`, `INVALID_PASSWORD`, `EMAIL_REGISTERED`, `EMAIL_NOT_VERIFIED`, `ACCOUNT_INACTIVE`, `EMAIL_SAME`, `EMAIL_UNAVAILABLE`, `LAST_ADMIN`, `ACCOUNT_CHANGED`, `UNAUTHENTICATED`, `FORBIDDEN`, `CSRF_FAILED`, `ORIGIN_FORBIDDEN`, `NOT_FOUND`, `SESSION_CONFLICT`, `SESSION_UNAVAILABLE`, `INVALID_SUBMISSION`, `CONTENT_NOT_READY`, `RATE_LIMITED`, and `INTERNAL_ERROR`. This list is the current implementation surface, not a finalized exhaustive error taxonomy.
+Implemented server error codes include `INVALID_REQUEST`, `INVALID_CREDENTIALS`, `INVALID_TOKEN`, `INVALID_PASSWORD`, `EMAIL_REGISTERED`, `EMAIL_NOT_VERIFIED`, `ACCOUNT_INACTIVE`, `EMAIL_SAME`, `EMAIL_UNAVAILABLE`, `LAST_ADMIN`, `ACCOUNT_CHANGED`, `UNAUTHENTICATED`, `FORBIDDEN`, `CSRF_FAILED`, `ORIGIN_FORBIDDEN`, `NOT_FOUND`, `SESSION_CONFLICT`, `SESSION_UNAVAILABLE`, `INVALID_SUBMISSION`, `CONTENT_NOT_READY`, `PLACEMENT_UNAVAILABLE`, `NO_REVIEWS_DUE`, `RATE_LIMITED`, and `INTERNAL_ERROR`. This list is the current implementation surface, not a finalized exhaustive error taxonomy.
 
 Validation and transport rules:
 
 - Auth request objects strip extra fields; profile (including nested preferences), start and submission objects reject them. Session response schemas reject unrecognized fields; other response schemas strip them and reject missing/invalid required fields. Request schema failures stop before Fetch; the backend independently validates requests and returns `400 INVALID_REQUEST` for invalid fields, rather than the draft 422 validation convention. Invalid replay/submission semantics use 422.
-- The transport validates current auth/user/session routes automatically and accepts explicit `requestSchema`/`responseSchema` for subsequently reviewed boundaries. Calls keep JSON-string bodies; schema-backed calls also accept plain objects. Authenticated writes require an explicit CSRF token. Unreviewed writes without a request schema are rejected. Paths are relative API paths; query strings are not supported until an endpoint's query contract is agreed.
+- The transport validates current auth/user/session/course routes automatically and accepts explicit `requestSchema`/`responseSchema` for subsequently reviewed boundaries. Calls keep JSON-string bodies; schema-backed calls also accept plain objects. Authenticated writes require an explicit CSRF token. Unreviewed writes without a request schema are rejected. Paths are relative API paths; query strings are accepted only for the course catalog's shared query schema.
 - Cookies use `credentials:include`; authenticated writes send `X-CSRF-Token`. AuthProvider remains the only auth-state owner and receives CSRF from real login/me; no JWT/CSRF persistence or duplicate token store is introduced. CSRF rejection never automatically retries a write or invents a token.
 - `ApiError` exposes safe `code`, `status`, `messageKey`, `retryable`, `retryAfterMs` and `authenticationRequired`. Server message/details are never surfaced verbatim. Known statuses include 400/401/403/404/409/422/429/5xx; malformed success DTOs produce `CONTRACT_ERROR`, network failure `NETWORK_ERROR`, and cancellation remains an AbortError. Retry metadata does not authorize replaying a write. Retry-After is usable only if exposed to the browser by the server/CORS policy.
 - AuthProvider retains ownership of logout/cache clearing. Transport signals protected-session rejection through `authenticationRequired`; it does not clear global auth on arbitrary late requests. Automatic protected-401 UI/session recovery and stale-account response handling require Dev 1 integration review; this task does not claim those browser flows verified.
@@ -106,12 +111,12 @@ Verification evidence: `server/tests/unit/frontend-contracts.test.js` (transport
 
 ## FE-05 typing assignment and result boundary — 22 October 2026
 
-**Status: implementation and focused API checks added; owner/reviewer demonstration and browser acceptance remain pending.** The current server flow is practice-only and uses the real `/sessions` API when the controller is active. Developer-fixture typing remains explicitly marked as fixture data; API failures do not silently fall back to fixture sessions.
+**Status: the existing typing controller integrates the practice contract; backend BE-04 also exposes all six session modes.** Non-practice frontend flows are not wired or browser-accepted in this FE task. Developer-fixture typing remains explicitly marked as fixture data; API failures do not silently fall back to fixture sessions.
 
 - `POST /sessions` sends the machine value `{ "mode": "practice" }`. The validated assignment's `text` is passed unchanged to the existing typing screen's `assignedText` prop. The UI label `Adaptive Practice` is presentation text, not a wire mode. The response's `source` and captured `rules` remain validated server data; they do not rewrite the assignment text or provide client scoring authority.
 - Submit places the session ID only in `/sessions/:id/submit`. The shared schema validates the strict body `{ "events": [...], "finishTimeMs": number }`. The adapter accepts the existing recorder snapshot timing name (`finishTime`) or the canonical timing name (`finishTimeMs`), then projects only those two fields. Recorder session IDs, event counts, and diagnostics are not sent; scores, expected keys and correctness claims are never part of the schema. Invalid event fields are rejected.
 - The response is checked against strict assignment, detail, history and official-result schemas. Displayed official metrics/rewards come from the server result, not from the recorder or live provisional metrics.
-- Placement, lesson/course enrollment identifiers, review and test modes, and any additional mode-specific fields remain **Draft**. Existing course examples such as `enrollmentId`/`lessonId` do not authorize adding them to runtime session schemas.
+- BE-04 adds placement, standalone key-group lesson, review, timed and certified start/submit behavior. Course enrollment identifiers and course-owned lesson completion are still not runtime session fields. Existing course examples such as `enrollmentId`/`lessonId` do not authorize adding them to this session schema.
 
 Unit verification uses `server/tests/unit/frontend-contracts.test.js` to check the assignment mapping and exact serialized request body from an actual recorder snapshot, including exclusion of recorder metadata. The focused dashboard/session browser suite passed 12 tests with intercepted HTTP fixtures; it checks the existing session/recovery presentation but is not live-API evidence. A real-HTTP FE-02/FE-05 integration test is present in `server/tests/integration/features.test.js`, where adapter output goes through the shared schema and authenticated session endpoint. Its local run was blocked because `server/.env` has no `TEST_DATABASE_URL` and Docker is unavailable; therefore live-server FE-05 verification remains outstanding. Unit tests (52), lint, production build and the focused browser suite passed; owner/reviewer demonstration and browser acceptance remain pending.
 
@@ -129,7 +134,7 @@ Unit verification uses `server/tests/unit/frontend-contracts.test.js` to check t
 | Course resume | No accepted runtime fields | Development-only labelled sample; no target, mastery value or resume action; FE-07/FE-12 review required |
 
 - Dashboard values remain server-derived; required-field failures are contract errors, not zero/empty fallbacks. A path failure does not hide the dashboard. Failed background refresh retains previously loaded data with a warning.
-- The recommendation's English reason is preserved with English/LTR markup. Translated labels explain that placement/timed modes are unavailable; a separately labelled action starts real practice. Future reason codes/parameters need backend-owner agreement.
+- The recommendation's English reason is preserved with English/LTR markup. Existing frontend labels may still describe placement/timed modes as unavailable; BE-04 now provides the backend session starts, but wiring and browser acceptance are separate frontend work. Future reason codes/parameters need backend-owner agreement.
 - An explicit retry checks owned status before sending the frozen `{events,finishTimeMs}` again. Completed recovery displays the saved result and supplies no new reward notifications. No automatic write retries or replacement assignments hide uncertain writes.
 - Full assignments and typing state stay in memory across presentation changes. Reload recovers a saved result, or explains lost typing progress and requires explicit abandon/restart. Failed abandonment cannot allocate another attempt.
 - Start has no backend idempotency key. A lost start response may leave an orphan assignment; the UI explains the uncertainty and does not automatically retry. A future backend contract is needed to remove this limitation.
@@ -175,7 +180,7 @@ This inventory includes mounted endpoints and future proposals. Current runtime 
 | `PATCH /users/me` | Owner (Student or Admin) | Allowlisted profile/preferences fields → updated DTO; partial preference merge |
 | `POST /users/me/password`, `POST /users/me/email` | Owner (Student or Admin) | Current password change/email change actions; see implemented request schemas above |
 | `DELETE /users/me` | Owner (Student or Admin) | Implemented `{password}` confirmation → acknowledgement; removes authored forum text, retains only needed anonymous discussion structure, and protects the last active Admin |
-| `POST /sessions` (`/sessions/start` alias) | Student | Implemented practice-only assignment; future mode/options remain draft |
+| `POST /sessions` (`/sessions/start` alias) | Student | Implemented six-mode assignment using shared `startSessionSchema`/`sessionAssignmentSchema`; course enrollment linkage remains draft |
 | `POST /sessions/:id/submit` | Owner | Events/finish time → official result |
 | `POST /sessions/:id/abandon` | Owner | Mark abandoned; no rewards |
 | `GET /sessions/:id` | Owner | Status or saved official result |
@@ -300,6 +305,8 @@ Illustrative **event-shape fragment**, not a complete valid session submission:
 
 Only insert carries `char`; pause/resume are valid only in allowed modes. The actual submitted log must meet the assignment's completion rules. `finishTimeMs` measures elapsed time from the first insert; server replay derives active time using permitted pause spans. Do not send an authoritative score, expected key or correctness flag.
 
+**Certified integrity event:** `{ "seq": 6, "type": "focusLost", "t": 1900 }` records one client-observed transition from focused to unfocused after the first insert. It carries no `char`, is accepted only for certified assignments, and does not pause the clock or directly change the score. Replay counts it and breaks adjacent-key latency evidence. The event is an untrusted client report, not proof of user intent or misconduct; no focus-return event is required. The server still validates sequence and monotonic elapsed time.
+
 Illustrative result shape, independent of the short assignment and event fragment above:
 
 ```json
@@ -315,21 +322,41 @@ Illustrative result shape, independent of the short assignment and event fragmen
 
 An identical accepted retry returns the same saved result without side effects; differing resubmission returns a conflict. Agree concrete key-breakdown, reward-event IDs, next-activity payload and certificate DTOs before integration. Clients must deduplicate already-presented reward events.
 
-## Course expansion — draft boundary only
+## Course expansion — student API implemented; feature boundary remains partial
 
-The course behavior in [SRS section 9.6](srs.md#course-proposal) / [decision 0008](decisions.md#0008) is approved. Exact endpoint methods, JSON fields and error/retry schemas below remain draft and require phase agreement. Shared course, admin-course and enrollment DTO schemas, plus client fixture adapters, exist for frontend work; no corresponding course/enrollment server routes are implemented or mounted. The current migrated API remains as documented above.
+The course behavior in [SRS section 9.6](srs.md#course-proposal) / [decision 0008](decisions.md#0008) is approved. On 26 November 2026, runtime implementation was explicitly authorized for the student catalog and enrollment slice. That authorization does not settle course objectives/checkpoints, lesson completion, placement freshness, re-enrollment across versions, or initial course content. Admin authoring and course-linked session submissions remain unimplemented.
+
+Implemented student course routes:
+
+| Route | Access | Runtime behavior |
+| --- | --- | --- |
+| `GET /courses?search=&level=&topic=&status=` | Public | Searches published versions; `status=archived` can inspect archived snapshots; drafts are never returned |
+| `GET /courses/:courseId` | Public | Returns a published detail or an archived snapshot; no learner data is included |
+| `POST /courses/:courseId/enrollments` | Student + CSRF | Captures the current published version; duplicate requests for the same user/version return the existing enrollment |
+| `GET /users/me/enrollments` (`GET /courses/my-courses` compatibility alias) | Student | Lists only the signed-in student's enrollments and derives zero/partial progress from saved lesson IDs |
+| `GET /enrollments/:enrollmentId/path` | Student | Returns the owned enrollment and its captured course snapshot; cross-user IDs return 404 |
+
+The enrollment uniqueness rule currently applies per user and course version. This is an implementation choice for retry safety, not a team-approved policy for simultaneous old/new-version enrollment. Course progress remains empty until the session integration and reviewed completion rules exist. No course content is inserted by the migration, so a fresh database correctly returns an empty catalog until reviewed content is authored and published.
 
 | Proposed boundary | Intent |
 | --- | --- |
-| `GET /courses`, `GET /courses/:courseId` | Published catalog, metadata and path preview; drafts excluded |
-| `POST /courses/:courseId/enrollments` | Idempotently enroll in an eligible published version; exact duplicate/version behavior TBD |
-| `GET /users/me/enrollments` | Owned course progress and resume targets |
-| `GET /enrollments/:enrollmentId/path` | Owned lesson states, explanations, recommendations and entry-check need |
 | Existing `POST /sessions` | Optional enrollment/lesson context for a course activity; placement/review use the same lifecycle |
 | Existing submit/result routes | Return saved course-progress effects alongside official result/rewards; identical retries remain safe |
 | `/admin/courses/*` | Protected draft authoring, validation/preview, publish and archive; exact methods/actions TBD |
 
 Candidate session-start fragment, **not a complete agreed payload**: `{ "mode": "lesson", "enrollmentId": "example-enrollment", "lessonId": "example-lesson" }`. The server resolves ownership, course version, eligibility, activity rules and settings. Clients cannot submit mastery/completion claims or override constraints. Preserve existing standalone session requests; agree nullability and backward compatibility before changes. Public catalog DTOs must not expose private learner data or draft content. Pagination, enrollment uniqueness, draft edit conflicts, publication retries, archival responses, eligibility errors, progress/exemption DTOs and targeted-placement request shapes remain to agree. Admin writes retain role/CSRF/audit protections.
+
+## Remaining draft course boundaries
+
+The student catalog/enrollment rows above are implemented from the shared runtime schemas. These behaviors are still proposals and are not implied by the student API slice:
+
+| Proposed boundary | Intent |
+| --- | --- |
+| Existing `POST /sessions` | Optional enrollment/lesson context for a course activity; placement/review use the same lifecycle |
+| Existing submit/result routes | Return saved course-progress effects alongside official result/rewards; identical retries remain safe |
+| `/admin/courses/*` | Protected draft authoring, validation/preview, publish and archive; exact methods/actions TBD |
+
+The same-version duplicate-enrollment rule is implemented for request retry safety, but active enrollments across successive versions remain a team decision. The enrollment uniqueness index should be reviewed by Dev 4 before treating that policy as final.
 
 ## Phase agreement record
 
@@ -356,17 +383,17 @@ Fill this for each phase and retain previous agreements when evolving the contra
 
 | Field | Value |
 | --- | --- |
-| Phase / contract version | BE-01 current-runtime inventory, revision 1 (2026-11-24) |
-| Status | Review-ready draft; not team-agreed. FE-35 handoff acceptance is not recorded in the project docs. |
-| Scope and SYS IDs | Current auth/profile, practice session, dashboard/path/progress/gamification, Admin ping and public certificate-verification boundaries; future modes/features remain draft (SYS-1–64 as applicable). |
-| Endpoint schemas and positive/error examples | Current shared exports are listed in the FE-02 matrix; fixtures for auth/practice and progress/gamification/Admin/certificate DTOs are in `server/tests/unit/frontend-contracts.test.js`. Course/admin-course/enrollment shared DTO schemas exist but have no matching runtime API routes and remain draft; forum and certificate-issuance schemas are not implemented. |
-| Auth/ownership, limits and retry rules | Current route gates and runtime limits are documented above; start has no server idempotency key, history/progress are capped at 100, and course enrollment retries remain draft because no route is implemented. |
-| Frontend/backend owners and reviewers | Coordination: Dev 1; assigned reviewer: Dev 4. FE-35 owner Dev 4/reviewer Dev 5 handoff evidence and feature-owner contract sign-offs are pending. |
-| Agreement date / decision link | Pending human/team review; no acceptance decision recorded. |
+| Phase / contract version | BE-01 current-runtime inventory, revision 2 (2026-11-25) |
+| Status | Agreed current auth/profile and practice frontend boundary; BE-04 mode start contracts and operational defaults are recorded in decision 0012. Student course API runtime shapes are implemented from candidate schemas; Dev 4 review and acceptance remain pending. |
+| Scope and SYS IDs | Current auth/profile, six-mode backend session lifecycle, dashboard/path/progress/gamification, Admin ping and public certificate-verification boundaries are recorded at their documented implemented shapes; course-linked features and unrelated future endpoints remain Draft (SYS-1–64 as applicable). |
+| Endpoint schemas and positive/error examples | Auth/practice and progress/gamification/Admin/certificate DTO fixtures remain in `server/tests/unit/frontend-contracts.test.js`. Student course catalog/enrollment DTOs are now runtime-bound; admin authoring, course session progress, forum and certificate issuance remain unimplemented. |
+| Auth/ownership, limits and retry rules | Current route gates and runtime limits are documented above; start has no server idempotency key, history/progress are capped at 100, and same-version enrollment retries return the unique existing row. Re-enrollment across versions remains policy-pending. |
+| Frontend/backend owners and reviewers | Coordination: Dev 1; assigned reviewer: Dev 4. Project owner confirms FE-35 handoff (Dev 4 / Dev 5) and applicable Dev 4 / feature-owner reviews are complete. |
+| Agreement date / decision link | 2026-11-25; owner confirmation recorded in this phase record. Detailed SRS policy values still marked TBD remain deferred to their owning feature tasks. |
 | Compatibility/migration plan | Move clients to `/api/v1`; keep the `/auth/signup` and `/sessions/start` aliases; replace legacy keystroke body with `{events,finishTimeMs}`. Legacy data import is separate and unapproved. |
-| Verification evidence | `npm test` (54 unit tests), `npm run lint`, `npm run build`, and `git diff --check` passed for the current implementation; live API/browser owner acceptance remains pending. |
+| Verification evidence | `npm test` (54 unit tests), `npm run lint`, `npm run build`, and `git diff --check` passed for the current implementation; current auth/practice live API evidence is linked in the FE-02/FE-05 sections above. |
 
-Before marking agreed, settle required/optional/null fields, time units, permission checks, error codes, pagination, duplicate/concurrent behaviour and matching mocks. A breaking change needs coordination and an updated decision/contract, not a silent field rename.
+For a future revision, settle required/optional/null fields, time units, permission checks, error codes, pagination, duplicate/concurrent behaviour and matching mocks before marking that revision Agreed. A breaking change needs coordination and an updated decision/contract, not a silent field rename.
 
 ## Guest practice integration boundary
 
