@@ -1,26 +1,19 @@
 /**
  * Shared typing-session request and response contracts for the current API.
  * The browser records events; the server replays them to produce official
- * results. Server-issued assignments capture the selected mode policy and
- * the fields needed to replay its deadline and learning rules.
+ * results. Future lesson/placement/test modes require reviewed schema changes.
  */
 import { z } from 'zod';
 import { sessionModeSchema, sessionSourceSchema, sessionStatusSchema } from './enums.js';
-import { modePolicyFor, sessionRulesSchema } from './modeRules.js';
+import { sessionRulesSchema } from './modeRules.js';
 
 export { eventSchema, submissionSchema } from './keystroke.js';
 export { sessionModeSchema, sessionSourceSchema } from './enums.js';
 
-// Empty start bodies preserve the existing practice-client contract.
+// Practice is the only implemented machine mode. Display labels stay in the UI.
 export const startSessionSchema = z
-  .discriminatedUnion('mode', [
-    z.object({ mode: z.literal('practice') }).strict(),
-    z.object({ mode: z.literal('placement') }).strict(),
-    z.object({ mode: z.literal('lesson') }).strict(),
-    z.object({ mode: z.literal('review') }).strict(),
-    z.object({ mode: z.literal('timed'), durationSeconds: z.union([z.literal(60), z.literal(180), z.literal(300)]) }).strict(),
-    z.object({ mode: z.literal('certified') }).strict(),
-  ]).or(z.object({}).strict().transform(() => ({ mode: 'practice' })));
+  .object({ mode: z.literal('practice').default('practice') })
+  .strict();
 export const idSchema = z.uuid();
 
 const dateTime = z.iso.datetime();
@@ -37,32 +30,7 @@ export const sessionAssignmentSchema = z
     expiresAt: dateTime,
     rules: sessionRulesSchema,
   })
-  .strict()
-  .superRefine((assignment, context) => {
-    const { mode, rules } = assignment;
-    if (rules.pauseAllowed !== modePolicyFor(mode).pauseAllowed) {
-      context.addIssue({ code: 'custom', path: ['rules', 'pauseAllowed'], message: 'Pause policy must match the mode' });
-    }
-    if (mode === 'lesson' && rules.lessonGroupId === undefined) {
-      context.addIssue({ code: 'custom', path: ['rules', 'lessonGroupId'], message: 'Lesson assignments require a group' });
-    }
-    if (mode === 'review' && (!rules.reviewKeys || rules.reviewKeys.length === 0)) {
-      context.addIssue({ code: 'custom', path: ['rules', 'reviewKeys'], message: 'Review assignments require captured keys' });
-    }
-    if (rules.focusKeys?.some(key => [...assignment.text].filter(char => char === key).length < 3)) {
-      context.addIssue({ code: 'custom', path: ['rules', 'focusKeys'], message: 'Each focus key requires at least three occurrences in assigned text' });
-    }
-    if (mode === 'timed' && ![60_000, 180_000, 300_000].includes(rules.durationMs)) {
-      context.addIssue({ code: 'custom', path: ['rules', 'durationMs'], message: 'Timed assignments require an allowed duration' });
-    }
-    if (mode === 'certified' && (
-      rules.durationMs !== 180_000
-      || rules.certifiedMinNetWpm !== 30
-      || rules.certifiedMinRawAccuracy !== 95
-    )) {
-      context.addIssue({ code: 'custom', path: ['rules'], message: 'Certified assignments require captured BE-04 thresholds' });
-    }
-  });
+  .strict();
 // Values come from server replay. null means unavailable evidence, not zero;
 // accuracy uses percentages and activeDurationMs excludes permitted pauses.
 export const officialMetricsSchema = z

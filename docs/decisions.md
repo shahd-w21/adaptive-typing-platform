@@ -11,8 +11,6 @@ This is the single decision log. Preserve dates, rationale and status; update th
 | [0005](#0005) | Structure retained; feature-removal scope superseded by 0006 | One active backend and workspace setup |
 | [0006](#0006) | Accepted migration task | Preserve teammate features in the new architecture |
 | [0007](#0007) | Accepted styling task | Migrate existing frontend styles to Tailwind utilities |
-| [0011](#0011) | Accepted contract | Certified focus-loss event evidence |
-| [0012](#0012) | Accepted BE-04 implementation policy | Unblock shared session lifecycle modes |
 
 <a id="0001"></a>
 ## 0001 — Organise project and agent documentation
@@ -145,7 +143,7 @@ Adopt a published course library with versioned Course → Unit → Lesson paths
 
 Rationale: courses make curriculum discoverable without restarting skill measurement or building a separate adaptive engine for each path. Immutable published versions protect current learners and assigned text. The tradeoff is additional enrollment, curriculum-version and objective-completion complexity. Do not treat course completion as the existing performance certificate or duplicate XP across courses.
 
-The owner approved the initial optional-placement/targeted-check policy, shared evidence with separate progress, objective/checkpoint completion and immutable publication/archival model. The original authorization covered structural placeholders only. On 26 November 2026, the user explicitly authorized runtime implementation of the student catalog and enrollment API slice; this supersedes the scaffold-only limit for that slice, but is not approval of the remaining course policies. Exact objective/checkpoint rules, numerical freshness/reattempt policies, initial outlines and enrollment migration remain open.
+The owner approved the initial optional-placement/targeted-check policy, shared evidence with separate progress, objective/checkpoint completion and immutable publication/archival model. Approval authorizes structural placeholders and documentation only; it does not authorize implementing or wiring routes, UI, models or migrations. Exact JSON/Prisma schemas, numerical freshness/reattempt policies, concrete lesson objectives and checkpoint thresholds, the initial course outlines and any future enrollment-migration mapping remain to agree before their implementation. Preserve existing teammate files.
 
 <a id="0009"></a>
 ## 0009 — Adopt the current TypeFlow Figma file for visual implementation
@@ -163,14 +161,14 @@ Use [DESIGN.md](../DESIGN.md) and its live frame links for the ten main views, s
 | Course details: exact contracts/schema, freshness/reattempt limits, concrete objectives/checkpoints, initial course outlines and any enrollment-migration mapping | Before implementing the corresponding course features; overall model accepted in 0008 |
 | LLM provider/model, budget, timeout and service limits | Before integration; fallback can be built first |
 | Hosting and database/email services | Before deployment design |
-| Public certificate display name and issuance/verification policy | Before certificate issuance implementation |
+| Certified duration, net WPM/raw accuracy thresholds, cooldown/attempt limits and public display name | Before certificate implementation |
 | XP/level formulas, daily-goal units, minimum reward activity and timezone-change policy | Before gamification implementation |
 | Integrity thresholds, clock tolerance, session expiry and request-size limits | Before scoring acceptance tests are finalised |
 | Audit/operational/backup retention and deletion procedure | Before production data is collected |
 | Reference device/load environment and production capacity | Before performance acceptance |
 | Final project name/branding | Before polished UI and report submission |
 
-The operational certified-session defaults adopted for BE-04 do not certify identity or authorize certificate issuance. The existing 250 WPM and timing heuristics still need calibration before they become general rejection rules.
+The earlier proposal of a 3-minute certificate at 30 net WPM and 95% raw accuracy remains a candidate, not an approved certification standard. Similarly, 250 WPM and 15 ms timing heuristics need calibration before becoming rejection rules.
 
 The engine is a statistical adaptation system with LLM-assisted text. No trained-model component is currently specified. If the rubric requires one, revise the design and evaluation plan rather than presenting an API call as model training.
 ## Record template
@@ -193,22 +191,3 @@ Consequences / verification / replacement if superseded:
 Accepted, 12 November 2026. Visitors may explore courses, try a desktop lesson, inspect a guest result and replay before creating an account. Signed-in first entry recommends optional placement and explains provisional level, course and lesson. Subsequent recommendations distinguish evidence from this attempt from patterns across compatible saved sessions. Preserve account ownership and once-only reward rules from the SRS.
 
 [DESIGN.md](../DESIGN.md) records the consolidated component masters, theme swaps, desktop menus, mobile and Arabic studies, independent hand/pressure controls and recovery states. These are implementation targets. Guest transport, persistence and any conversion of guest activity into account history remain unspecified.
-
-<a id="0011"></a>
-## 0011 — Certified focus-loss event evidence
-
-Accepted, 25 November 2026, by project-owner confirmation that applicable contract agreements are complete. The shared event contract accepts a strict `focusLost` event with only `seq`, `type` and elapsed `t`, and scoring accepts it only in certified mode. The canonical event log records each report and pure replay returns its count while resetting adjacent-key latency continuity; it does not pause time, change accuracy or treat the client report as proof of misconduct. A focus-return event is unnecessary. At the time, this event record did not approve certified endpoints; decision 0012 later records the BE-04 operational test policy and endpoint implementation, while certificate issuance remains separate.
-
-<a id="0012"></a>
-## 0012 — Unblock the shared session lifecycle modes
-
-- Status: Accepted for BE-04 implementation by the project owner's instruction to unblock the modes
-- Date: 2026-11-25
-- Decision authority: project owner
-- Affected requirements/contracts: SYS-13, 15–16, 31–32, 36–37, 46–50; API session start/assignment and review schedule
-
-Use one session service for placement, standalone key-group lesson, practice, spaced review, timed tests and certified tests. Capture mode policy, scoring/settings versions, target, timezone, text, expiry and mode-specific parameters at start. Placement text covers all letters; completion records assessment evidence and sets the one-time placement flag without mastery, XP or certificate rewards. Group skips require at least three attempts, zero errors and two eligible latency samples within 1.2 times the captured target interval for each prerequisite letter. Skipped group keys become in-progress, not mastered. The lesson start selects the earliest active key group with in-progress keys; it does not attach course enrollment or lesson IDs. Review starts only for mastered keys due at the captured start time, requires at least five attempts and three eligible latency samples per key, passes at 97% raw key accuracy and mean latency at most 1.2 times the captured target interval, and schedules 1/3/7/14/30-day stages. A failed assessable review returns the key to in-progress and clears its due date; an unassessable key keeps its stage unchanged.
-
-Timed tests allow 60, 180 or 300 seconds. Generate enough text for the captured configured speed ceiling plus a 15% margin; timed submissions use the complete selected duration and do not count the unattempted suffix as errors. For BE-04 certified test sessions, use the SRS candidate defaults of 180 seconds, 30 net WPM and 95% raw accuracy. Do not impose a cooldown or attempt cap in this lifecycle. A qualifying result is recorded as passed, but this decision does not create certificates; public name, issuance and certificate-list/PDF policy remain for the certificate task. Learning/mastery effects remain limited to lesson, practice and review; rewards follow the mode-policy map.
-
-These are operational defaults to let BE-04 start and complete the six session modes. They do not approve course enrollment contracts, placement reassessment policy, public certificate issuance, or calibration of the general speed/integrity limits. Existing BE-01/FE-35 review records remain separate from this implementation decision.

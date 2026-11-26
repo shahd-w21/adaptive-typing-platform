@@ -654,23 +654,23 @@ Start practice
 
 | Step | What happens | Where it happens |
 | --- | --- | --- |
-| 1. Launch real mode | Current browser flow requests practice; backend accepts all six SRS mode requests. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → launchTyping({ serverPractice: true }) → useTypingSession().controller.startPractice(); [api/sessions.js](../client/src/api/sessions.js): startPracticeSession() |
-| 2. Validate access/input | Require authenticated Student, CSRF and the selected strict mode request shape. | [sessions/routes.js](../server/src/modules/sessions/routes.js): sessionRoutes(), POST handler; [shared/session.js](../packages/shared/src/session.js): startSessionSchema |
-| 3. Read policy/evidence | Load prototype settings; briefly lock user and read active account, target/timezone, key groups and due reviews. | [sessions/service.js](../server/src/modules/sessions/service.js): start(); [stats/service.js](../server/src/modules/stats/service.js): ensureKeyProgress(); [db/transaction.js](../server/src/db/transaction.js): transaction() |
-| 4. Produce text | Build placement/review text or generate fallback text that covers every eligible key and repeats selected exploration/weakness focus. | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): keyWeight(), selectPracticeFocus(), generatePracticeText(); [sessions/service.js](../server/src/modules/sessions/service.js): mode-specific assignment text |
-| 5. Capture assignment | Save owner, exact text, mode/version/target/timezone rules, settings reference and expiry. | Sessions service: start() → database.typingSession.create() |
+| 1. Launch real mode | Request an assignment, not a locally invented exercise. | [router.jsx](../client/src/app/router.jsx): AppRoutes() → launchTyping({ serverPractice: true }) → useTypingSession().controller.startPractice(); [api/sessions.js](../client/src/api/sessions.js): startPracticeSession() |
+| 2. Validate access/input | Require authenticated Student, CSRF and practice request shape. | [sessions/routes.js](../server/src/modules/sessions/routes.js): sessionRoutes(), POST handler; [shared/session.js](../packages/shared/src/session.js): startSessionSchema |
+| 3. Read policy/evidence | Load prototype settings; briefly lock user and read initialized eligible keys. | [sessions/service.js](../server/src/modules/sessions/service.js): start(); [stats/service.js](../server/src/modules/stats/service.js): ensureKeyProgress(); [db/transaction.js](../server/src/db/transaction.js): transaction() |
+| 4. Produce text | Weight available keys and generate fallback outside the read transaction. | [fallbackGenerator.js](../server/src/modules/generation/fallbackGenerator.js): keyWeight(), generatePracticeText() |
+| 5. Capture assignment | Save owner, exact text, rules/target/timezone, settings reference and expiry. | Sessions service: start() → database.typingSession.create() |
 | 6. Check response | Validate assignment DTO before the page uses it. | [api/client.js](../client/src/api/client.js): request(); [shared/session.js](../packages/shared/src/session.js): sessionAssignmentSchema |
 | 7. Enter typing | Keep the full assignment in the owner-scoped controller; the router navigates to /typing. | [router.jsx](../client/src/app/router.jsx): launchTyping(), AuthenticatedLayout(); [TypingSessionPage.jsx](../client/src/features/typing/pages/TypingSessionPage.jsx): TypingSessionPage() |
 
 **Current limits:**
 
-- All six session modes have backend lifecycle support; the browser currently wires only practice.
+- Practice is the only server mode implemented.
 - Missing settings/unlocked content returns CONTENT_NOT_READY, not an empty exercise.
 - No LLM/cache orchestrator is called by current start().
 - Router source='server' means API-backed; assignment source='fallback' describes text generation.
 - [useTypingSession.js](../client/src/features/typing/hooks/useTypingSession.js) owns one controller above routes. [sessionController.js](../client/src/features/typing/sessionController.js): startPractice() prevents duplicate pending starts; restart() confirms abandonment before replacement.
 - Reload stores only owner/session IDs in tab storage. recover() retrieves real owned status; [SessionRecovery.jsx](../client/src/features/typing/components/SessionRecovery.jsx) explains lost typing progress. Completed results recover directly; unfinished attempts require explicit abandon/restart.
-- Placement, standalone key-group lesson, practice, due review, timed and certified modes now reuse this lifecycle with captured rules. Course-linked lesson context and certificate issuance remain separate feature work.
+- Planned lesson/placement/review/test modes must reuse this lifecycle with reviewed mode rules.
 
 ### 6.7 While the student types — current
 
@@ -688,7 +688,7 @@ Start practice
 
 **Sample result:** handleComplete() takes its isFixture branch and uses computeOfficialResults() locally with sample:true. Despite that helper's name, this result is not server-authoritative.
 
-**Remaining debt:** browser formula copies and sample views are not completion evidence for frontend mode integration, certificate issuance, forum or full admin APIs.
+**Remaining debt:** browser formula copies and sample views are not completion evidence for real scoring, review/tests, certificates, forum or admin APIs.
 
 ### 6.8 Submitting, replaying and committing a real result — current
 
@@ -903,21 +903,21 @@ Deployment: run committed migrations in a controlled release step, configure HTT
 
 Tests should establish behaviour rather than mirror file structure. Record requirement coverage and evidence using [testing.md](testing.md).
 
-## Course expansion architecture — approved model, student API slice implemented
+## Course expansion architecture — approved, placeholders only
 
-[SRS section 9.6](srs.md#course-proposal) and [decision 0008](decisions.md#0008) define the approved course behavior. Runtime student catalog, detail, enrollment, enrollment-list and owned-snapshot routes are implemented in `modules/courses/`, backed by immutable version snapshots and user-owned enrollment rows. The migration adds no course content. Admin authoring/publication, lesson progress writes, course-linked sessions, objective completion and reviewed content import remain future work. See the API contract for the current boundary and unresolved policy choices.
+[SRS section 9.6](srs.md#course-proposal) and [decision 0008](decisions.md#0008) define the approved course behavior. The owner authorized folders and comment-only files for frontend, backend and shared contracts; no runtime implementation is authorized in this task. The trees above show their canonical paths. Course files have no exports and must not be imported until implemented. No Prisma models/migrations, package exports, routes, navigation, dependencies or seed behavior were changed.
 
-Use `modules/courses/` for catalog, authoring, publication, enrollment and progress; retain one `sessions/` lifecycle, adaptive/scoring/generation engine and existing integrations. Student course pages live in `features/courses/`; admin course pages live in `features/admin/courses/`. Existing `features/learning-path/LearningPath.jsx`, `features/admin/AdminView.jsx`, typing components, dictionaries and preferences are preserved; course catalog/enrollment pages now use shared schemas and remote-data hooks. There is not yet a course-path screen or admin API. Content under `prisma/content/courses/` remains unseeded until its format/importer and course outlines are reviewed.
+Use `modules/courses/` for catalog, authoring, publication, enrollment and progress; retain one `sessions/` lifecycle, adaptive/scoring/generation engine and existing integrations. Student course pages live in `features/courses/`; admin course pages live in `features/admin/courses/`. Existing `features/learning-path/LearningPath.jsx`, `features/admin/AdminView.jsx`, typing components, dictionaries and preferences are preserved; reuse/refactor them only in a later authorized implementation. Catalog/enrollment state belongs in remote-data hooks, not another course Context. Agree exact shared schemas before wiring APIs, hooks and pages. Content under `prisma/content/courses/` remains unseeded until its format/importer is reviewed.
 
-Implemented course persistence and remaining design gates:
+Concepts to review before writing the Prisma schema:
 
 | Concept | Responsibility |
 | --- | --- |
 | Course | Stable identity, catalog metadata and archival state |
-| CourseVersion | Published-version snapshot stored as JSON; admin draft/successor workflow is not implemented |
-| Unit / Lesson / LessonPrerequisite | Preview data is nested in the version snapshot; normalized authoring/prerequisite graph is not implemented |
-| Enrollment | User and captured course version with idempotent same-version retry; cross-version enrollment policy remains open |
-| LessonProgress / exemption evidence | Not implemented; lesson completion/evaluation awaits BE-13/14 policy and session integration |
+| CourseVersion | Immutable published curriculum snapshot; editable draft successor |
+| Unit / Lesson / LessonPrerequisite | Version-owned order, objectives, permitted activity rules and acyclic dependencies |
+| Enrollment | User, captured course version, start/completion and resume state |
+| LessonProgress / exemption evidence | Enrollment-owned status, objective evaluation, provenance and contributing sessions |
 | Shared KeyStat / PairStat and reviews | Existing user-level evidence; not copied into each enrollment |
 
 Course-linked assignments capture enrollment/version/lesson identity and effective constraints alongside the existing text, settings and engine/scoring versions. Generic practice and standalone tests remain possible without enrollment. The server derives valid relationships from the owned enrollment; never trust a client-supplied course/version/lesson combination. Course eligibility and shared skill state are read under the existing submission concurrency strategy; result, learning evidence, lesson progress and qualifying rewards commit atomically and replay safely. Changing or selecting another course cannot alter a running assignment. Email, LLM and PDF work stay outside that transaction.

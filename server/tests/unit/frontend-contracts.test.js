@@ -16,7 +16,6 @@ import { toSessionPayload } from '../../../client/src/features/typing/engine/ses
 import { KeystrokeRecorder } from '../../../client/src/features/typing/engine/keystrokeRecorder.js';
 import {
   sessionAssignmentSchema,
-  startSessionSchema,
   sessionResultSchema,
   sessionDetailSchema,
   sessionHistorySchema,
@@ -320,16 +319,9 @@ test('transport rejects external and unsupported paths and invalid session IDs',
   }
 });
 
-test('current and mode-specific session DTOs match the shared contracts', () => {
+test('current synthetic DTOs match runtime contracts; future modes are not silently accepted', () => {
   publicUserSchema.parse(studentUser);
   sessionAssignmentSchema.parse(sessionAssignment);
-  assert.deepEqual(startSessionSchema.parse({}), { mode: 'practice' });
-  assert.deepEqual(startSessionSchema.parse({ mode: 'timed', durationSeconds: 300 }), {
-    mode: 'timed',
-    durationSeconds: 300,
-  });
-  assert.equal(startSessionSchema.safeParse({ mode: 'timed', durationSeconds: 90 }).success, false);
-  assert.equal(startSessionSchema.safeParse({ mode: 'certified', durationSeconds: 180 }).success, false);
   sessionResultSchema.parse(sessionResult);
   sessionDetailSchema.parse(sessionResult);
   sessionHistorySchema.parse(sessionHistoryResponse);
@@ -337,14 +329,6 @@ test('current and mode-specific session DTOs match the shared contracts', () => 
     sessionAssignmentSchema.safeParse({ ...sessionAssignment, mode: 'lesson' })
       .success,
     false,
-  );
-  assert.equal(
-    sessionAssignmentSchema.safeParse({
-      ...sessionAssignment,
-      mode: 'lesson',
-      rules: { ...sessionAssignment.rules, lessonGroupId: 1 },
-    }).success,
-    true,
   );
   assert.equal(
     sessionAssignmentSchema.safeParse({

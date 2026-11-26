@@ -55,7 +55,6 @@ The active server is `server/src/server.js`. Preserve the migrated feature servi
 | Server replay, corrections, pause handling and SRS metrics | Mode-specific timing and key/pair evidence cases | BE-03, BE-04 |
 | Atomic save, identical retries, conflicting-retry rejection and concurrency protection | Apply the same guarantees to course progress, badges and certificates | BE-14, BE-18, BE-20 |
 | Per-key evidence, mastery and prerequisite unlocking | Pair statistics, difficulty progression, placement and reviews | BE-06, BE-07, BE-08 |
-| Student course catalog, detail, enrollment and owned snapshot endpoints | Course authoring, session-linked lesson progress, objective/checkpoint evaluation and reviewed content | BE-11 through BE-15 |
 | Constrained local fallback | Complete validation, curated content, cache and LLM integration | BE-05, BE-16 |
 | Basic dashboard/progress, XP, levels, goals and streak calculations | Approved final policies, badges, reporting and UI connections | FE-06, FE-11, FE-16, BE-18, BE-22 |
 | Raw-log expiry cleanup at startup and hourly | Durable generation/job coordination, catch-up and safe failure diagnostics | BE-17 |
@@ -87,16 +86,15 @@ Lint and build success do not establish that these integrations work.
 
 These areas have reserved paths or supporting concepts; comment-only files supply no runtime behavior:
 
-- Student course catalog/detail/enrollment APIs and client hooks are now connected; course session progress and resumable lesson paths still need BE-11/13/14 completion.
+- Course library, enrollment, separate course progress and resumable paths.
 - Admin course authoring, preview, validation, publication, versioning and archival.
-- Admin course authoring, preview, validation, publication, versioning and archival.
-- Dev 4 review of the implemented course/enrollment contract and version uniqueness choice; lesson-progress schemas remain draft.
+- Exact shared course/enrollment contracts and reviewed Prisma models.
 - Placement, targeted entry checks, complete adaptive difficulty, pair statistics and spaced reviews.
 - Full generation validation, curated content, LLM integration and compatible cache.
 - Timed and certified session modes.
 - Certificate eligibility, PDF generation, verification and revocation.
 - Forum backend workflows and moderation, badge awards, and complete administration.
-- Course catalog/enrollment client wiring is connected; other frontend transport, routing/providers and guard work remains.
+- Frontend transport, routing/providers, guards and remote-data hooks.
 - Simulation, content-validation commands and executable browser-test infrastructure.
 
 Course model approval does not mean course implementation is finished. One shared skill profile/session engine must support separate course enrollments and progress. Course completion remains distinct from a performance certificate.
@@ -1035,8 +1033,6 @@ Every feature owner supplies loading, empty, error, retry and permission states;
 
 **Contract/schema note:** freeze the frontend contract revision for BE-01; later changes follow section 8.
 
-**Acceptance status (25 November 2026):** the project owner confirms the FE-35 handoff and Dev 4/Dev 5 review are complete. The accepted handoff feeds the agreed current-runtime BE-01 contract revision; future backend feature endpoints remain Draft until their owning tasks review those boundaries.
-
 ### Giovanni - Shared UI, forum, certificates and administration
 
 #### FE-03 — Complete reusable shells and common interface states
@@ -1303,7 +1299,7 @@ Backend primary estimates total 74 developer-days: Dev 1 has 17, Dev 2 has 18, D
 
 **Contract/schema note:** contracts drive candidate data changes, never the reverse.
 
-**Coordination status (25 November 2026):** the project owner confirmed FE-35 handoff, Dev 4 review and applicable contract agreements are complete. The current auth/practice and implemented progress/dashboard/path/gamification/Admin-probe/public-certificate boundary is recorded as Agreed in the [API contract phase record](api-contract.md#phase-agreement-record), with passing fixture evidence. Non-implemented feature endpoints remain explicitly Draft and are deferred to their named feature tasks; unresolved numerical SRS policies remain TBD there. BE-01's current-runtime contract phase is complete; later feature phases must update their own contract rows before implementation.
+**Coordination status (25 November 2026):** current auth/practice and implemented progress/dashboard/path/gamification/Admin-probe/public-certificate DTOs are inventoried with runtime status and fixture evidence in the [API contract phase record](api-contract.md#phase-agreement-record). The record is review-ready, not agreed. FE-35 handoff evidence, Dev 4 review and feature-owner decisions for future course/forum/admin/certificate-issuance contracts are still pending; do not mark BE-01 complete until the applicable owners record agreement or explicitly defer those boundaries.
 
 #### BE-02 — Review and evolve Prisma additively
 
@@ -1420,8 +1416,6 @@ Backend primary estimates total 74 developer-days: Dev 1 has 17, Dev 2 has 18, D
 
 #### BE-04 — Extend one session lifecycle across all modes
 
-**Status:** Implementation complete; BE-04 automated checks passed. Dev 2 review/sign-off and non-practice frontend wiring remain separate.
-
 - **Owner:** Dev 1
 - **Reviewer:** Dev 2
 - **Estimate:** 3 d
@@ -1447,8 +1441,6 @@ Backend primary estimates total 74 developer-days: Dev 1 has 17, Dev 2 has 18, D
 - No LLM/mail/PDF calls inside save transactions.
 
 **Contract/schema note:** captured policy/version metadata and agreed status fields through BE-02.
-
-**Current implementation status (26 November 2026):** one owned service now starts, submits, abandons and lists placement, standalone key-group lesson, practice, due review, timed and certified test sessions. Starts re-read the active account, target/timezone, key groups and due reviews under the per-user lock. Assignments capture mode-policy/event/scoring/settings versions, target, timezone, duration/lesson/review/focus/threshold parameters and expiry; the session row captures the engine version. Placement covers the alphabet, records assessment evidence and its one-time completion, and can put prerequisite-qualified groups in progress without granting mastery or rewards. Practice text covers every key currently unlocked for that learner and adds at least three occurrences for a small focus set chosen from least-sampled, overdue and weak keys. The path recommendation uses the same per-user evidence ranking and refreshes after submitted results. Reviews apply SRS coverage/pass rules and persist review stages/dates through the additive `KeyStat` migration. Timed assignments offer 1/3/5-minute durations and size text for the configured speed ceiling plus 15%; certified sessions capture the 3-minute/30-WPM/95%-raw operational defaults, but do not issue certificates. No cooldown or attempt cap is applied. Learning and reward effects remain mode-specific. Integration fixtures exercise public starts and persisted submissions, history/detail, deadlines, retries, conflicts, expiry, concurrency and terminal races. Course enrollment linkage, certificate issuance and human Dev 2 review remain separate or pending. Implementation checks are listed in `docs/testing.md`.
 
 #### BE-06 — Complete shared statistics and adaptive selection/difficulty
 
@@ -2024,8 +2016,8 @@ This table is a design worklist, **not a final schema or instruction to generate
 | Shared skill | KeyStat; no PairStat model | Separate evidence counts, contributing sessions, review scheduling and tracked pair stats; accuracy units stay explicit | Dev 2 / BE-06, 08 |
 | Session record | TypingSession with text/rules/settingsId/result/hash; `settingsId` now references immutable SettingVersion via BE-02 | Preserve exact assignment and retry result; review explicit scoring/config/content references and optional course context | Dev 1 + Dev 2 / BE-02, 04 |
 | Adaptive state | Some logic exists, no dedicated adaptive-event model | Explainable decisions, effective versions, difficulty/review state and safe reason parameters | Dev 2 / BE-06 |
-| Courses | Stable Course, version snapshots stored as validated JSON, and CourseEnrollment persistence added in migration `20261126130000_course_catalog_enrollments`; student APIs are connected | Admin authoring, ordered prerequisite graph, lesson progress/exemption/evidence, and course-linked session save | Dev 4 / BE-11–14 |
-| Enrollment uniqueness | Unique per user/course version; retries return the existing row | Review simultaneous active versions and re-enrollment policy before treating the current key as final | Dev 4 + Dev 1 / BE-11 |
+| Courses | Comment-only files; no course models | Stable Course, immutable published Version, ordered Unit/Lesson, same-version DAG prerequisites, Enrollment, lesson progress/exemption/evidence | Dev 4 / BE-11–14 |
+| Enrollment uniqueness | No existing constraint | Define one active enrollment per user/course or reviewed alternative; version/reenrollment/retry behavior before choosing a unique key | Dev 4 + Dev 1 / BE-01, 11 |
 | Evidence transfer | Existing user-key aggregates | One shared skill profile, distinct enrollment objectives/provenance; no per-course copies or reward duplication | Dev 2 + Dev 4 / BE-13 |
 | Generation | Theme/Word/BlockedWord; no full cache/attempt pipeline | PracticeText/GenerationAttempt or equivalent, spec/content/validation compatibility, limits and cleanup | Dev 3 / BE-05, 16 |
 | Settings | Immutable SettingVersion values; hardcoded prototype ID used at start | Validated active-version selection, retained references and expected-version changes | Dev 1 / BE-09 |

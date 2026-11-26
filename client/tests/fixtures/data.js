@@ -41,14 +41,10 @@ export const sessionAssignment = {
   issuedAt: '2026-10-19T09:00:00.000Z',
   expiresAt: '2026-10-19T10:00:00.000Z',
   rules: {
-    modePolicyVersion: 'session-modes-v1',
     pauseAllowed: true,
     eventVersion: 1,
-    scoringVersion: 'replay-v1',
     settingsVersion: 'teammate-migration-v1',
     targetWpm: studentUser.targetWpm,
-    timezone: studentUser.timezone,
-    maxKeystrokes: 5000,
   },
 };
 
