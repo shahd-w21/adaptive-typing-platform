@@ -31,6 +31,14 @@ async function setupProgress(
         json: { user: currentUser, csrfToken: 'a'.repeat(64) },
       });
     }
+    if (path === '/users/me' && request.method() === 'PATCH') {
+      const patch = request.postDataJSON();
+      currentUser.preferences = {
+        ...currentUser.preferences,
+        ...patch.preferences,
+      };
+      return route.fulfill({ json: { user: currentUser } });
+    }
     if (path === '/auth/logout') {
       return route.fulfill({ json: { ok: true } });
     }
@@ -139,4 +147,44 @@ test('supports Arabic RTL, Dark mode, and 320px mobile reflow without horizontal
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
   expect(overflow).toBe(false);
+});
+
+test('keeps filters intact across theme/language changes and isolates private data on account switch', async ({
+  page,
+}) => {
+  const controller = await setupProgress(page);
+  await page.goto('/progress');
+
+  // Real migrated /progress response has no development fixture notice.
+  await expect(page.getByText('Development fixture')).toHaveCount(0);
+
+  // Set explicit filters before changing appearance and language.
+  await page.getByLabel('Mode').selectOption('practice');
+  await page.getByLabel('Time range').selectOption('30d');
+  await expect(page.getByLabel('Mode')).toHaveValue('practice');
+  await expect(page.getByLabel('Time range')).toHaveValue('30d');
+
+  // Switch appearance to Dark and language to Arabic.
+  await page.getByRole('button', { name: /Appearance:/i }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await page.getByRole('button', { name: /Language:/i }).click();
+  await page.getByRole('menuitemradio', { name: 'العربية' }).click();
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+
+  // Selected filter values must remain unchanged after theme/locale switches.
+  await expect(page.locator('select').nth(0)).toHaveValue('practice');
+  await expect(page.locator('select').nth(2)).toHaveValue('30d');
+
+  // Switching accounts via logout clears previous private progress data.
+  controller.switchUser(
+    { ...newStudentUser, preferences: { themePreference: 'light', uiLocale: 'en' } },
+    { sessions: [], keys: [] },
+  );
+  await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
+  await page.goto('/progress');
+  await expect(
+    page.getByText('Across 0 completed sessions.').first(),
+  ).toBeVisible();
 });
