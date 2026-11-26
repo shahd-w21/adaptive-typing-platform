@@ -1,4 +1,4 @@
-import { progressFiltersSchema } from '@typeflow/shared';
+import { progressFiltersSchema, analyticsFiltersSchema } from '@typeflow/shared';
 
 /**
  * Central TanStack Query cache addresses, not API URLs or permission checks.
@@ -34,6 +34,15 @@ function normalizeProgressFilters(filters = {}) {
   const parsed = progressFiltersSchema.safeParse(filters);
   if (!parsed.success) {
     throw new TypeError('Invalid progress filter parameters');
+  }
+  return parsed.data;
+}
+
+/** Validate and normalize analytics filters so cache keys never collide. */
+function normalizeAnalyticsFilters(filters = {}) {
+  const parsed = analyticsFiltersSchema.safeParse(filters);
+  if (!parsed.success) {
+    throw new TypeError('Invalid analytics filter parameters');
   }
   return parsed.data;
 }
@@ -95,4 +104,10 @@ export const queryKeys = {
     }
     return [...owner(ownerId), 'admin-course', courseId];
   },
+  // Owner-scoped cache key for draft analytics queries; window param is normalised.
+  analytics: (ownerId, filters = {}) => [
+    ...owner(ownerId),
+    'analytics',
+    normalizeAnalyticsFilters(filters),
+  ],
 };

@@ -17,3 +17,4 @@ export * from './dashboard.js';
 export * from './certificates.js';
 export * from './stats.js';
 export * from './gamification.js';
+export * from './analytics.js';
