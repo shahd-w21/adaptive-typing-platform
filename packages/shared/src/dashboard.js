@@ -1,6 +1,6 @@
 /** Current dashboard/path wire DTOs; these are not future course or Prisma models. */
 import { z } from 'zod';
-import { keyProgressStatusSchema } from './enums.js';
+import { keyProgressStatusSchema, sessionModeSchema } from './enums.js';
 
 export const countSchema = z.number().int().nonnegative();
 export const metricSchema = z.number().finite().nonnegative().nullable();
@@ -12,6 +12,7 @@ export const recommendationSchema = z.object({
   activity: z.enum(['placement', 'practice', 'timed']),
   reason: z.string().min(1),
   weakestKey: z.string().length(1).optional(),
+  focusKeys: z.array(z.string().length(1)).max(5).optional(),
 });
 
 export const keyGroupSchema = z.object({
@@ -34,7 +35,7 @@ export const keyStatSchema = z.object({
 
 export const completedSessionSummarySchema = z.object({
   id: z.uuid(),
-  mode: z.literal('practice'),
+  mode: sessionModeSchema,
   netWpm: metricSchema,
   grossWpm: metricSchema,
   rawAccuracy: accuracySchema,

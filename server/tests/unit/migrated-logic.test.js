@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateMetrics, submissionSchema, registerSchema, profileSchema } from '@typeflow/shared';
 import { replay } from '../../src/modules/scoring/replay.js';
-import { generatePracticeText } from '../../src/modules/generation/fallbackGenerator.js';
+import { generatePracticeText, selectPracticeFocus } from '../../src/modules/generation/fallbackGenerator.js';
 import { nextStreak } from '../../src/modules/gamification/rules.js';
 import { recommendNext } from '../../src/modules/path/recommend.js';
 import { transaction } from '../../src/db/transaction.js';
@@ -29,7 +29,59 @@ test('fallback is reproducible and restricted to unlocked keys', () => {
   const keys = [{ key: 'a', weight: 1 }, { key: 's', weight: 2 }];
   assert.equal(generatePracticeText(keys, () => 0.1), generatePracticeText(keys, () => 0.1));
   assert.match(generatePracticeText(keys, () => 0.9), /^[as ]+$/);
+  const focused = generatePracticeText(keys, () => 0.1, 3, { focusKeys: ['s'] });
+  assert.ok(focused.includes('as'));
+  assert.ok(focused.split(' ').includes('sss'));
+  assert.throws(() => generatePracticeText(keys, () => 0.1, 3, { focusKeys: ['d'] }));
   assert.throws(() => generatePracticeText([], () => 0));
+});
+
+test('focus selection reserves exploration and due review before filling weak unlocked keys', () => {
+  const keys = [
+    { key: 'a', status: 'in_progress', attempts: 30, latencySamples: 30, accuracy: 70, avgMs: 500 },
+    { key: 's', status: 'in_progress', attempts: 40, latencySamples: 30, accuracy: 90, avgMs: 220 },
+    { key: 'd', status: 'in_progress', attempts: 2, latencySamples: 1, accuracy: null, avgMs: null },
+    { key: 'f', status: 'locked', attempts: 0, latencySamples: 0, accuracy: null, avgMs: null },
+  ];
+  const dueReviews = [{
+    key: 'j',
+    status: 'mastered',
+    attempts: 50,
+    latencySamples: 45,
+    accuracy: 99,
+    avgMs: 180,
+    nextReviewAt: new Date('2026-11-25T00:00:00.000Z'),
+  }];
+
+  assert.deepEqual(selectPracticeFocus(keys, 40, dueReviews), ['d', 'j', 'a', 's']);
+});
+
+test('recommendation follows the current weakest unlocked key after its evidence improves', () => {
+  const baseKeys = [
+    { key: 'a', status: 'in_progress', attempts: 20, latencySamples: 10, accuracy: 55, avgMs: 500 },
+    { key: 's', status: 'in_progress', attempts: 30, latencySamples: 20, accuracy: 90, avgMs: 220 },
+  ];
+  const before = recommendNext({
+    placementDone: true,
+    completedSessions: 1,
+    keys: baseKeys,
+    targetWpm: 40,
+  });
+  const after = recommendNext({
+    placementDone: true,
+    completedSessions: 2,
+    keys: [
+      { ...baseKeys[0], attempts: 40, latencySamples: 40, accuracy: 99, avgMs: 180 },
+      baseKeys[1],
+    ],
+    targetWpm: 40,
+  });
+
+  assert.equal(before.weakestKey, 'a');
+  assert.equal(after.weakestKey, 's');
+  assert.deepEqual(before.focusKeys, ['a', 's']);
+  assert.deepEqual(after.focusKeys, ['s', 'a']);
+  assert.notEqual(before.reason, after.reason);
 });
 test('schemas reject malformed events/passwords and strip registration roles', () => {
   assert.equal(registerSchema.parse({ email: ' USER@EXAMPLE.COM ', password: 'Strong123', role: 'ADMIN' }).role, undefined);
@@ -61,4 +113,18 @@ test('transactions recognise Prisma adapter SQLSTATE metadata', async () => {
     return 'saved';
   } };
   assert.equal(await transaction(database, async () => {}), 'saved');
+});
+test('transactions retry PostgreSQL adapter conflicts exposed as direct SQLSTATE causes', async () => {
+  let calls = 0;
+  const database = { $transaction: async () => {
+    if (calls++ === 0) {
+      throw Object.assign(new Error('serialization conflict'), {
+        name: 'DriverAdapterError',
+        cause: { originalCode: '40001' },
+      });
+    }
+    return 'saved';
+  } };
+  assert.equal(await transaction(database, async () => {}), 'saved');
+  assert.equal(calls, 2);
 });

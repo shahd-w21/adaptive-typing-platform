@@ -154,7 +154,7 @@ export function MyCoursesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEnrollments.map((enr) => {
-            const course = courses.find((c) => c.id === enr.courseId) || {
+            const course = enr.course || courses.find((c) => c.id === enr.courseId) || {
               id: enr.courseId,
               title: enr.courseId,
               description: '',

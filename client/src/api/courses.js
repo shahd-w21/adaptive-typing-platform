@@ -13,7 +13,6 @@ import { request } from './client.js';
  */
 export async function fetchCourses(filters = {}) {
   const data = await request('/courses', {
-    available: false,
     query: filters,
   });
   return { courses: data.courses, isFixture: false };
@@ -26,7 +25,7 @@ export async function fetchCourses(filters = {}) {
  * @returns {Promise<{ course: object, isFixture: boolean }>}
  */
 export async function fetchCourseById(courseId) {
-  const data = await request(`/courses/${courseId}`, { available: false });
+  const data = await request(`/courses/${encodeURIComponent(courseId)}`);
   return { course: data, isFixture: false };
 }
 
@@ -36,7 +35,7 @@ export async function fetchCourseById(courseId) {
  * @returns {Promise<{ enrollments: Array<object>, isFixture: boolean }>}
  */
 export async function fetchMyEnrollments() {
-  const data = await request('/my-courses', { available: false });
+  const data = await request('/users/me/enrollments');
   return { enrollments: data.enrollments, isFixture: false };
 }
 
@@ -49,12 +48,11 @@ export async function fetchMyEnrollments() {
  * @returns {Promise<{ enrollment: object, isFixture: boolean }>}
  */
 export async function enrollCourse(courseId, { csrfToken } = {}) {
-  const data = await request(`/courses/${courseId}/enroll`, {
+  const data = await request(`/courses/${encodeURIComponent(courseId)}/enrollments`, {
     method: 'POST',
     body: { courseId },
     csrfToken,
     authenticated: true,
-    available: false,
   });
   return { enrollment: data, isFixture: false };
 }
