@@ -1,6 +1,20 @@
-// Fetch server-owned XP/level/streak data; reward calculations stay on the server.
-import { request } from './client.js';
+// Fetch and validate server-owned XP/level/streak/daily-goal data;
+// reward calculations and badge policies remain on the server.
+import { gamificationResponseSchema } from '@typeflow/shared';
+import { ApiError, request } from './client.js';
 
-// The optional signal cancels the read when its account/query is no longer active.
-export const fetchGamification = ({ signal } = {}) =>
-  request('/gamification', { signal });
+/**
+ * Fetch the authenticated student's official gamification summary.
+ * Rejects malformed payloads with CONTRACT_ERROR instead of inventing values.
+ */
+export async function fetchGamification({ signal } = {}) {
+  const payload = await request('/gamification', { signal });
+  const parsed = gamificationResponseSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new ApiError('Invalid gamification response.', {
+      status: 500,
+      code: 'CONTRACT_ERROR',
+    });
+  }
+  return parsed.data;
+}

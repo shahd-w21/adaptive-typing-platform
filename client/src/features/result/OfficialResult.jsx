@@ -21,6 +21,7 @@ export function OfficialResult({
   streakDays = 5,
   reason = 'Great consistency! Your next activity focuses on strengthening right-hand pinky reach for P and semicolon.',
   isOfficial = true,
+  showRewards = true,
   busy = false,
   onContinue,
   onRetry,
@@ -123,7 +124,7 @@ export function OfficialResult({
       </div>
 
       {/* Rewards & Next Steps Grid */}
-      {isOfficial && (
+      {isOfficial && showRewards && (
         <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2">
           {/* Rewards Earned Card */}
           <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex flex-col justify-center">

@@ -240,6 +240,8 @@ export function TypingSessionPage({
   }, [totalInserts, correctInserts, buffer.length, elapsedMs]);
 
   // Render Official Result on completion
+  const isPlacement =
+    typeof mode === 'string' && mode.toLowerCase().includes('placement');
   if (isCompleted && officialResult) {
     return (
       <>
@@ -249,6 +251,7 @@ export function TypingSessionPage({
         <OfficialResult
           result={officialResult}
           isOfficial={!officialResult.sample}
+          showRewards={!isPlacement}
           xpEarned={officialResult.xpEarned}
           streakDays={officialResult.streakDays}
           onContinue={onExit}
