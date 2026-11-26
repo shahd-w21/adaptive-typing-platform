@@ -1,12 +1,35 @@
-name: Foundation checks
+# Continuous integration: install → generate → lint → unit tests → integration tests → build → E2E.
+#
+# Every push and pull request runs the full check suite on ubuntu-24.04.
+# Node version is pinned by .nvmrc (currently 24.14.0).
+# PostgreSQL 16.10 is provided as a service container for integration tests.
+# Playwright browser tests run last; traces and screenshots are uploaded as artifacts on failure.
+#
+# Action versions pinned to the latest stable major:
+#   actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4
+
+name: CI
+
 on:
   push:
   pull_request:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   check:
+    name: Lint · Unit · Integration · Build · E2E
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    # -------------------------------------------------------------------------
+    # PostgreSQL service — required for npm run test:integration
+    # -------------------------------------------------------------------------
     services:
       postgres:
         image: postgres:16.10
@@ -18,22 +41,106 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U typeflow -d typeflow_test"
-          --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # -------------------------------------------------------------------------
+    # Environment — mirrors server/src/config/env.js validation requirements.
+    # SMTP values use safe defaults (localhost:1025) so the server parses its
+    # config without error; email delivery is not tested in CI.
+    # VITE_API_URL is consumed by the client build (see client/.env.example).
+    # -------------------------------------------------------------------------
     env:
       NODE_ENV: test
+      PORT: 5000
       CLIENT_URL: http://localhost:5173
       JWT_SECRET: ci-only-signing-secret-longer-than-thirty-two-characters
       DATABASE_URL: postgresql://typeflow:typeflow_ci_only@localhost:5432/typeflow_test
       TEST_DATABASE_URL: postgresql://typeflow:typeflow_ci_only@localhost:5432/typeflow_test
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      MAIL_FROM: "TypeFlow <no-reply@typeflow.local>"
+      VITE_API_URL: http://localhost:5000/api/v1
+
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      # -----------------------------------------------------------------------
+      # Setup
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
+          # Reads the exact engine version from .nvmrc (currently 24.14.0)
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
-      - run: npm run db:generate
-      - run: npm run lint
-      - run: npm test
-      - run: npm run test:integration
-      - run: npm run build
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      # -----------------------------------------------------------------------
+      # Static checks
+      # -----------------------------------------------------------------------
+      - name: Lint (ESLint — client, server, shared, scripts)
+        run: npm run lint
+
+      # -----------------------------------------------------------------------
+      # Server unit tests
+      # Runs all server/tests/unit/*.test.js with the built-in Node test runner.
+      # Does not require a database connection.
+      # -----------------------------------------------------------------------
+      - name: Unit tests
+        run: npm test
+
+      # -----------------------------------------------------------------------
+      # Database integration tests
+      # Applies pending Prisma migrations to typeflow_test, then runs the
+      # integration suite against it. Requires the postgres service above.
+      # -----------------------------------------------------------------------
+      - name: Integration tests
+        run: npm run test:integration
+
+      # -----------------------------------------------------------------------
+      # Production build
+      # Runs: db:generate → vite build → node --check server/src/server.js
+      # The existing >500 kB chunk-size warning is a known issue, not an error.
+      # -----------------------------------------------------------------------
+      - name: Build
+        run: npm run build
+
+      # -----------------------------------------------------------------------
+      # Playwright E2E browser tests
+      # The global setup (client/tests/support/setup.js) starts an isolated
+      # Vite dev server on 127.0.0.1:5174. All /api/v1/ requests are
+      # intercepted by route handlers; no real API server is started.
+      # -----------------------------------------------------------------------
+      - name: Install Playwright browser (Chrome)
+        # channel: 'chrome' uses system Google Chrome (/opt/google/chrome), not
+        # ms-playwright's user cache, so install it directly with OS deps.
+        working-directory: client
+        run: npx playwright install chrome --with-deps
+
+      - name: E2E browser tests
+        # --workers=1 avoids port contention on shared CI runners and matches
+        # the proven local run order. Increase when tests are known stable.
+        run: npm run test:ui --workspace=client -- --workers=1
+
+      # -----------------------------------------------------------------------
+      # Failure artifacts — Playwright traces and screenshots help diagnose
+      # intermittent failures without having to reproduce them locally.
+      # -----------------------------------------------------------------------
+      - name: Upload E2E failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          # Vite build output is excluded; only Playwright results are uploaded.
+          path: client/test-results/
+          retention-days: 7
