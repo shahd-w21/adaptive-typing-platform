@@ -9,6 +9,7 @@ import {
 } from '../engine/liveMetrics.js';
 import { TypingStage } from '../components/TypingStage.jsx';
 import { KeyboardGuide } from '../components/KeyboardGuide.jsx';
+import { HandGuide } from '../components/HandGuide.jsx';
 import { OfficialResult } from '../../result/OfficialResult.jsx';
 import { AppearanceSelector } from '../../../components/controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../../../components/controls/LanguageSelector.jsx';
@@ -31,17 +32,23 @@ export function TypingSessionPage({
   onRetrySession,
   isActive = true,
   onExit,
+  onViewProgress,
 }) {
   const submission = useSubmitSession(controller);
   const { largeText, setLargeText, reducedPressure, setReducedPressure } =
     usePreferences();
   const { t, isRTL } = useTranslation();
+  const modeLabel =
+    mode === 'practice' || mode === 'Adaptive Practice'
+      ? t('practice.cardTitle')
+      : mode;
 
   // Engine state
   const [buffer, setBuffer] = useState('');
   const [totalInserts, setTotalInserts] = useState(0);
   const [correctInserts, setCorrectInserts] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showHandGuide, setShowHandGuide] = useState(true);
   const isSubmitting = !isFixture && submission.isSubmitting;
   const [fixtureCompleted, setFixtureCompleted] = useState(false);
   const isCompleted = isFixture
@@ -248,11 +255,14 @@ export function TypingSessionPage({
         )}
         <OfficialResult
           result={officialResult}
+          assignedText={assignedText}
+          typedText={buffer}
           isOfficial={!officialResult.sample}
           xpEarned={officialResult.xpEarned}
           streakDays={officialResult.streakDays}
           onContinue={onExit}
-          reason={t('sessionFlow.savedResultReason')}
+          onViewProgress={onViewProgress}
+          reason={isFixture ? undefined : t('sessionFlow.savedResultReason')}
           busy={['starting', 'submitting'].includes(submission.status)}
           onRetry={isFixture ? handleRestart : onRetrySession}
         />
@@ -268,7 +278,7 @@ export function TypingSessionPage({
   return (
     <div className="min-h-screen bg-page">
       {/* Study Shell Top Bar */}
-      <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-b-border-subtle bg-surface px-4 py-3 sm:px-6">
+      <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-white/15 bg-inverse px-4 py-3 text-on-inverse sm:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
           <button
             type="button"
@@ -276,7 +286,7 @@ export function TypingSessionPage({
               if (buffer.length > 0) setShowExitConfirm(true);
               else onExit();
             }}
-            className="bg-transparent border-0 cursor-pointer flex items-center gap-1.5 text-[14px] font-bold text-muted"
+            className="flex min-h-11 items-center gap-1.5 rounded-control border-0 bg-transparent px-3 text-[14px] font-bold text-on-inverse hover:bg-surface/10"
           >
             <ArrowLeftIcon
               size={18}
@@ -287,8 +297,8 @@ export function TypingSessionPage({
             <span>{t('common.exit')}</span>
           </button>
 
-          <span className="py-1 px-2.5 rounded-full bg-learning-soft text-learning-strong text-[12px] font-bold">
-            {mode}
+          <span className="rounded-control bg-surface/10 px-3 py-1.5 text-[12px] font-bold text-on-inverse" lang="en" dir="ltr">
+            {modeLabel}
           </span>
         </div>
 
@@ -299,15 +309,28 @@ export function TypingSessionPage({
             type="button"
             onClick={() => setLargeText(!largeText)}
             className={[
-              'bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink',
+              'min-h-11 rounded-control border border-white/30 bg-transparent px-3 text-[13px] text-on-inverse',
               largeText
                 ? 'font-extrabold bg-subtle'
                 : 'font-medium bg-transparent',
             ]
               .filter(Boolean)
               .join(' ')}
+            aria-pressed={largeText}
           >
-            Large Text: {largeText ? 'ON' : 'OFF'}
+            {t('typing.largeText')}: {largeText ? t('typing.on') : t('typing.off')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowHandGuide(visible => !visible)}
+            aria-pressed={showHandGuide}
+            className={[
+              'min-h-11 rounded-control border border-white/30 bg-transparent px-3 text-[13px] text-on-inverse',
+              showHandGuide ? 'bg-surface/10 font-bold' : 'font-medium',
+            ].join(' ')}
+          >
+            {t('typing.handGuide')}: {showHandGuide ? t('typing.on') : t('typing.off')}
           </button>
 
           {/* Reduced Pressure Toggle */}
@@ -315,15 +338,16 @@ export function TypingSessionPage({
             type="button"
             onClick={() => setReducedPressure(!reducedPressure)}
             className={[
-              'bg-transparent border border-border-subtle rounded-full py-1 px-2.5 cursor-pointer text-[13px] text-ink',
+              'min-h-11 rounded-control border border-white/30 bg-transparent px-3 text-[13px] text-on-inverse',
               reducedPressure
                 ? 'font-extrabold bg-subtle'
                 : 'font-medium bg-transparent',
             ]
               .filter(Boolean)
               .join(' ')}
+            aria-pressed={reducedPressure}
           >
-            Reduced Pressure: {reducedPressure ? 'ON' : 'OFF'}
+            {t('typing.reducedPressure')}: {reducedPressure ? t('typing.on') : t('typing.off')}
           </button>
 
           <LanguageSelector compact />
@@ -337,11 +361,10 @@ export function TypingSessionPage({
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-1">
-              Home Row & Upper Reach Drill
+              {t('practice.cardTitle')}
             </h1>
             <p className="text-[14px] text-muted">
-              Type naturally. Correct mistakes with Backspace or keep typing
-              forward.
+              {t('practice.description')}
             </p>
           </div>
 
@@ -362,7 +385,7 @@ export function TypingSessionPage({
             </div>
           ) : (
             <div className="text-[12px] text-muted italic">
-              (Timer runs calmly in background)
+              {t('typing.timerContinues')}
             </div>
           )}
         </div>
@@ -383,6 +406,7 @@ export function TypingSessionPage({
           onBackspace={handleBackspace}
           isActive={isActive && !isCompleted && !isSubmitting && !inputLocked}
           isPaused={isPaused}
+          inputLabel={t('typing.inputLabel')}
         />
 
         {!isFixture && submission.error && (
@@ -423,15 +447,21 @@ export function TypingSessionPage({
           <div className="text-[13px] text-muted">
             {buffer.length === 0
               ? t('typing.startPrompt')
-              : `${buffer.length} / ${assignedText.length} characters`}
+              : t('typing.charactersProgress', {
+                  current: buffer.length,
+                  total: assignedText.length,
+                })}
           </div>
         </div>
 
         {/* Physical QWERTY Keyboard Guide */}
-        <KeyboardGuide
-          nextChar={nextChar}
-          masteredKeys={new Set(['f', 'j', 'd', 'k', 'a', 's', 'l', ';'])}
-        />
+        {showHandGuide && (
+          <HandGuide
+            nextChar={nextChar}
+            label={t('typing.handGuideDescription')}
+          />
+        )}
+        <KeyboardGuide nextChar={nextChar} />
 
         {/* Pause Overlay */}
         {isPaused && (
@@ -441,7 +471,7 @@ export function TypingSessionPage({
                 <PauseIcon size={36} />
               </div>
               <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-2">
-                Practice Paused
+                {t('typing.pausedTitle')}
               </h2>
               <p className="text-muted text-[14px] mb-5">
                 {t('typing.pausedState')}

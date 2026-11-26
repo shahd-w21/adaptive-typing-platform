@@ -160,11 +160,11 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
             <input id="profile-timezone" type="text" required value={timezone} onChange={(event) => setTimezone(event.target.value)} placeholder="Africa/Cairo" className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]" />
           </div>
           <form onSubmit={saveEmail} className="mt-4 flex flex-wrap items-end gap-3" noValidate>
-            <div className="min-w-60 flex-1">
+            <div className="min-w-0 basis-full flex-1 sm:basis-0">
               <label className="mb-1.5 block text-[13px] font-bold" htmlFor="email-change-password">{t('profile.currentPassword')}</label>
               <input id="email-change-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
             </div>
-            <div className="min-w-60 flex-1">
+            <div className="min-w-0 basis-full flex-1 sm:basis-0">
               <label className="mb-1.5 block text-[13px] font-bold" htmlFor="new-email">{t('profile.newEmail')}</label>
               <input id="new-email" type="email" required value={newEmail} onChange={event => setNewEmail(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
             </div>

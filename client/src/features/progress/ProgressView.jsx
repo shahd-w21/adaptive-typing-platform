@@ -9,6 +9,109 @@ function dateLabel(value, locale) {
   return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
+function TrendChart({ sessions, field, title, suffix, locale, t }) {
+  const values = sessions
+    .filter(session => Number.isFinite(session[field]))
+    .slice()
+    .sort((left, right) => new Date(left.completedAt) - new Date(right.completedAt));
+
+  if (values.length === 0) {
+    return (
+      <section className="rounded-card border border-border-subtle bg-surface p-5">
+        <h2 className="mb-2 font-display text-lg font-bold">{title}</h2>
+        <p className="text-sm text-muted">{t('progress.chartUnavailable')}</p>
+      </section>
+    );
+  }
+
+  const numbers = values.map(session => session[field]);
+  const minimum = Math.min(...numbers);
+  const range = Math.max(...numbers) - minimum || 1;
+  const coordinates = numbers.map((value, index) => {
+    const x = values.length === 1 ? 50 : 4 + (index / (values.length - 1)) * 92;
+    const y = 36 - ((value - minimum) / range) * 28;
+    return `${x},${y}`;
+  });
+
+  return (
+    <section className="rounded-card border border-border-subtle bg-surface p-5" aria-labelledby={`${field}-trend-title`}>
+      <h2 id={`${field}-trend-title`} className="mb-3 font-display text-lg font-bold">
+        {title}
+      </h2>
+      <figure>
+        <div className="h-36 w-full rounded-control bg-page p-3">
+          <svg
+            viewBox="0 0 100 40"
+            className="h-full w-full overflow-visible"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            {[8, 22, 36].map(y => (
+              <line
+                key={y}
+                x1="0"
+                x2="100"
+                y1={y}
+                y2={y}
+                stroke="var(--tf-color-border-subtle)"
+                strokeWidth="0.5"
+              />
+            ))}
+            {coordinates.length > 1 && (
+              <polyline
+                points={coordinates.join(' ')}
+                fill="none"
+                stroke="var(--tf-color-learning-accent)"
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+            {coordinates.map((point, index) => {
+              const [x, y] = point.split(',');
+              return (
+                <circle
+                  key={values[index].id}
+                  cx={x}
+                  cy={y}
+                  r="1.6"
+                  fill="var(--tf-color-learning-accent)"
+                />
+              );
+            })}
+          </svg>
+        </div>
+        <figcaption className="mt-2 flex justify-between text-xs text-muted">
+          <span>{dateLabel(values[0].completedAt, locale)}</span>
+          <span dir="ltr">{numbers[numbers.length - 1]}{suffix}</span>
+        </figcaption>
+      </figure>
+      <details className="mt-3 border-t border-border-subtle pt-3">
+        <summary className="min-h-11 cursor-pointer py-2 text-sm font-bold text-action-link">
+          {t('progress.chartData')}
+        </summary>
+        <div className="overflow-x-auto">
+          <table className="w-full text-start text-sm">
+            <thead>
+              <tr className="border-b border-border-subtle text-muted">
+                <th className="py-2 pe-3">{t('progress.completed')}</th>
+                <th className="py-2" dir="ltr">{title}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {values.map(session => (
+                <tr key={session.id} className="border-b border-border-subtle last:border-0">
+                  <td className="py-2 pe-3">{dateLabel(session.completedAt, locale)}</td>
+                  <td className="py-2 font-mono" dir="ltr">{session[field]}{suffix}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  );
+}
+
 export function ProgressView() {
   const { isRTL, locale, t } = useTranslation();
   const [filterMode, setFilterMode] = useState('all');
@@ -23,6 +126,7 @@ export function ProgressView() {
   };
   const averageNetWpm = average('netWpm');
   const averageRawAccuracy = average('rawAccuracy');
+  const trendSessions = filteredHistory;
 
   if (isPending) return <p className="mx-auto max-w-3xl rounded-card border border-border-subtle bg-surface p-6 text-muted shadow-card" role="status">{t('progress.loading')}</p>;
   if (isError) return (
@@ -61,6 +165,25 @@ export function ProgressView() {
           <p className="text-xs text-muted">{t('progress.serverScored')}</p>
         </article>
       </div>
+
+      <section className="mb-7 grid grid-cols-1 gap-4 lg:grid-cols-2" aria-label={t('progress.trends')}>
+        <TrendChart
+          sessions={trendSessions}
+          field="netWpm"
+          title={t('progress.speedTrend')}
+          suffix=" WPM"
+          locale={locale}
+          t={t}
+        />
+        <TrendChart
+          sessions={trendSessions}
+          field="rawAccuracy"
+          title={t('progress.accuracyTrend')}
+          suffix="%"
+          locale={locale}
+          t={t}
+        />
+      </section>
 
       <section className="overflow-hidden rounded-card border border-border-subtle bg-surface shadow-card" aria-labelledby="session-records-title">
         <div className="border-b border-border-subtle px-6 py-5"><h2 id="session-records-title" className="font-display text-xl font-bold">{t('progress.records')}</h2></div>

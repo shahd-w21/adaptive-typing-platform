@@ -33,6 +33,25 @@ Use `.test.js` for JavaScript tests and `.jsx` where a React test renders JSX. C
 | Content validation | Word/group/theme references, allowed alphabet, coverage feasibility, blocked text and cache versions |
 | Performance | SRS workload and reference environment; warm/cold results separately |
 
+## FE-34 typing correctness, retry and input performance — 26 November 2026
+
+**Status: focused implementation checks passed; the local input-to-DOM target was not met.** The current shared/API contract implements practice only. Placement, lesson, review, timed and certified session modes remain rejected at both the client validation boundary and server endpoint; their sample screens are not acceptance evidence for server modes.
+
+| Check | Evidence / result |
+| --- | --- |
+| Recorder/shared unit tests | Root `npm test` passed 56 tests, including deterministic monotonic event ordering, pause/resume, reset, strict submission projection and no-fetch rejection for unsupported modes |
+| Practice browser flow | `client/tests/e2e/typing.spec.js` covers wrong/correct characters, Backspace, Shift-produced printable characters, paste/drop blocking, focus, hand-guide toggling, practice pause, resize and official-result/history presentation |
+| Retry browser flow | `client/tests/e2e/session-retry.spec.js` covers committed lost response recovery without a second submit, identical retry after a pre-commit drop, conflict handling and expiry before retry |
+| Real API | `npm run test:integration` passed all 7 PostgreSQL integration tests. The owned-practice test now verifies unsupported modes return `400`, identical retries return the saved result, conflicting payloads return `409`, and saved sessions appear in the owned history DTO |
+| Browser tests | The targeted landing, typing and retry checks passed 9/9; the opt-in five-minute input measurement also passed. A full-suite attempt showed multiple failures in forum specs and was stopped, so no full-suite pass is claimed |
+| Static/build | Root lint and production build passed; the existing Vite chunk-size warning remains |
+
+**Five-minute input measurement:** run from the repository root in PowerShell with `$env:TYPEFLOW_RUN_TYPING_PERF='1'; npm run test:ui --workspace=client -- tests/e2e/typing.spec.js --grep "five-minute scripted practice"`. On this Windows host, the latest five-minute scripted run lasted 300.21 s and recorded 1,490 accepted keydowns and 1,490 corresponding passage DOM updates (no dropped accepted events observed). The measured p95 was **95.2 ms** and maximum **170.7 ms**, above the SRS target of 16.7 ms; the test reports this result rather than asserting target success.
+
+Measurement method and limits: Playwright sent `a` key presses at a 200 ms target interval against a 3,000-character intercepted practice assignment in headless Chrome at 1280×900, device-pixel ratio 1. A page-side keydown listener timestamped accepted inputs; a `MutationObserver` timestamped the corresponding successful-character class mutation. This measures input-to-DOM-update, not paint completion, scan-out or physical display latency; the headless run has no meaningful physical display refresh-rate measurement. All API traffic in this browser measurement was intercepted, with Vite served on loopback.
+
+Environment: Windows, Intel Core i7-13650HX (14 cores / 20 logical processors), 15.7 GB RAM, NVIDIA GeForce RTX 3050 Laptop GPU, Node 24.12.0, npm 11.6.2, headless Chrome 158.0.0.0, Playwright 1.64.1. The browser reported 20 logical processors and device-pixel ratio 1. Node 24.12.0 is below the repository's declared minimum 24.14.0; treat this result as local diagnostic evidence, not release acceptance. It is not representative of the required 200-user backend load profile.
+
 ## Fixed scoring examples
 
 Use server-reconstructed counts. These examples illustrate SRS formulas; do not replace them with a library's different WPM convention.

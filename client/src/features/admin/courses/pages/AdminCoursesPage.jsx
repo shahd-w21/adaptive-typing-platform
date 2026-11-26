@@ -68,19 +68,19 @@ export function AdminCoursesPage() {
   };
 
   return (
-    <div className="mx-auto my-0 max-w-270 pb-12">
+    <div className="mx-auto my-0 w-full min-w-0 max-w-270 pb-12">
       {/* Reviewer Demonstration Scenario Switcher */}
       <aside
         aria-label="Reviewer demonstration controls"
-        className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-control border border-border-subtle bg-subtle/70 px-4 py-2.5 text-[13px]"
+        className="mb-6 flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-control border border-border-subtle bg-subtle/70 px-4 py-2.5 text-[13px]"
       >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-bold text-ink">Reviewer Scenario (FE-22):</span>
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2">
+          <span className="max-w-full break-words font-bold text-ink">Reviewer Scenario (FE-22):</span>
           <select
             value={scenario}
             onChange={(e) => setScenario(e.target.value)}
             aria-label="Select simulation scenario for review"
-            className="rounded-control border border-border-control bg-surface px-2.5 py-1 text-[13px] font-medium text-ink"
+            className="min-w-0 w-full max-w-full rounded-control border border-border-control bg-surface px-2.5 py-1 text-[13px] font-medium text-ink sm:w-auto"
           >
             <option value="default">Default (Drafts & Published Curricula)</option>
             <option value="empty">Empty Course List (0 Curricula)</option>

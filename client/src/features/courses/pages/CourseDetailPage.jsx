@@ -42,6 +42,8 @@ export function CourseDetailPage() {
 
   const isArchived = course?.status === 'archived';
   const isEnrolled = Boolean(existingEnrollment);
+  const canResume = typeof existingEnrollment?.resumeLink === 'string'
+    && existingEnrollment.resumeLink.length > 0;
 
   const handleEnroll = async () => {
     if (!course) return;
@@ -61,7 +63,9 @@ export function CourseDetailPage() {
   };
 
   const handleResume = () => {
-    navigate(existingEnrollment?.resumeLink || '/learning-path');
+    if (canResume) {
+      navigate(existingEnrollment.resumeLink);
+    }
   };
 
   if (isPending) {
@@ -388,10 +392,15 @@ export function CourseDetailPage() {
                 <button
                   type="button"
                   onClick={handleResume}
-                  className="w-full inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-action-primary px-6 py-3 font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus"
+                  disabled={!canResume}
+                  className="w-full inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-action-primary px-6 py-3 font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-disabled-text disabled:shadow-none"
                 >
-                  <span>{t('courses.resumeAction')}</span>
-                  <ArrowRightIcon size={18} aria-hidden="true" />
+                  <span>
+                    {canResume
+                      ? t('courses.resumeAction')
+                      : t('courses.resumeUnavailable')}
+                  </span>
+                  {canResume && <ArrowRightIcon size={18} aria-hidden="true" />}
                 </button>
               </div>
             ) : isArchived ? (

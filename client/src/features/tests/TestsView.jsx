@@ -1,11 +1,8 @@
-import { useState } from 'react';
-import { PlayIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
+import { ShieldIcon } from '../../components/ui/Icons.jsx';
 import { useTranslation } from '../../i18n/useTranslation.js';
 
-export function TestsView({ onStartTimed, onStartCertified }) {
+export function TestsView() {
   const { t } = useTranslation();
-  const [selectedDuration, setSelectedDuration] = useState(3);
-  const [consentName, setConsentName] = useState(true);
 
   return (
     <div className="max-w-220 my-0 mx-auto">
@@ -27,6 +24,10 @@ export function TestsView({ onStartTimed, onStartCertified }) {
             {t('test.timedDescription')}
           </p>
 
+          <p role="note" className="mb-5 rounded-control bg-warning-soft p-3 text-sm text-warning-text">
+            {t('test.unavailable')}
+          </p>
+
           <div className="mb-6">
             <span className="text-[13px] font-bold block mb-2">
               {t('test.duration')}
@@ -36,10 +37,10 @@ export function TestsView({ onStartTimed, onStartCertified }) {
                 <button
                   key={d}
                   type="button"
-                  onClick={() => setSelectedDuration(d)}
+                  disabled
                   className={[
-                    "flex-1 h-10 rounded-control border-2 font-bold cursor-pointer",
-                    selectedDuration === d ? 'border-learning-accent bg-learning-soft text-learning-strong' : 'border-border-subtle bg-surface text-ink',
+                    "min-h-11 flex-1 rounded-control border-2 font-bold",
+                    'border-border-subtle bg-disabled-bg text-disabled-text',
                   ].filter(Boolean).join(' ')}
                 >
                   {d} {t(d > 1 ? 'test.minutes' : 'test.minute')}
@@ -50,11 +51,10 @@ export function TestsView({ onStartTimed, onStartCertified }) {
 
           <button
             type="button"
-            onClick={() => onStartTimed(selectedDuration)}
-            className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full h-12"
+            disabled
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-control bg-disabled-bg px-6 font-bold text-disabled-text"
           >
-            <PlayIcon size={18} />
-            <span>{t('test.startTimed', { duration: selectedDuration })}</span>
+            <span>{t('test.unavailableAction')}</span>
           </button>
         </div>
 
@@ -72,32 +72,16 @@ export function TestsView({ onStartTimed, onStartCertified }) {
             {t('test.certifiedDescription')}
           </p>
 
-          <div
-            className="p-3.5 rounded-control bg-subtle text-[13px] text-muted mb-5"
-          >
-            <div className="font-bold text-ink mb-1">
-              {t('test.thresholds')}
-            </div>
-            <div>• {t('test.minimumNet')}</div>
-            <div>• {t('test.minimumAccuracy')}</div>
-            <div>• {t('test.strictDuration')}</div>
-          </div>
-
-          <label className="flex items-center gap-2 text-[13px] mb-5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={consentName}
-              onChange={(e) => setConsentName(e.target.checked)}
-            />
-            <span>{t('test.consent')}</span>
-          </label>
+          <p role="note" className="mb-5 rounded-control bg-warning-soft p-3 text-sm text-warning-text">
+            {t('test.unavailable')}
+          </p>
 
           <button
             type="button"
-            onClick={onStartCertified}
-            className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full h-12 bg-learning-accent shadow-node"
+            disabled
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-control bg-disabled-bg px-6 font-bold text-disabled-text"
           >
-            <span>{t('test.beginCertified')}</span>
+            <span>{t('test.unavailableAction')}</span>
           </button>
         </div>
       </div>

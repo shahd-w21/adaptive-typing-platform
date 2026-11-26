@@ -114,10 +114,10 @@ export function Dashboard({
         </header>
 
         <section
-          className="relative overflow-hidden rounded-card border-2 border-learning-accent bg-surface p-5 shadow-card sm:p-8"
+          className="relative overflow-hidden rounded-card border border-border-subtle bg-surface p-5 text-primary shadow-card sm:p-8"
           aria-labelledby="recommendation-title"
         >
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-learning-soft px-3 py-1 text-xs font-bold text-learning-strong">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-subtle px-3 py-1 text-xs font-bold text-secondary">
             <span
               className="size-2 rounded-full bg-learning-accent"
               aria-hidden="true"
@@ -141,10 +141,10 @@ export function Dashboard({
             </p>
           )}
           {recommendation?.weakestKey && (
-            <div className="mb-6 flex items-center gap-2 text-sm font-bold text-muted">
+            <div className="mb-6 flex items-center gap-2 text-sm font-bold">
               {t('dashboard.focusKey')}{' '}
               <kbd
-                className="inline-flex size-9 items-center justify-center rounded-lg border border-border-control bg-subtle font-mono text-base text-ink"
+                className="inline-flex size-9 items-center justify-center rounded-control border border-learning-accent bg-learning-accent font-mono text-base text-learning-foreground"
                 dir="ltr"
               >
                 {recommendation.weakestKey.toUpperCase()}

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from '../../../i18n/useTranslation.js';
 
 // Next-key hints update immediately without lifting keys or animating feedback.
 // Standard English Desktop QWERTY Layout rows
@@ -69,7 +70,32 @@ const KEYBOARD_ROWS = [
   ],
 ];
 
+const BASE_KEY_BY_SHIFTED_CHARACTER = {
+  '~': '`',
+  '!': '1',
+  '@': '2',
+  '#': '3',
+  '$': '4',
+  '%': '5',
+  '^': '6',
+  '&': '7',
+  '*': '8',
+  '(': '9',
+  ')': '0',
+  '_': '-',
+  '+': '=',
+  '{': '[',
+  '}': ']',
+  '|': '\\',
+  ':': ';',
+  '"': "'",
+  '<': ',',
+  '>': '.',
+  '?': '/',
+};
+
 export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
+  const { t } = useTranslation();
   // Determine if next character requires Shift
   const isShiftNeeded = useMemo(() => {
     if (!nextChar) return false;
@@ -83,29 +109,34 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
   const targetBaseKey = useMemo(() => {
     if (!nextChar) return '';
     if (nextChar === ' ') return ' ';
-    return nextChar.toLowerCase();
+    return (
+      BASE_KEY_BY_SHIFTED_CHARACTER[nextChar] ?? nextChar.toLowerCase()
+    );
   }, [nextChar]);
 
   return (
     <div
+      role="group"
       className="max-md:hidden [direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! mt-6 mx-auto mb-0 p-4 bg-subtle border border-border-subtle rounded-card max-w-195 select-none"
-      aria-label="Physical QWERTY Keyboard Guide"
+      aria-label={t('typing.keyboardGuideDescription')}
     >
       <div className="flex justify-between items-center mb-3 text-[13px] text-muted">
         <div className="flex items-center gap-2">
-          <span>Next Expected:</span>
+          <span>{t('typing.nextExpected')}</span>
           <span
             className="py-0.5 px-2 rounded-md bg-learning-soft text-learning-strong font-bold text-[15px]"
           >
-            {nextChar === ' ' ? '␣ Space' : (nextChar || 'None')}
+            {nextChar === ' '
+              ? `␣ ${t('typing.spaceKey')}`
+              : nextChar || t('typing.noNextKey')}
           </span>
           {isShiftNeeded && (
             <span className="text-[12px] text-learning-accent font-bold">
-              (Hold Shift)
+              {t('typing.holdShift')}
             </span>
           )}
         </div>
-        <span className="text-[12px]">Physical QWERTY Guide</span>
+        <span className="text-[12px]">{t('typing.keyboardGuide')}</span>
       </div>
 
       {KEYBOARD_ROWS.map((row, rowIdx) => (
@@ -118,7 +149,7 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
             const isShiftActive = isShiftNeeded && (item.key === 'ShiftLeft' || item.key === 'ShiftRight');
             const isMastered = masteredKeys.has(item.key.toLowerCase());
 
-            let keyClass = "flex flex-col items-center justify-center min-w-11 h-11 p-1 bg-surface border-2 border-border-control rounded-lg font-mono text-[15px] font-medium text-ink shadow-[0_2px_0_var(--tf-color-border-control)] select-none";
+            let keyClass = "relative flex flex-col items-center justify-center min-w-11 h-11 p-1 bg-surface border-2 border-border-control rounded-control font-mono text-[15px] font-medium text-ink shadow-[0_2px_0_var(--tf-color-border-control)] select-none";
             if (isTarget || isShiftActive) keyClass += " bg-learning-soft! border-learning-accent! text-learning-strong! shadow-[0_4px_0_var(--tf-color-learning-lip)]!";
             else if (isMastered) keyClass += " border-success-accent! bg-success-soft! text-success-text!";
 
@@ -136,6 +167,12 @@ export function KeyboardGuide({ nextChar = '', masteredKeys = new Set() }) {
                       ].filter(Boolean).join(' ')}>
                   {item.label || item.key.toUpperCase()}
                 </span>
+                {['f', 'j'].includes(item.key) && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-1 h-0.5 w-3 rounded-full bg-border-control"
+                  />
+                )}
               </div>
             );
           })}

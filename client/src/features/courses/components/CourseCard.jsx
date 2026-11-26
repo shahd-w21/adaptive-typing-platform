@@ -43,6 +43,8 @@ export function CourseCard({
 
   const isArchived = course.status === 'archived';
   const isEnrolled = Boolean(enrollment);
+  const canResume = typeof enrollment?.resumeLink === 'string'
+    && enrollment.resumeLink.length > 0;
 
   return (
     <article className="flex h-full flex-col justify-between rounded-card border border-border-subtle bg-surface p-6 shadow-card transition-colors hover:border-learning-accent/40">
@@ -149,11 +151,16 @@ export function CourseCard({
           <>
             <button
               type="button"
-              onClick={() => onResume(enrollment.resumeLink || '/learning-path')}
-              className="inline-flex flex-1 min-h-10 items-center justify-center gap-2 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus"
+              onClick={() => canResume && onResume(enrollment.resumeLink)}
+              disabled={!canResume}
+              className="inline-flex flex-1 min-h-11 items-center justify-center gap-2 rounded-control bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-disabled-text disabled:shadow-none"
             >
-              <span>{t('courses.resumeAction')}</span>
-              <ArrowRightIcon size={16} aria-hidden="true" />
+              <span>
+                {canResume
+                  ? t('courses.resumeAction')
+                  : t('courses.resumeUnavailable')}
+              </span>
+              {canResume && <ArrowRightIcon size={16} aria-hidden="true" />}
             </button>
             <button
               type="button"

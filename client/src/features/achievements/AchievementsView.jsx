@@ -1,85 +1,84 @@
+// Show server-owned reward totals without inventing badge criteria or progress thresholds.
+import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { Loading } from '../../components/Loading.jsx';
+import { useTranslation } from '../../i18n/useTranslation.js';
+import { useGamification } from '../gamification/hooks/useGamification.js';
 
 export function AchievementsView() {
-  const badges = [
-    { id: 'b1', title: 'First Touch', desc: 'Completed your first typing session', earned: true, date: 'Oct 11, 2026', icon: '🌱' },
-    { id: 'b2', title: 'Home Row Master', desc: 'Passed Home Row gate with >95% accuracy', earned: true, date: 'Oct 13, 2026', icon: '👑' },
-    { id: 'b3', title: 'Five-Day Streak', desc: 'Practised 5 consecutive days', earned: true, date: 'Today', icon: '🔥' },
-    { id: 'b4', title: 'Speed Demon', desc: 'Reach 60 Net WPM on a timed test', earned: false, criteria: 'Achieve 60+ Net WPM', icon: '⚡' },
-    { id: 'b5', title: 'Flawless Run', desc: 'Complete a 100+ character passage with 100% raw accuracy', earned: false, criteria: 'Zero mistyped characters', icon: '🎯' },
-    { id: 'b6', title: 'Century Club', desc: 'Complete 100 total learning sessions', earned: false, criteria: '14 / 100 completed', icon: '💯' },
+  const { t } = useTranslation();
+  const rewards = useGamification();
+
+  if (rewards.isPending) {
+    return <Loading message={t('achievements.loading')} />;
+  }
+
+  if (rewards.isError) {
+    return (
+      <div className="mx-auto w-full max-w-240">
+        <h1 className="mb-2 font-display text-2xl font-bold text-ink">
+          {t('achievements.title')}
+        </h1>
+        <ErrorMessage
+          title={t('achievements.errorTitle')}
+          message={t('achievements.errorDescription')}
+          onRetry={() => rewards.refetch()}
+          retrying={rewards.isFetching}
+        />
+      </div>
+    );
+  }
+
+  const metrics = [
+    { key: 'level', label: t('dashboard.level'), value: rewards.data?.level },
+    { key: 'xp', label: t('dashboard.experience'), value: rewards.data?.xp },
+    { key: 'streak', label: t('achievements.streak'), value: rewards.data?.streak },
   ];
 
   return (
-    <div className="max-w-240 my-0 mx-auto">
-      <h1 className="font-display rtl:font-arabic text-[32px] leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] mb-2">
-        Achievements & Milestones
-      </h1>
-      <p className="text-[16px] leading-[26px] font-normal text-muted mb-8">
-        Reward your consistency, accuracy gates passed, and speed milestones.
-      </p>
+    <div className="mx-auto w-full max-w-240">
+      <header className="mb-7">
+        <h1 className="mb-2 font-display text-[32px] leading-[44px] font-bold text-ink max-md:text-[24px] max-md:leading-[32px]">
+          {t('achievements.title')}
+        </h1>
+        <p className="text-base leading-[26px] text-muted">
+          {t('achievements.description')}
+        </p>
+      </header>
 
-      {/* Level & XP Progress Card */}
-      <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] mb-8 p-7">
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <span className="text-[13px] font-bold text-reward-text">CURRENT RANK</span>
-            <div className="font-display rtl:font-arabic leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] text-[28px]">Level 3 Typist</div>
-          </div>
-          <div className="text-[32px] leading-[40px] font-bold [font-variant-numeric:tabular-nums] text-learning-strong">
-            1,420 / 2,000 XP
-          </div>
-        </div>
-
-        <div className="h-3 bg-subtle rounded-md overflow-hidden">
-          <div className="w-[71%] h-full bg-reward-accent rounded-md" />
-        </div>
-        <div className="flex justify-between mt-2 text-[12px] text-muted">
-          <span>Level 3</span>
-          <span>580 XP until Level 4</span>
-        </div>
-      </div>
-
-      {/* Badges Grid */}
-      <h2 className="font-display rtl:font-arabic leading-[34px] font-bold text-[20px] mb-4">
-        Earned & Available Badges
-      </h2>
-
-      <div className="grid grid-cols-[repeat(auto-fit,_minmax(280px,_1fr))] gap-5">
-        {badges.map((b) => (
+      <section
+        aria-label={t('achievements.accountProgress')}
+        className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3"
+      >
+        {metrics.map(metric => (
           <div
-            key={b.id}
-            className={[
-              "bg-surface rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] flex gap-4 items-center",
-              b.earned ? 'opacity-100 border-2 border-success-accent' : 'opacity-65 border border-border-subtle',
-            ].filter(Boolean).join(' ')}
+            key={metric.key}
+            className="min-w-0 border-b border-border-subtle py-4 sm:px-4"
           >
-            <div
-              className={[
-                "w-14 h-14 rounded-2xl flex items-center justify-center text-[28px] shrink-0",
-                b.earned ? 'bg-success-soft' : 'bg-subtle',
-              ].filter(Boolean).join(' ')}
-            >
-              {b.icon}
-            </div>
-
-            <div>
-              <div className="font-extrabold text-[16px] mb-0.5">{b.title}</div>
-              <p className="text-[13px] text-muted mb-1.5 leading-[18px]">
-                {b.desc}
-              </p>
-              {b.earned ? (
-                <span className="text-[12px] text-success-text font-bold">
-                  ✓ Earned on {b.date}
-                </span>
-              ) : (
-                <span className="text-[12px] text-muted italic">
-                  Criteria: {b.criteria}
-                </span>
-              )}
-            </div>
+            <h2 className="mb-2 text-sm font-bold text-muted">{metric.label}</h2>
+            <p className="font-display text-[28px] leading-9 font-bold text-learning-strong [overflow-wrap:anywhere]">
+              {Number.isFinite(metric.value)
+                ? metric.value.toLocaleString()
+                : t('dashboard.unavailable')}
+              {metric.key === 'xp' && Number.isFinite(metric.value) ? ' XP' : ''}
+            </p>
           </div>
         ))}
-      </div>
+      </section>
+
+      <section
+        aria-labelledby="achievement-badges-title"
+        className="border-t border-border-subtle pt-6"
+      >
+        <h2
+          id="achievement-badges-title"
+          className="mb-2 font-display text-xl font-bold text-ink"
+        >
+          {t('achievements.badgesTitle')}
+        </h2>
+        <p className="text-muted" role="status">
+          {t('achievements.badgesUnavailable')}
+        </p>
+      </section>
     </div>
   );
 }
