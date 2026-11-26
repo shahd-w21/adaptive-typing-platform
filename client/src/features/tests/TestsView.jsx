@@ -1,8 +1,9 @@
+// Provides server-assigned timed practice and clearly unavailable certificate issuance.
 import { useState } from 'react';
 import { PlayIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
 import { useTranslation } from '../../i18n/useTranslation.js';
 
-export function TestsView({ onStartTimed, onStartCertified }) {
+export function TestsView({ onStartTimed }) {
   const { t } = useTranslation();
   const [selectedDuration, setSelectedDuration] = useState(3);
   const [consentName, setConsentName] = useState(true);
@@ -94,7 +95,6 @@ export function TestsView({ onStartTimed, onStartCertified }) {
 
           <button
             type="button"
-            onClick={onStartCertified}
             className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none w-full h-12 bg-learning-accent shadow-node"
           >
             <span>{t('test.beginCertified')}</span>
