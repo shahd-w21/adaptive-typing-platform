@@ -115,4 +115,12 @@ export const queryKeys = {
     'admin-users',
     filters,
   ],
+  adminContent: (ownerId) => [
+    ...owner(ownerId),
+    'admin-content',
+  ],
+  adminSettings: (ownerId) => [
+    ...owner(ownerId),
+    'admin-settings',
+  ],
 };

@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   checkAdminAccess,
   createAdminUsersApi,
+  createAdminContentApi,
+  createAdminSettingsApi,
   fetchAnalytics,
 } from '../../../api/admin.js';
 import { useAuth } from '../../../hooks/useAuth.js';
@@ -122,5 +124,100 @@ export function useAdminUsers(filters = {}) {
     deactivate,
     deleteUser,
     createAdmin,
+  };
+}
+
+/**
+ * FE-23 development content-authoring hook.
+ * The draft DTO and mutations are account-scoped and never alter live sessions.
+ *
+ * @returns {object}
+ */
+export function useAdminContent() {
+  const { user, csrfToken } = useAuth();
+  const queryClient = useQueryClient();
+  const api = useMemo(
+    () => createAdminContentApi(
+      user,
+      {
+        csrfToken,
+        mode: import.meta.env?.DEV ? 'fixture' : 'unavailable',
+      },
+    ),
+    [user, csrfToken],
+  );
+
+  const content = useQuery({
+    queryKey: user
+      ? queryKeys.adminContent(user.id)
+      : ['disabled', 'admin-content'],
+    queryFn: () => api.get(),
+    enabled: Boolean(user) && user.role === 'admin',
+  });
+
+  const validate = useMutation({
+    mutationFn: (input) => api.validate(input),
+  });
+
+  const activate = useMutation({
+    mutationFn: async (input) => {
+      const result = await api.activate(input);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.adminContent(user.id),
+      });
+      return result;
+    },
+  });
+
+  return {
+    source: api.source,
+    content,
+    validate,
+    activate,
+  };
+}
+
+/**
+ * FE-23 versioned learning-settings hook.
+ * Activation is valid only for future sessions and uses an expected-version guard.
+ *
+ * @returns {object}
+ */
+export function useAdminSettings() {
+  const { user, csrfToken } = useAuth();
+  const queryClient = useQueryClient();
+  const api = useMemo(
+    () => createAdminSettingsApi(
+      user,
+      {
+        csrfToken,
+        mode: import.meta.env?.DEV ? 'fixture' : 'unavailable',
+      },
+    ),
+    [user, csrfToken],
+  );
+
+  const settings = useQuery({
+    queryKey: user
+      ? queryKeys.adminSettings(user.id)
+      : ['disabled', 'admin-settings'],
+    queryFn: () => api.get(),
+    enabled: Boolean(user) && user.role === 'admin',
+  });
+
+  const activate = useMutation({
+    mutationFn: async (input) => {
+      const result = await api.activate(input);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.adminSettings(user.id),
+      });
+      return result;
+    },
+  });
+
+  return {
+    source: api.source,
+    settings,
+    activate,
   };
 }

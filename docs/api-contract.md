@@ -180,6 +180,16 @@ The draft public DTO contains `id`, `name`, `email`, `role`, `isActive` and `isL
 
 This fixture demonstrates presentation and recovery only. The real server must enforce Admin role, authentication revocation, CSRF/origin checks, input limits, last-admin protection and audit records. It must independently return the authoritative post-operation DTO rather than trusting browser state.
 
+## FE-23 admin content and settings fixture boundary
+
+The Admin content and versioned-settings routes, DTOs and audit contract remain **Contract to agree**. FE-23 provides development-only in-memory content and settings review. Production reports `FEATURE_UNAVAILABLE` and makes no guessed state-changing request.
+
+The draft content DTO contains a content version, English word lists, blocked words, exercise themes and key groups with prerequisite IDs. Exercise themes are separate from interface appearance. Validation checks field shape, duplicate membership, missing prerequisites, alphabet compatibility, blocked words and an initial usable preview. Activation creates an immutable successor version in the fixture only.
+
+The draft settings DTO contains `currentVersion`, `rawAccuracyGatePercent`, `difficultyReductionPercent` and `initialLatencyCutoffMs`, plus `expectedCurrentVersion` on activation. The UI requires the reduction boundary to remain below the accuracy gate and detects stale versions. Activation is described as applying to future sessions only; active/completed assignments keep captured rules and text.
+
+This fixture does not authorise server endpoints or numerical policy changes. The real implementation must enforce Admin role, CSRF, input and size limits, prerequisite/feasibility validation, expected-version conflicts, immutable versions, audit records and server replay boundaries.
+
 ## Presentation-preference draft
 
 Required behaviour is recorded in [decision 0002](decisions.md#0002); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.
