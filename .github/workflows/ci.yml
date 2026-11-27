@@ -5,8 +5,8 @@
 # PostgreSQL 16.10 is provided as a service container for integration tests.
 # Playwright browser tests run last; traces and screenshots are uploaded as artifacts on failure.
 #
-# Action versions pinned to the latest stable major:
-#   actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4
+# Action versions pinned to the latest Node 24-native major:
+#   actions/checkout@v7, actions/setup-node@v7, actions/upload-artifact@v7
 
 name: CI
 
@@ -70,10 +70,10 @@ jobs:
       # Setup
       # -----------------------------------------------------------------------
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Reads the exact engine version from .nvmrc (currently 24.14.0)
           node-version-file: .nvmrc
@@ -151,7 +151,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Upload E2E failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-traces
           # Vite build output is excluded; only Playwright results are uploaded.
