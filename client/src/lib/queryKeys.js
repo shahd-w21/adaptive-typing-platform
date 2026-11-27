@@ -110,4 +110,9 @@ export const queryKeys = {
     'analytics',
     normalizeAnalyticsFilters(filters),
   ],
+  adminUsers: (ownerId, filters = {}) => [
+    ...owner(ownerId),
+    'admin-users',
+    filters,
+  ],
 };

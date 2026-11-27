@@ -172,6 +172,14 @@ The following feature-local shapes support UI review only; backend/DTO owners mu
 
 Fixture-only input bounds are title 180 characters, discussion/reply 5000, report reason 1000; categories are `technique`, `adaptive`, `hardware`, `general`. These are draft UI constraints, not approved server limits. Fixture owner/permission checks and replay receipts demonstrate the flows; the real server must independently enforce authentication, ownership, revocation, CSRF, validation, atomic single-answer replacement and idempotent writes. Reporting acknowledges a concern without hiding content in the browser. Permission flags are explicit UI hints; absent flags disable controls, and no Admin moderation controls are added by FE-08.
 
+## FE-18 admin user-management fixture boundary
+
+The Admin user-management routes and audit contract remain **Contract to agree**. FE-18 provides a development-only in-memory account directory for search/pagination and deactivation/deletion/admin creation review. Production reports `FEATURE_UNAVAILABLE` and makes no guessed state-changing request.
+
+The draft public DTO contains `id`, `name`, `email`, `role`, `isActive` and `isLastActiveAdmin`; it excludes passwords, CSRF/session secrets and private typing logs. Draft filters are `search`, `page` and `pageSize`. Deactivation and deletion require confirmed UI intent and fixture CSRF presence, and the fixture preserves a record on simulated write failure until an explicit retry succeeds. It also refuses to deactivate or delete the only active Admin.
+
+This fixture demonstrates presentation and recovery only. The real server must enforce Admin role, authentication revocation, CSRF/origin checks, input limits, last-admin protection and audit records. It must independently return the authoritative post-operation DTO rather than trusting browser state.
+
 ## Presentation-preference draft
 
 Required behaviour is recorded in [decision 0002](decisions.md#0002); field names/shapes remain **proposed**, to agree with shared schemas before implementation. Use existing account routes; no language-switch, dark-mode or mobile API is needed.

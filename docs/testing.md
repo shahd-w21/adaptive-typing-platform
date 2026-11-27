@@ -2,6 +2,17 @@
 
 **Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
 
+## FE-18 admin user-management verification — 27 November 2026
+
+FE-18 adds the protected Admin user-directory UI for search, pagination, account deactivation/deletion, admin creation, confirmation and last-active-admin protection.
+
+| Check | Evidence / result |
+| --- | --- |
+| Unit tests | `client/tests/unit/admin-users.test.js` passed all 5 checks: safe DTO shape, search/pagination, last-admin denial, failed-write retry, CSRF requirement and unavailable production boundary |
+| Browser checks | `client/tests/e2e/admin-users.spec.js` passed all 3 Chrome checks: search/create flow, retained record with confirmation retry, and Arabic Dark 320px reflow with axe WCAG 2.1 AA checks |
+| Static/build checks | Root lint and production build passed; the existing >500 kB bundle-size warning remains |
+| Boundary | Development uses an explicitly labelled in-memory fixture; production fails closed with `FEATURE_UNAVAILABLE`. Admin access remains server-authorized and the real admin user routes/audit contract remain pending |
+
 ## FE-31 acceptance verification — 26 November 2026
 
 Verified dashboard/progress/reward/analytics frontend flows against current migrated API contracts and labelled future fixtures.

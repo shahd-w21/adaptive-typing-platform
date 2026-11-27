@@ -136,6 +136,7 @@
   "navigation": {
     "adminSections": "Administration sections",
     "userDirectory": "User directory, scroll horizontally to see all columns",
+    "userDirectoryTitle": "User Directory",
     "skipToContent": "Skip to main content",
     "public": "Public navigation",
     "student": "Student navigation",
@@ -238,6 +239,36 @@
     "moderation": "Moderation",
     "certificates": "Certificates",
     "audit": "Audit Log"
+  },
+  "adminUsers": {
+    "searchLabel": "Search users",
+    "searchPlaceholder": "Name or email",
+    "createAdmin": "Create Admin",
+    "createTitle": "Create another administrator",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "lastAdminProtected": "Protected (last active admin)",
+    "confirmDeactivateTitle": "Deactivate this account?",
+    "confirmDeactivate": "Deactivate {name}? Their sessions and account access will be revoked.",
+    "confirmDeleteTitle": "Delete this account?",
+    "confirmDelete": "Delete {name}? Account data handling and audit records remain subject to the real server policy.",
+    "noUsers": "No users found",
+    "noUsersHelp": "Try a different name or email search.",
+    "pagination": "User directory pages",
+    "page": "Page {page} of {total}",
+    "nameRequired": "Enter an administrator name.",
+    "emailRequired": "Enter an email address.",
+    "emailInvalid": "Enter a valid email address.",
+    "roles": {
+      "admin": "Admin",
+      "student": "Student"
+    }
   },
   "analytics": {
     "windowLabel": "Reporting window",

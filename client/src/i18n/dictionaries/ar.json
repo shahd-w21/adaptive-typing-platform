@@ -136,6 +136,7 @@
   "navigation": {
     "adminSections": "أقسام الإدارة",
     "userDirectory": "دليل المستخدمين، مرر أفقياً لعرض جميع الأعمدة",
+    "userDirectoryTitle": "دليل المستخدمين",
     "skipToContent": "انتقل إلى المحتوى الرئيسي",
     "public": "التنقل العام",
     "student": "تنقل الطالب",
@@ -238,6 +239,36 @@
     "moderation": "الإشراف",
     "certificates": "الشهادات",
     "audit": "سجل التدقيق"
+  },
+  "adminUsers": {
+    "searchLabel": "البحث عن المستخدمين",
+    "searchPlaceholder": "الاسم أو البريد الإلكتروني",
+    "createAdmin": "إنشاء مسؤول",
+    "createTitle": "إنشاء مسؤول آخر",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "deactivate": "تعطيل",
+    "lastAdminProtected": "محمي (آخر مسؤول نشط)",
+    "confirmDeactivateTitle": "هل تريد تعطيل هذا الحساب؟",
+    "confirmDeactivate": "تعطيل {name}؟ سيتم إلغاء جلساته والوصول إلى حسابه.",
+    "confirmDeleteTitle": "هل تريد حذف هذا الحساب؟",
+    "confirmDelete": "حذف {name}؟ يخضع التعامل مع بيانات الحساب وسجلات التدقيق لسياسة الخادم الفعلية.",
+    "noUsers": "لا يوجد مستخدمون",
+    "noUsersHelp": "جرّب اسمًا أو بريدًا إلكترونيًا آخر.",
+    "pagination": "صفحات دليل المستخدمين",
+    "page": "الصفحة {page} من {total}",
+    "nameRequired": "أدخل اسم المسؤول.",
+    "emailRequired": "أدخل عنوان البريد الإلكتروني.",
+    "emailInvalid": "أدخل عنوان بريد إلكتروني صحيحًا.",
+    "roles": {
+      "admin": "مسؤول",
+      "student": "متعلّم"
+    }
   },
   "analytics": {
     "windowLabel": "نافذة التقارير",
