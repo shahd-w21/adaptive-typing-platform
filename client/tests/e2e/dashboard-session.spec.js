@@ -150,6 +150,12 @@ for (const locale of ['en', 'ar']) {
       await page.goto('/dashboard');
       await expect(page.getByRole('table')).toBeVisible();
       await expect(page.getByRole('progressbar')).toBeVisible();
+      const recommendationBackground = await page
+        .locator('section[aria-labelledby="recommendation-title"]')
+        .evaluate((section) => getComputedStyle(section).backgroundColor);
+      expect(recommendationBackground).toBe(
+        theme === 'light' ? 'rgb(251, 250, 248)' : 'rgb(36, 46, 62)',
+      );
       await expect(page.locator('html')).toHaveAttribute(
         'dir',
         locale === 'ar' ? 'rtl' : 'ltr',
@@ -270,7 +276,7 @@ test('typing survives preference/viewport changes; lost submission recovers and 
     delay: 20,
   });
   // Existing controls update presentation, not assignment identity/recorded events.
-  await page.getByRole('button', { name: /Large Text:/ }).click();
+  await page.getByRole('button', { name: /Large text:/i }).click();
   await page.getByRole('button', { name: 'Appearance: Light' }).click();
   await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
   await page.getByRole('button', { name: 'Language: English' }).click();

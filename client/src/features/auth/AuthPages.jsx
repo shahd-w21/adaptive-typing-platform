@@ -1,5 +1,5 @@
 // Existing public screens; authentication modal delegates keyboard and focus behavior to Dialog.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog } from '../../components/ui/Dialog.jsx';
 import { useForm } from 'react-hook-form';
@@ -7,7 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, registerSchema } from '@typeflow/shared';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { BrandLogo } from '../../components/ui/BrandLogo.jsx';
-import { ShieldIcon, XIcon } from '../../components/ui/Icons.jsx';
+import { AppearanceSelector } from '../../components/controls/AppearanceSelector.jsx';
+import { LanguageSelector } from '../../components/controls/LanguageSelector.jsx';
+import { ArrowLeftIcon, ShieldIcon, XIcon } from '../../components/ui/Icons.jsx';
 import { verifyCertificate } from '../../api/certificates.js';
 
 // Preserve the router's existing import while keeping marketing separate from forms.
@@ -35,6 +37,7 @@ export function AuthModal({
   onForgotPassword,
 }) {
   const { t } = useTranslation();
+  const emailInputRef = useRef(null);
   const isRegister = mode === 'register';
   const [notice, setNotice] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -59,6 +62,10 @@ export function AuthModal({
       confirmPassword: '',
     },
   });
+  const {
+    ref: registerEmailRef,
+    ...emailField
+  } = register('email');
 
   /** Keep the existing request shape and verification notice; never store credentials. */
   const submit = handleSubmit(async values => {
@@ -102,135 +109,192 @@ export function AuthModal({
       onClose={onClose}
       labelledBy="auth-dialog-title"
       describedBy="auth-dialog-description"
+      initialFocusRef={emailInputRef}
       className="auth-dialog"
     >
-      <Link to="/" aria-label={t('navigation.homeLabel')} className="auth-dialog-brand">
-        <BrandLogo />
-      </Link>
-      <div className="auth-dialog-body">
-        <header className="auth-introduction">
-          <h2 id="auth-dialog-title">
-            {isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
-          </h2>
-          <p id="auth-dialog-description">
-            {isRegister ? t('auth.registerDescription') : t('auth.loginDescription')}
-          </p>
-        </header>
-
-        <form onSubmit={submit} className="auth-form" noValidate>
-          <div className="auth-field">
-            <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
-            <input
-              id="auth-email"
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              aria-invalid={Boolean(errors.email)}
-              aria-describedby={errors.email ? 'auth-email-error' : undefined}
-              {...register('email')}
-              placeholder="name@example.com"
-            />
-            {errors.email && (
-              <p id="auth-email-error" className="auth-field-error" role="alert">
-                {errors.email.type === 'server' ? errors.email.message : t('auth.invalidEmail')}
-              </p>
-            )}
+      <aside className="auth-illustration" aria-hidden="true">
+        <div className="auth-art-orbit" />
+        <div className="auth-art-keyboard" dir="ltr">
+          {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map(key => (
+            <span className="auth-art-key" key={key}>{key}</span>
+          ))}
+          {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map(key => (
+            <span
+              className={`auth-art-key ${['F', 'J'].includes(key) ? 'auth-art-key-focus' : ''}`}
+              key={key}
+            >
+              {key}
+            </span>
+          ))}
+        </div>
+        <p className="auth-art-caption">{t('landing.focusTitle')}</p>
+      </aside>
+      <section className="auth-panel">
+        <div className="auth-panel-header">
+          <Link to="/" aria-label={t('navigation.homeLabel')} className="auth-dialog-brand">
+            <BrandLogo />
+          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSelector compact />
+            <AppearanceSelector compact />
           </div>
+        </div>
+        <div className="auth-dialog-body">
+          <header className="auth-introduction">
+            <h2 id="auth-dialog-title">
+              {isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
+            </h2>
+            <p id="auth-dialog-description">
+              {isRegister ? t('auth.registerDescription') : t('auth.loginDescription')}
+            </p>
+          </header>
 
-          <div className="auth-field">
-            <div className="auth-field-heading">
-              <label htmlFor="auth-password">{t('auth.passwordLabel')}</label>
-              <button
-                type="button"
-                className="auth-password-toggle"
-                aria-pressed={passwordVisible}
-                aria-controls={isRegister ? 'auth-password auth-confirm-password' : 'auth-password'}
-                onClick={() => setPasswordVisible(visible => !visible)}
-              >
-                {t(passwordVisible ? 'auth.hidePassword' : 'auth.showPassword')}
-              </button>
-            </div>
-            <input
-              id="auth-password"
-              type={passwordVisible ? 'text' : 'password'}
-              dir="ltr"
-              autoComplete={isRegister ? 'new-password' : 'current-password'}
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby={[
-                isRegister && 'auth-password-help',
-                errors.password && 'auth-password-error',
-              ].filter(Boolean).join(' ') || undefined}
-              {...register('password')}
-            />
-            {isRegister && <p id="auth-password-help" className="auth-field-help">{t('auth.passwordHelp')}</p>}
-            {errors.password && (
-              <p id="auth-password-error" className="auth-field-error" role="alert">
-                {errors.password.type === 'server'
-                  ? errors.password.message
-                  : t(isRegister ? 'auth.passwordHelp' : 'auth.passwordRequired')}
-              </p>
-            )}
-          </div>
-
-          {isRegister && (
+          <form onSubmit={submit} className="auth-form" noValidate>
             <div className="auth-field">
-              <label htmlFor="auth-confirm-password">{t('auth.confirmPasswordLabel')}</label>
+              <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
               <input
-                id="auth-confirm-password"
-                type={passwordVisible ? 'text' : 'password'}
+                id="auth-email"
+                type="email"
                 dir="ltr"
-                autoComplete="new-password"
-                aria-invalid={Boolean(errors.confirmPassword)}
-                aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
-                {...register('confirmPassword')}
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? 'auth-email-error' : undefined}
+                {...emailField}
+                ref={element => {
+                  registerEmailRef(element);
+                  emailInputRef.current = element;
+                }}
+                placeholder="name@example.com"
               />
-              {errors.confirmPassword && (
-                <p id="auth-confirm-password-error" className="auth-field-error" role="alert">
-                  {errors.confirmPassword.message}
+              {errors.email && (
+                <p id="auth-email-error" className="auth-field-error" role="alert">
+                  {errors.email.type === 'server'
+                    ? errors.email.message
+                    : t('auth.invalidEmail')}
                 </p>
               )}
             </div>
-          )}
 
-          {errors.root?.server && (
-            <p className="auth-feedback bg-error-soft text-error-text" role="alert">
-              {errors.root.server.message}
+            <div className="auth-field">
+              <div className="auth-field-heading">
+                <label htmlFor="auth-password">{t('auth.passwordLabel')}</label>
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  aria-pressed={passwordVisible}
+                  aria-controls={isRegister ? 'auth-password auth-confirm-password' : 'auth-password'}
+                  onClick={() => setPasswordVisible(visible => !visible)}
+                >
+                  {t(passwordVisible ? 'auth.hidePassword' : 'auth.showPassword')}
+                </button>
+              </div>
+              <input
+                id="auth-password"
+                type={passwordVisible ? 'text' : 'password'}
+                dir="ltr"
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={[
+                  isRegister && 'auth-password-help',
+                  errors.password && 'auth-password-error',
+                ].filter(Boolean).join(' ') || undefined}
+                {...register('password')}
+              />
+              {isRegister && (
+                <p id="auth-password-help" className="auth-field-help">
+                  {t('auth.passwordHelp')}
+                </p>
+              )}
+              {errors.password && (
+                <p id="auth-password-error" className="auth-field-error" role="alert">
+                  {errors.password.type === 'server'
+                    ? errors.password.message
+                    : t(isRegister ? 'auth.passwordHelp' : 'auth.passwordRequired')}
+                </p>
+              )}
+            </div>
+
+            {isRegister && (
+              <div className="auth-field">
+                <label htmlFor="auth-confirm-password">
+                  {t('auth.confirmPasswordLabel')}
+                </label>
+                <input
+                  id="auth-confirm-password"
+                  type={passwordVisible ? 'text' : 'password'}
+                  dir="ltr"
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
+                  {...register('confirmPassword')}
+                />
+                {errors.confirmPassword && (
+                  <p
+                    id="auth-confirm-password-error"
+                    className="auth-field-error"
+                    role="alert"
+                  >
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {errors.root?.server && (
+              <p className="auth-feedback bg-error-soft text-error-text" role="alert">
+                {errors.root.server.message}
+              </p>
+            )}
+            {notice && (
+              <p className="auth-feedback bg-success-soft text-success-text" role="status">
+                {notice}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="auth-submit"
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting
+                ? t('common.loading')
+                : t(isRegister ? 'auth.registerAction' : 'auth.loginAction')}
+            </button>
+          </form>
+
+          {!isRegister && onForgotPassword && (
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="mt-4 text-sm font-bold text-action-link"
+            >
+              {t('auth.forgotPassword')}
+            </button>
+          )}
+          {isRegister && (
+            <p className="auth-verification-note">
+              {t('auth.verificationNote')}
             </p>
           )}
-          {notice && (
-            <p className="auth-feedback bg-success-soft text-success-text" role="status">{notice}</p>
-          )}
-
-          <button type="submit" disabled={isSubmitting} className="auth-submit" aria-busy={isSubmitting}>
-            {isSubmitting
-              ? t('common.loading')
-              : t(isRegister ? 'auth.registerAction' : 'auth.loginAction')}
-          </button>
-        </form>
-
-        {!isRegister && onForgotPassword && (
-          <button type="button" onClick={onForgotPassword} className="mt-4 text-sm font-bold text-action-link">
-            {t('auth.forgotPassword')}
-          </button>
-        )}
-        {isRegister && <p className="auth-verification-note">{t('auth.verificationNote')}</p>}
-        <div className="auth-switch">
-          <button type="button" onClick={switchMode}>
-            {t(isRegister ? 'auth.switchToLogin' : 'auth.switchToRegister')}
-          </button>
+          <div className="auth-switch">
+            <button type="button" onClick={switchMode}>
+              {t(isRegister ? 'auth.switchToLogin' : 'auth.switchToRegister')}
+            </button>
+          </div>
         </div>
-      </div>
-
-      <button type="button" onClick={onClose} aria-label={t('common.close')} className="auth-close">
-        <XIcon size={20} />
-      </button>
+        <button type="button" onClick={onClose} aria-label={t('common.close')} className="auth-close">
+          <XIcon size={20} />
+        </button>
+      </section>
     </Dialog>
   );
 }
 
 export function PublicCertificateVerification({ onBack, initialCode = '' }) {
+  const { t, isRTL } = useTranslation();
   const [code, setCode] = useState(initialCode);
   const [lookupResult, setLookupResult] = useState(null);
   const [lookupError, setLookupError] = useState('');
@@ -248,8 +312,8 @@ export function PublicCertificateVerification({ onBack, initialCode = '' }) {
     } catch (error) {
       setLookupError(
         error?.code === 'NOT_FOUND'
-          ? 'No valid certificate was found for this code.'
-          : 'Certificate verification is temporarily unavailable.',
+          ? t('certificates.notFound')
+          : t('certificates.verificationUnavailable'),
       );
     } finally {
       setIsVerifying(false);
@@ -263,7 +327,12 @@ export function PublicCertificateVerification({ onBack, initialCode = '' }) {
         onClick={onBack}
         className="bg-transparent border-0 cursor-pointer flex items-center gap-1.5 text-action-link font-bold mb-5"
       >
-        ← Return Home
+        <ArrowLeftIcon
+          size={18}
+          className={isRTL ? 'rotate-180' : ''}
+          aria-hidden="true"
+        />
+        {t('certificates.returnHome')}
       </button>
 
       <div className="bg-surface border border-border-subtle rounded-card shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] text-center p-8">
@@ -271,23 +340,26 @@ export function PublicCertificateVerification({ onBack, initialCode = '' }) {
           <ShieldIcon size={44} />
         </div>
         <h1 className="font-display rtl:font-arabic leading-[44px] font-bold max-md:text-[24px] max-md:leading-[32px] text-[24px] mb-2">
-          Certificate Verification
+          {t('certificates.verificationTitle')}
         </h1>
         <p className="text-muted text-[14px] mb-6">
-          Enter a unique TypeFlow certificate code to verify authentic performance records.
+          {t('certificates.verificationDescription')}
         </p>
 
         <form onSubmit={handleVerify} className="flex gap-3 mb-7">
           <input
             type="text"
             required
+            aria-label={t('certificates.codeLabel')}
             className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] [direction:ltr]! [unicode-bidi:isolate] font-mono! text-center font-bold tracking-[1px]"
-            placeholder="e.g. TF-2026-X98B"
+            placeholder={t('certificates.codePlaceholder')}
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
           <button type="submit" disabled={isVerifying} className="inline-flex items-center justify-center gap-2 h-12 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none py-0 px-6 shrink-0">
-            {isVerifying ? 'Checking...' : 'Verify'}
+            {isVerifying
+              ? t('certificates.checking')
+              : t('certificates.verify')}
           </button>
         </form>
 
@@ -299,11 +371,11 @@ export function PublicCertificateVerification({ onBack, initialCode = '' }) {
 
         {lookupResult?.code && (
           <div
-            className="p-6 rounded-card bg-subtle border-2 border-success-accent text-left"
+            className="p-6 rounded-card bg-subtle border-2 border-success-accent text-start"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="text-[13px] font-bold text-success-text">
-                ✓ OFFICIAL VALID RECORD
+                ✓ {t('certificates.validRecord')}
               </span>
               <span className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono! text-[13px] font-bold">
                 {lookupResult.code}
@@ -312,25 +384,35 @@ export function PublicCertificateVerification({ onBack, initialCode = '' }) {
 
             <div className="grid grid-cols-1 gap-3.5 text-[14px] sm:grid-cols-2">
               <div>
-                <span className="text-muted block text-[12px]">Recipient</span>
+                <span className="text-muted block text-[12px]">
+                  {t('certificates.recipient')}
+                </span>
                 <strong>{lookupResult.name}</strong>
               </div>
               <div>
-                <span className="text-muted block text-[12px]">Issue Date</span>
+                <span className="text-muted block text-[12px]">
+                  {t('certificates.issueDate')}
+                </span>
                 <strong>{lookupResult.issueDate}</strong>
               </div>
               <div>
-                <span className="text-muted block text-[12px]">Net Speed</span>
-                <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{lookupResult.netWpm} WPM</strong>
+                <span className="text-muted block text-[12px]">
+                  {t('certificates.netSpeed')}
+                </span>
+                <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">
+                  {lookupResult.netWpm} WPM
+                </strong>
               </div>
               <div>
-                <span className="text-muted block text-[12px]">Raw Accuracy</span>
+                <span className="text-muted block text-[12px]">
+                  {t('certificates.rawAccuracy')}
+                </span>
                 <strong className="[direction:ltr]! text-left! [unicode-bidi:isolate] font-mono!">{lookupResult.rawAccuracy}</strong>
               </div>
             </div>
 
             <p className="mt-4 pt-3 border-t border-t-border-subtle text-[12px] text-muted italic">
-              * Unproctored TypeFlow performance certificate issued under self-study conditions.
+              {t('certificates.disclosure')}
             </p>
           </div>
         )}

@@ -160,11 +160,11 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
             <input id="profile-timezone" type="text" required value={timezone} onChange={(event) => setTimezone(event.target.value)} placeholder="Africa/Cairo" className="w-full h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)]" />
           </div>
           <form onSubmit={saveEmail} className="mt-4 flex flex-wrap items-end gap-3" noValidate>
-            <div className="min-w-60 flex-1">
+            <div className="min-w-0 basis-full flex-1 sm:basis-0">
               <label className="mb-1.5 block text-[13px] font-bold" htmlFor="email-change-password">{t('profile.currentPassword')}</label>
               <input id="email-change-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
             </div>
-            <div className="min-w-60 flex-1">
+            <div className="min-w-0 basis-full flex-1 sm:basis-0">
               <label className="mb-1.5 block text-[13px] font-bold" htmlFor="new-email">{t('profile.newEmail')}</label>
               <input id="new-email" type="email" required value={newEmail} onChange={event => setNewEmail(event.target.value)} className="h-12 w-full rounded-control border-2 border-border-control bg-surface px-4 text-ink focus:border-focus-ring focus:outline-none" />
             </div>
@@ -334,7 +334,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
         <button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text h-10.5 text-[14px]"
+          className="inline-flex items-center justify-center gap-2 py-0 px-6 font-body rtl:font-arabic font-bold bg-error-soft text-error-text border border-error-text rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:opacity-90 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:border-transparent disabled:cursor-not-allowed disabled:shadow-none h-10.5 text-[14px]"
         >
           {t('profile.deleteAccount')}
         </button>
@@ -371,7 +371,7 @@ export function ProfileView({ user, onAccountDeleted, onPasswordChanged }) {
                 type="button"
                   onClick={removeAccount}
                   disabled={!deletePassword || deleteStatus === 'deleting'}
-                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none bg-error-text"
+                className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold bg-error-soft text-error-text border border-error-text rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:opacity-90 enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:border-transparent disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {deleteStatus === 'deleting' ? t('profile.deleting') : t('profile.deleteAction')}
               </button>

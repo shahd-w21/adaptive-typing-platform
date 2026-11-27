@@ -1,6 +1,7 @@
 // Stable English passage feedback; presentation changes preserve the capture input.
 import { useRef, useEffect } from 'react';
 import { usePreferences } from '../../../context/preferences.js';
+import { useTranslation } from '../../../i18n/useTranslation.js';
 
 /**
  * Render assigned text and the current buffer with immediate character feedback.
@@ -12,10 +13,12 @@ export function TypingStage({
   buffer = '',
   onCharInput,
   onBackspace,
+  inputLabel,
   isActive = true,
   isPaused = false,
 }) {
   const { largeText } = usePreferences();
+  const { t } = useTranslation();
   const inputRef = useRef(null);
 
   // Keep focus in the typing surface while active
@@ -63,7 +66,7 @@ export function TypingStage({
       <input
         ref={inputRef}
         type="text"
-        aria-label="Typing input stream"
+        aria-label={inputLabel || t('typing.inputLabel')}
         autoComplete="off"
         autoCapitalize="off"
         autoCorrect="off"

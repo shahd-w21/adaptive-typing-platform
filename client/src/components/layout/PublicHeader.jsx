@@ -30,7 +30,7 @@ export function PublicHeader({ activeTab, onNavigate }) {
   }, [activeTab]);
 
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 768px)');
+    const desktop = window.matchMedia('(min-width: 1024px)');
     const closeOnDesktop = () => {
       if (desktop.matches) {
         setMenuOpen(false);
@@ -69,27 +69,40 @@ export function PublicHeader({ activeTab, onNavigate }) {
   return (
     <>
       <a href="#main-content" className="skip-link">{t('navigation.skipToContent')}</a>
-      <header className="site-header sticky top-0 z-50 flex min-h-[var(--header-height)] flex-wrap items-center justify-between gap-2 border-b border-border-subtle bg-surface/90 px-3 py-2 backdrop-blur-xl md:px-6 lg:px-8">
+      <header className="site-header public-site-header sticky top-0 z-50 flex min-h-16 flex-nowrap items-center justify-between border-b border-border-subtle bg-surface/90 px-4 py-2 backdrop-blur-xl lg:min-h-[var(--header-height)] lg:gap-2 lg:px-6 xl:px-8">
         <div className="flex min-w-0 items-center gap-3 lg:gap-6">
           <Link to="/" aria-label={t('navigation.homeLabel')} className="flex min-h-11 items-center gap-2 rounded-control text-ink">
             <BrandLogo />
           </Link>
-          <nav aria-label={t('navigation.public')} className="hidden items-center gap-2 md:flex">{renderLinks()}</nav>
+          <nav aria-label={t('navigation.public')} className="hidden items-center gap-2 lg:flex">{renderLinks()}</nav>
         </div>
-        <button type="button" className="flex size-11 items-center justify-center rounded-control text-ink hover:bg-subtle md:hidden" aria-label={t('nav.openMenu')} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(true)}>
-          <MenuIcon size={24} />
-        </button>
-        <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
-          <LanguageSelector compact />
-          <AppearanceSelector compact />
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          {status === 'authenticated' ? (
+            <button type="button" onClick={() => navigate(user?.role === 'admin' ? 'admin' : 'dashboard')} className="min-h-11 rounded-full bg-action-primary px-3 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.dashboard')}</button>
+          ) : (
+            <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-full bg-action-primary px-3 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.register')}</button>
+          )}
+          <button type="button" className="flex size-11 items-center justify-center rounded-control text-on-inverse hover:bg-subtle" aria-label={t('nav.openMenu')} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(true)}>
+            <MenuIcon size={24} />
+          </button>
+        </div>
+        <div className="hidden items-center gap-3 lg:flex">
+          <div className="flex items-center gap-2 text-sm font-bold text-on-inverse">
+            <span>{t('preferences.language')}</span>
+            <LanguageSelector compact />
+          </div>
+          <div className="flex items-center gap-2 text-sm font-bold text-on-inverse">
+            <span>{t('preferences.appearance')}</span>
+            <AppearanceSelector compact />
+          </div>
           {status === 'authenticated' ? (
             <>
               <button type="button" onClick={() => navigate(user?.role === 'admin' ? 'admin' : 'dashboard')} className="min-h-11 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.dashboard')}</button>
-              <button type="button" onClick={() => signOut()} className="min-h-11 rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-subtle">{t('nav.logout')}</button>
+              <button type="button" onClick={() => signOut()} className="public-header-link min-h-11 rounded-control px-3 py-2 text-sm font-bold hover:bg-subtle">{t('nav.logout')}</button>
             </>
           ) : (
             <>
-              <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-subtle">{t('nav.login')}</button>
+              <button type="button" onClick={() => navigate('login')} className="public-header-link min-h-11 rounded-control px-3 py-2 text-sm font-bold hover:bg-subtle">{t('nav.login')}</button>
               <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary hover:bg-action-hover">{t('nav.register')}</button>
             </>
           )}
@@ -105,15 +118,25 @@ export function PublicHeader({ activeTab, onNavigate }) {
           {status === 'authenticated' ? (
             <>
               <button type="button" onClick={() => navigate(user?.role === 'admin' ? 'admin' : 'dashboard')} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.dashboard')}</button>
-              <button type="button" onClick={() => signOut()} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.logout')}</button>
+              <button type="button" onClick={() => signOut()} className="public-header-link min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.logout')}</button>
             </>
           ) : (
             <>
-              <button type="button" onClick={() => navigate('login')} className="min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.login')}</button>
+              <button type="button" onClick={() => navigate('login')} className="public-header-link min-h-11 rounded-control px-3 py-2 text-start font-bold hover:bg-subtle">{t('nav.login')}</button>
               <button type="button" onClick={() => navigate('register')} className="min-h-11 rounded-control bg-action-primary px-3 py-2 text-start font-bold text-action-foreground hover:bg-action-hover">{t('nav.register')}</button>
             </>
           )}
         </nav>
+        <div className="mt-5 grid gap-3 border-t border-border-subtle pt-4">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-bold">{t('preferences.language')}</span>
+            <LanguageSelector compact />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-bold">{t('preferences.appearance')}</span>
+            <AppearanceSelector compact />
+          </div>
+        </div>
       </Dialog>
     </>
   );

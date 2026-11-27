@@ -62,7 +62,9 @@ export function CourseLibraryPage() {
   };
 
   const handleResume = (resumeLink) => {
-    navigate(resumeLink || '/learning-path');
+    if (typeof resumeLink === 'string' && resumeLink.length > 0) {
+      navigate(resumeLink);
+    }
   };
 
   const handleViewDetails = (courseId) => {

@@ -154,13 +154,10 @@ export function MyCoursesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEnrollments.map((enr) => {
-            const course = courses.find((c) => c.id === enr.courseId) || {
-              id: enr.courseId,
-              title: enr.courseId,
-              description: '',
-              level: 'beginner',
-            };
+            const course = courses.find((c) => c.id === enr.courseId);
             const isFinished = enr.progressPercent >= 100;
+            const canResume = typeof enr.resumeLink === 'string'
+              && enr.resumeLink.length > 0;
 
             return (
               <article
@@ -182,10 +179,10 @@ export function MyCoursesPage() {
                   <h3 className="mb-2 font-display text-lg font-bold text-ink">
                     <button
                       type="button"
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      onClick={() => navigate(`/courses/${enr.courseId}`)}
                       className="text-start hover:underline hover:text-learning-strong"
                     >
-                      {course.title}
+                      {course?.title ?? t('courses.unavailableCourse')}
                     </button>
                   </h3>
 
@@ -228,21 +225,22 @@ export function MyCoursesPage() {
                 <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-t-border-subtle/50">
                   <button
                     type="button"
-                    onClick={() =>
-                      navigate(enr.resumeLink || '/learning-path')
-                    }
-                    className="inline-flex flex-1 min-h-10 items-center justify-center gap-2 rounded-full bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus"
+                    onClick={() => canResume && navigate(enr.resumeLink)}
+                    disabled={!canResume}
+                    className="inline-flex flex-1 min-h-11 items-center justify-center gap-2 rounded-control bg-action-primary px-4 py-2 text-sm font-bold text-action-foreground shadow-primary transition-colors hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-action-focus disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-disabled-text disabled:shadow-none"
                   >
                     <span>
-                      {isFinished
-                        ? t('courses.reviewCourseAction')
-                        : t('courses.resumeAction')}
+                      {canResume
+                        ? isFinished
+                          ? t('courses.reviewCourseAction')
+                          : t('courses.resumeAction')
+                        : t('courses.resumeUnavailable')}
                     </span>
-                    <ArrowRightIcon size={16} aria-hidden="true" />
+                    {canResume && <ArrowRightIcon size={16} aria-hidden="true" />}
                   </button>
                   <button
                     type="button"
-                    onClick={() => navigate(`/courses/${course.id}`)}
+                    onClick={() => navigate(`/courses/${enr.courseId}`)}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-border-subtle bg-surface px-4 py-2 text-sm font-medium text-ink hover:bg-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-action-focus"
                   >
                     {t('courses.detailsAction')}

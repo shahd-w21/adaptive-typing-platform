@@ -13,7 +13,11 @@ import { createSessionService } from '../../src/modules/sessions/service.js';
 import { once } from 'node:events';
 import { request as frontendRequest } from '../../../client/src/api/client.js';
 import { toSessionPayload } from '../../../client/src/features/typing/engine/sessionPayload.js';
-import { dashboardResponseSchema, pathResponseSchema } from '@typeflow/shared';
+import {
+  dashboardResponseSchema,
+  pathResponseSchema,
+  sessionHistorySchema,
+} from '@typeflow/shared';
 import { createSessionController } from '../../../client/src/features/typing/sessionController.js';
 
 const config = { JWT_SECRET: 'test-only-migration-signing-secret-longer-than-32', NODE_ENV: 'test', CLIENT_URL: 'http://localhost:5173' };
@@ -282,6 +286,10 @@ test('profile, permissions, password change and account deletion', async () => f
 test('owned practice, atomic retries/concurrency, dashboard and progress', async () => fixture(async ({ agent, user, login, database, app, advance }) => {
   const person = await user();
   const csrf = await login(person);
+  for (const mode of ['placement', 'lesson', 'review', 'timed', 'certified']) {
+    await agent.post('/api/v1/sessions').set('X-CSRF-Token', csrf).send({ mode }).expect(400);
+  }
+  assert.equal(await database.typingSession.count({ where: { userId: person.id } }), 0);
   const path = await agent.get('/api/v1/path').expect(200);
   assert.equal(path.body.groups.length, 4);
   const assignments = [];
@@ -308,6 +316,16 @@ test('owned practice, atomic retries/concurrency, dashboard and progress', async
   assert.deepEqual(afterPurge.body, results[0].body);
   const dashboard = await agent.get('/api/v1/dashboard').expect(200);
   assert.equal(dashboard.body.recentSessions.length, 2);
+  const history = sessionHistorySchema.parse(
+    (await agent.get('/api/v1/sessions').expect(200)).body,
+  );
+  assert.deepEqual(
+    history.sessions
+      .filter((session) => session.status === 'completed')
+      .map((session) => session.id)
+      .sort(),
+    assignments.map((assignment) => assignment.sessionId).sort(),
+  );
   await agent.get('/api/v1/progress').expect(200);
   const abandoned = (await agent.post('/api/v1/sessions').set('X-CSRF-Token', csrf).send({}).expect(201)).body;
   await agent.post(`/api/v1/sessions/${abandoned.sessionId}/abandon`).set('X-CSRF-Token', csrf).send({}).expect(200);

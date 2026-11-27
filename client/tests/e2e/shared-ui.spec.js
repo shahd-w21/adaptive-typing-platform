@@ -1,5 +1,6 @@
 // FE-03 behavior checks use explicit HTTP fixtures; no account or scored session is created.
 import { test, expect } from '../support/browser.js';
+import { mockPracticeSession } from '../support/typing-session.js';
 import AxeBuilder from '@axe-core/playwright';
 
 const student = {
@@ -57,6 +58,20 @@ async function mockApi(page, { role, theme = 'light', locale = 'en' } = {}) {
     if (path.endsWith('/admin/ping')) {
       return route.fulfill({ json: { message: 'Fixture access check' } });
     }
+    if (path.endsWith('/gamification')) {
+      return route.fulfill({
+        json: {
+          xp: 120,
+          level: 1,
+          streak: 2,
+          dailyGoal: {
+            goalMinutes: 15,
+            minutesToday: 5,
+            done: false,
+          },
+        },
+      });
+    }
     return route.fulfill({
       status: 503,
       json: { error: { code: 'SERVICE_UNAVAILABLE' } },
@@ -69,8 +84,23 @@ async function expectReflow(page) {
   const dimensions = await page.evaluate(() => ({
     width: document.documentElement.clientWidth,
     scroll: document.documentElement.scrollWidth,
+    overflowing: [...document.querySelectorAll('body *')]
+      .filter(element => element.scrollWidth > element.clientWidth + 1)
+      .map(element => ({
+        tag: element.tagName.toLowerCase(),
+        className: typeof element.className === 'string' ? element.className : '',
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        right: Math.round(element.getBoundingClientRect().right),
+        text: element.textContent.trim().slice(0, 60),
+      }))
+      .sort((first, second) => (second.scrollWidth - second.clientWidth) - (first.scrollWidth - first.clientWidth))
+      .slice(0, 5),
   }));
-  expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width + 1);
+  expect(
+    dimensions.scroll,
+    `Horizontal overflow at ${dimensions.width}px: ${JSON.stringify(dimensions.overflowing)}`,
+  ).toBeLessThanOrEqual(dimensions.width + 1);
 }
 
 /** Restrict automated accessibility review to the FE-03 shared interface. */
@@ -147,6 +177,43 @@ test('account menus navigate by keyboard, with the same admin actions on mobile'
   await expect(page).toHaveURL(/\/admin$/);
 });
 
+test('public mobile header stays compact and puts labeled preferences in its navigation drawer', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await mockApi(page, { theme: 'light' });
+  await page.goto('/');
+
+  const header = page.locator('.public-site-header');
+  await expect(header.getByRole('button', { name: 'Get Started' })).toBeVisible();
+  const menuButton = header.getByRole('button', { name: 'Open navigation menu' });
+  expect(
+    await menuButton.evaluate((element) => getComputedStyle(element).color),
+  ).toBe('rgb(245, 243, 240)');
+  await expect(
+    header.getByRole('button', { name: /^Appearance:/ }),
+  ).toHaveCount(0);
+  expect(
+    await header.evaluate((element) => element.getBoundingClientRect().height),
+  ).toBeLessThanOrEqual(66);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(321);
+
+  await header.getByRole('button', { name: 'Open navigation menu' }).click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByText('Language', { exact: true })).toBeVisible();
+  await expect(drawer.getByText('Appearance', { exact: true })).toBeVisible();
+  await drawer.getByRole('button', { name: 'Appearance: Light' }).click();
+  await drawer.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(header.getByText('Language', { exact: true })).toBeVisible();
+  await expect(header.getByText('Appearance', { exact: true })).toBeVisible();
+});
+
 test('public keyboard navigation reaches every destination and returns focus from authentication', async ({ page }) => {
   await mockApi(page);
   await page.setViewportSize({ width: 320, height: 740 });
@@ -161,7 +228,8 @@ test('public keyboard navigation reaches every destination and returns focus fro
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/verify-certificate$/);
   await expect(page.locator('#main-content')).toBeFocused();
-  await page.getByRole('button', { name: 'Log In', exact: true }).focus();
+  await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Log In', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByLabel('Email Address')).toBeFocused();
@@ -173,45 +241,53 @@ test('public keyboard navigation reaches every destination and returns focus fro
 });
 
 test('typing assignment and entered characters survive theme, RTL and viewport changes', async ({ page }) => {
-  await mockApi(page, { role: 'student' });
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/review');
-  await page.getByRole('button', { name: 'Begin sample review' }).click();
-  await expect(page).toHaveURL(/\/typing$/);
-  const input = page.getByRole('textbox', { name: 'Typing input stream' });
-  await input.pressSequentially('trex');
+  const flow = await mockPracticeSession(page);
+  await page.goto('/dashboard');
+  await page.getByRole('button', { name: /^Appearance:/ }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('menuitemradio', { name: 'العربية', exact: true }).click();
+  await page.getByRole('button', { name: 'ابدأ تدريبًا تكيفيًا' }).click();
+  const input = page.getByRole('textbox', {
+    name: 'حقل إدخال تمرين الكتابة',
+  });
+  await input.pressSequentially(flow.assignment.text.slice(0, 3));
   const passage = input.locator('..').locator('.select-none');
   const text = await passage.textContent();
   const correctCount = await passage.locator('span.text-success-text').count();
   expect(correctCount).toBe(3);
 
-  // Motion preferences may change mid-attempt without replacing the input or passage.
+  // Motion and viewport changes preserve the active assignment and typed feedback.
   const caret = passage.locator('span.relative').last();
   expect(await caret.evaluate(element => getComputedStyle(element, '::before').animationName)).toBe('none');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(passage).toHaveText(text);
   expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.getByRole('button', { name: 'Appearance: Light' }).click();
-  await page.getByRole('menuitemradio', { name: 'Dark' }).click();
-  await page.getByRole('button', { name: 'Language: English' }).click();
-  await page.getByRole('menuitemradio', { name: 'العربية' }).click();
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await expect(passage).toHaveText(text);
   expect(await passage.evaluate(element => getComputedStyle(element).direction)).toBe('ltr');
-  await page.setViewportSize({ width: 320, height: 740 });
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await page.setViewportSize({ width: 1024, height: 768 });
   await expect(passage).toHaveText(text);
   expect(await passage.locator('span.text-success-text').count()).toBe(correctCount);
-  await page.getByRole('button', { name: 'خروج', exact: true }).click();
-  await expect(page.getByRole('alertdialog')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'خروج', exact: true })).toBeFocused();
-  await expect(passage).toHaveText(text);
+  await expectReflow(page);
+});
+
+test('unsupported review and test modes stay unavailable and do not start practice', async ({ page }) => {
+  const flow = await mockPracticeSession(page);
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.goto('/review');
+  await expect(page.getByRole('button', { name: 'Unavailable' })).toBeDisabled();
+  await expect(page.getByRole('note').last()).toContainText('No review attempt can be started');
+
+  await page.goto('/tests');
+  await expect(page.getByRole('button', { name: 'Unavailable' })).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Unavailable' }).nth(0)).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Unavailable' }).nth(1)).toBeDisabled();
+  await expect(page.getByRole('note').nth(1)).toContainText('not supported by the server');
+  expect(flow.startBodies).toEqual([]);
 });
 
 test('admin sections and table remain reachable at 320px and increased text size', async ({ page }) => {
@@ -332,7 +408,7 @@ test('supporting pages and role denial retain 320px reflow', async ({ page, brow
   await expect(page.getByRole('button', { name: 'Admin Panel' })).toHaveCount(0);
 });
 
-test('existing profile and forum dialogs contain focus and restore their opener', async ({ page }) => {
+test('profile dialog contains focus and restores its opener', async ({ page }) => {
   await mockApi(page, { role: 'student' });
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto('/profile');
@@ -343,13 +419,26 @@ test('existing profile and forum dialogs contain focus and restore their opener'
   await expectAccessible(page, 'dialog[open]');
   await page.keyboard.press('Escape');
   await expect(deleteButton).toBeFocused();
-  await page.goto('/forum');
-  const discussionButton = page.getByRole('button', { name: '+ New Discussion' });
-  await discussionButton.click();
-  await expectAccessible(page, 'dialog[open]');
+});
+
+test('achievement and certificate pages never present sample rewards as account data', async ({ page }) => {
+  await mockApi(page, { role: 'student' });
+  await page.setViewportSize({ width: 320, height: 740 });
+
+  await page.goto('/achievements');
+  await expect(page.getByRole('heading', { name: 'Achievements' })).toBeVisible();
+  await expect(page.getByText('120 XP', { exact: true })).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('Badges and their award criteria are not available yet.');
+  await expect(page.getByText('First Touch')).toHaveCount(0);
   await expectReflow(page);
-  await page.keyboard.press('Escape');
-  await expect(discussionButton).toBeFocused();
+
+  await page.goto('/certificates');
+  await expect(page.getByRole('heading', { name: 'My certificates' })).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('Certificate listing and downloads are not connected yet.');
+  await expect(page.getByText('TF-2026-X98B')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Verify a certificate' }).click();
+  await expect(page).toHaveURL(/\/verify-certificate$/);
+  await expectReflow(page);
 });
 
 // Shared foundations are exercised through the actual page, with API fixtures above.
@@ -394,10 +483,17 @@ for (const locale of ['en', 'ar']) {
       await page.goto('/');
       const main = page.locator('#main-content');
       await expect(main.getByRole('heading', { level: 1 })).toHaveText(
-        locale === 'ar' ? 'تعلّم لوحة المفاتيح. وطوّر دقّتك.' : 'Learn the keyboard. Build accuracy.',
+        locale === 'ar' ? 'اعثر على F دون أن تنظر.' : 'Find F without looking.',
       );
       await expect(main.locator('.landing-passage')).toHaveAttribute('dir', 'ltr');
       await expect(main.locator('.landing-keyboard')).toHaveAttribute('dir', 'ltr');
+      await expect(main.locator('.landing-finger-art')).toBeVisible();
+      await expect(main.locator('.landing-touch-art')).toBeVisible();
+      await expect(main.locator('.landing-map-contours')).toBeVisible();
+      await expect(main.locator('.landing-history-chart')).toBeVisible();
+      await expect(main.locator('.landing-history-label')).toContainText(
+        locale === 'ar' ? 'ليس بيانات متعلّم' : 'not learner data',
+      );
       await expect(main.locator('.landing-course-status')).toContainText(
         locale === 'ar' ? 'ليست قائمة دورات' : 'not a live course listing',
       );

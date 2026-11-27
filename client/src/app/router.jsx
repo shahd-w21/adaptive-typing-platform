@@ -252,7 +252,7 @@ function PracticeSetup({ onStart }) {
   );
 }
 
-function ReviewSetup({ onStart }) {
+function ReviewSetup() {
   // NOTE FOR DEVS — FE-20 / backend mode contracts: review and test routes
   // below remain labelled development fixtures. Connect reviewed mode DTOs to
   // the shared lifecycle when those APIs exist; never disguise them as practice.
@@ -268,12 +268,15 @@ function ReviewSetup({ onStart }) {
           {t('review.cardTitle')}
         </h2>
         <p className="mb-5 text-sm text-muted">{t('review.cardDescription')}</p>
+        <p role="note" className="mb-4 rounded-control bg-warning-soft p-3 text-sm text-warning-text">
+          {t('review.unavailable')}
+        </p>
         <button
           type="button"
-          onClick={onStart}
-          className="min-h-12 rounded-full bg-action-primary px-7 py-2 font-bold text-action-foreground shadow-primary hover:bg-action-hover"
+          disabled
+          className="min-h-12 rounded-control bg-disabled-bg px-7 py-2 font-bold text-disabled-text"
         >
-          {t('review.start')}
+          {t('review.unavailableAction')}
         </button>
       </div>
     </div>
@@ -304,7 +307,7 @@ function AuthenticatedLayout({
   const showDeviceGuidance = isTypingRoute && viewportWidth < 1024;
   const Shell = user?.role === 'admin' ? AdminShell : StudentShell;
   /** Preserve an uncertain/failed attempt until abandonment is confirmed. */
-  const exitSession = async () => {
+  const leaveSessionFor = async (destination) => {
     if (
       (activeSessionConfig?.source === 'server' || session.status !== 'idle') &&
       !(await session.controller.abandon())
@@ -312,8 +315,9 @@ function AuthenticatedLayout({
       return;
     }
     onClearSession();
-    onNavigate('dashboard');
+    onNavigate(destination);
   };
+  const exitSession = () => leaveSessionFor('dashboard');
   const recovering = session.status === 'recovering';
   const needsRecovery =
     session.lostProgress ||
@@ -392,6 +396,7 @@ function AuthenticatedLayout({
             controller={session.controller}
             onRetrySession={onRetrySession}
             onExit={exitSession}
+            onViewProgress={() => leaveSessionFor('progress')}
           />
         </div>
       )}
@@ -572,6 +577,7 @@ function AppRoutes() {
               <AuthenticatedLayout
                 activeSessionConfig={activeSessionConfig}
                 session={session}
+                onClearSession={session.controller.clear}
                 onNavigate={onNavigate}
                 onLogout={handleLogout}
                 onRetrySession={restartSession}
@@ -630,38 +636,11 @@ function AppRoutes() {
               />
               <Route
                 path="/review"
-                element={
-                  <ReviewSetup
-                    onStart={() =>
-                      launchTyping({
-                        mode: 'Sample Review',
-                        assignedText:
-                          'tree tree free free refer deter reader ferret',
-                      })
-                    }
-                  />
-                }
+                element={<ReviewSetup />}
               />
               <Route
                 path="/tests"
-                element={
-                  <TestsView
-                    onStartTimed={(minutes) =>
-                      launchTyping({
-                        mode: `Sample Timed Test (${minutes}m)`,
-                        assignedText:
-                          'Touch typing requires muscle memory and disciplined finger placement. Keep your eyes on the screen and trust your hands.',
-                      })
-                    }
-                    onStartCertified={() =>
-                      launchTyping({
-                        mode: 'Sample Certified Test',
-                        assignedText:
-                          'Touch typing requires muscle memory and disciplined finger placement. Keep your eyes on the screen and trust your hands.',
-                      })
-                    }
-                  />
-                }
+                element={<TestsView />}
               />
               <Route path="/progress" element={<ProgressView />} />
               <Route path="/achievements" element={<AchievementsView />} />

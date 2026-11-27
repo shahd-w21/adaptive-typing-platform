@@ -9,13 +9,11 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
-import { useGamification } from '../../features/gamification/hooks/useGamification.js';
 import { RewardNotifications } from '../../features/gamification/components/RewardNotifications.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
 import { BrandLogo } from '../ui/BrandLogo.jsx';
 import {
   KeyboardIcon,
-  FlameIcon,
   TrophyIcon,
   MenuIcon,
   CheckIcon,
@@ -41,8 +39,6 @@ export function StudentShell({
   const previousTab = useRef(activeTab);
   const role = user.role?.toLowerCase();
   const displayName = user.name || user.email || t('common.account');
-  const gamificationQuery = useGamification(role === 'student');
-  const gamification = gamificationQuery.data;
   const navigationLabel = t(role === 'admin' ? 'navigation.admin' : 'navigation.student');
 
   useEffect(() => {
@@ -66,7 +62,6 @@ export function StudentShell({
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: ArrowRightIcon },
     { id: 'courses', label: t('nav.courses'), icon: KeyboardIcon },
-    { id: 'my-courses', label: t('nav.myCourses'), icon: CheckIcon },
     { id: 'path', label: t('nav.learningPath'), icon: CheckIcon },
     { id: 'practice', label: t('nav.practice'), icon: PracticeIcon },
     { id: 'review', label: t('nav.review'), icon: RotateCcwIcon },
@@ -103,7 +98,7 @@ export function StudentShell({
   );
 
   return (
-    <div className="flex min-h-screen min-w-0 bg-[radial-gradient(ellipse_at_78%_0%,color-mix(in_srgb,var(--tf-color-learning-soft)_45%,transparent),transparent_34rem)] bg-page">
+    <div className="flex min-h-screen min-w-0 bg-page">
       <a href="#main-content" className="skip-link">{t('navigation.skipToContent')}</a>
       {/* Desktop Sidebar (224px wide) */}
       <aside
@@ -152,23 +147,13 @@ export function StudentShell({
             >
               <MenuIcon size={24} />
             </button>
-
-            {/* Streak & Level Counter */}
-            {role === 'student' ? <div className="flex flex-wrap items-center gap-3 max-sm:gap-1.5">
-              <div
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-warning-soft text-streak-text text-[13px] font-bold"
-              >
-                <FlameIcon size={16} />
-                <span>{gamification?.streak ?? user.streak ?? 0} {t('common.days')}</span>
-              </div>
-
-              <div
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-reward-soft text-reward-text text-[13px] font-bold"
-              >
-                <TrophyIcon size={16} />
-                <span dir="ltr">{gamification?.xp ?? user.xp ?? 0} XP</span>
-              </div>
-            </div> : <span className="font-bold text-ink">{t('nav.admin')}</span>}
+            <Link
+              to="/"
+              aria-label={t('navigation.homeLabel')}
+              className="lg:hidden"
+            >
+              <BrandLogo />
+            </Link>
           </div>
 
           {/* Right Preferences */}
@@ -179,7 +164,7 @@ export function StudentShell({
         </header>
 
         {/* Page Content */}
-        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-360 flex-1 px-4 py-7 sm:px-6 sm:py-9 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight">
+        <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-[var(--content-max)] flex-1 px-4 py-6 sm:px-6 sm:py-8 xl:px-8 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight">
           {role === 'student' && <RewardNotifications />}
           {children}
         </main>

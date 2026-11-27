@@ -6,6 +6,8 @@
 
 export class KeystrokeRecorder {
   constructor(options = {}) {
+    // Keep clock access injectable so event timelines can be tested deterministically.
+    this.now = options.now ?? (() => performance.now());
     this.events = [];
     this.sequence = 0;
     this.startTime = null; // Set on first printable insert (t = 0)
@@ -24,11 +26,11 @@ export class KeystrokeRecorder {
 
   getElapsedMs() {
     if (this.startTime === null) return 0;
-    return Math.max(0, performance.now() - this.startTime);
+    return Math.max(0, this.now() - this.startTime);
   }
 
   recordInsert(char) {
-    const now = performance.now();
+    const now = this.now();
     if (this.startTime === null) {
       this.startTime = now;
     }
@@ -48,7 +50,7 @@ export class KeystrokeRecorder {
   recordBackspace() {
     if (this.startTime === null) return null; // Cannot backspace before start
 
-    const now = performance.now();
+    const now = this.now();
     const event = {
       seq: this.sequence++,
       type: 'backspace',
@@ -63,7 +65,7 @@ export class KeystrokeRecorder {
   recordPause() {
     if (this.startTime === null || this.currentPauseStart !== null) return null;
 
-    const now = performance.now();
+    const now = this.now();
     this.currentPauseStart = now;
 
     const event = {
@@ -80,7 +82,7 @@ export class KeystrokeRecorder {
   recordResume() {
     if (this.startTime === null || this.currentPauseStart === null) return null;
 
-    const now = performance.now();
+    const now = this.now();
     this.activePauses.push({
       start: this.currentPauseStart,
       end: now,
