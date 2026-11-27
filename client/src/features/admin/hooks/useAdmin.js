@@ -1,7 +1,12 @@
 // Admin React Query hooks: access probe and draft analytics.
 // Each hook is owner-scoped so cached data is never shared across accounts.
-import { useQuery } from '@tanstack/react-query';
-import { checkAdminAccess, fetchAnalytics } from '../../../api/admin.js';
+import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  checkAdminAccess,
+  createAdminUsersApi,
+  fetchAnalytics,
+} from '../../../api/admin.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { queryKeys } from '../../../lib/queryKeys.js';
 
@@ -54,4 +59,68 @@ export function useAnalytics(filters = {}) {
     // Stale after 5 minutes; analytics data does not need to be real-time.
     staleTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * FE-18 user-management hooks.
+ * The development adapter is disposable and account-scoped; mutations refresh
+ * the same validated list rather than inventing rows in the component.
+ *
+ * @param {{ search?: string, page?: number, pageSize?: number }} [filters={}]
+ * @returns {object} Query and mutation state for the protected user directory.
+ */
+export function useAdminUsers(filters = {}) {
+  const { user, csrfToken } = useAuth();
+  const queryClient = useQueryClient();
+  const api = useMemo(
+    () => createAdminUsersApi(
+      user,
+      {
+        csrfToken,
+        mode: import.meta.env?.DEV ? 'fixture' : 'unavailable',
+      },
+    ),
+    [user, csrfToken],
+  );
+
+  const list = useQuery({
+    queryKey: user
+      ? queryKeys.adminUsers(user.id, filters)
+      : ['disabled', 'admin-users'],
+    queryFn: () => api.list(filters),
+    enabled: Boolean(user) && user.role === 'admin',
+  });
+
+  async function refresh() {
+    await queryClient.invalidateQueries({
+      predicate: (query) =>
+        query.queryKey[0] === 'owner'
+        && query.queryKey[1] === user?.id
+        && query.queryKey[2] === 'admin-users',
+    });
+  }
+
+  const deactivate = useMutation({
+    mutationFn: (id) => api.deactivate(id),
+    onSuccess: refresh,
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: (id) => api.delete(id),
+    onSuccess: refresh,
+  });
+
+  const createAdmin = useMutation({
+    mutationFn: (input) => api.createAdmin(input),
+    onSuccess: refresh,
+  });
+
+  return {
+    api,
+    source: api.source,
+    list,
+    deactivate,
+    deleteUser,
+    createAdmin,
+  };
 }

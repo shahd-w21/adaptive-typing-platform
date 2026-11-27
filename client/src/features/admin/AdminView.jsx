@@ -4,9 +4,10 @@ import { useTranslation } from '../../i18n/useTranslation.js';
 import { useAdminPing } from './hooks/useAdmin.js';
 import { AdminCoursesPage } from './courses/pages/AdminCoursesPage.jsx';
 import { AnalyticsPanel } from './components/AnalyticsPanel.jsx';
+import { UserManagement } from './components/UserManagement.jsx';
 
 export function AdminView() {
-  const { isRTL, t } = useTranslation();
+  const { t } = useTranslation();
   const adminPing = useAdminPing();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'settings' | 'moderation'
 
@@ -19,13 +20,6 @@ export function AdminView() {
     currentGate: '95.0%',
     engineVersion: 'v1.2.0',
   };
-
-  const users = [
-    { id: 'u1', name: 'Omar S.', email: 'omar@example.com', role: 'Admin', status: 'Active', isLastAdmin: false },
-    { id: 'u2', name: 'Layla M.', email: 'layla@example.com', role: 'Student', status: 'Active', isLastAdmin: false },
-    { id: 'u3', name: 'Karim D.', email: 'karim@example.com', role: 'Student', status: 'Active', isLastAdmin: false },
-    { id: 'u4', name: 'System Root', email: 'admin@typeflow.edu', role: 'Admin', status: 'Active', isLastAdmin: true },
-  ];
 
   return (
     <div className="max-w-270 my-0 mx-auto">
@@ -129,58 +123,10 @@ export function AdminView() {
 
       {activeTab === 'users' && (
         <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
-          <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">User Directory</h2>
-
-          <div role="region" aria-label={t('navigation.userDirectory')} tabIndex={0} className="max-w-full overflow-x-auto rounded-control">
-          <table className={[
-                   "w-full border-collapse",
-                   isRTL ? 'text-right' : 'text-left',
-                 ].filter(Boolean).join(' ')}>
-            <thead>
-              <tr className="border-b-2 border-b-border-subtle text-muted text-[13px]">
-                <th className="py-2.5 px-3">Name</th>
-                <th className="py-2.5 px-3">Email</th>
-                <th className="py-2.5 px-3">Role</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-b border-b-border-subtle text-[14px]">
-                  <td className="p-3 font-bold">{u.name}</td>
-                  <td className="p-3">{u.email}</td>
-                  <td className="p-3">
-                    <span
-                      className={[
-                        "py-0.5 px-2 rounded-full text-[12px] font-bold",
-                        u.role === 'Admin' ? 'bg-learning-soft text-learning-strong' : 'bg-subtle text-ink',
-                      ].filter(Boolean).join(' ')}
-                    >
-                      {u.role}
-                    </span>
-                  </td>
-                  <td className="p-3 text-success-text">{u.status}</td>
-                  <td className="p-3">
-                    {u.isLastAdmin ? (
-                      <span className="text-[12px] text-muted italic">
-                        Protected (Last Admin)
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => alert(`Deactivating ${u.name}...`)}
-                        className="bg-transparent border-0 text-error-text font-bold text-[13px] cursor-pointer"
-                      >
-                        Deactivate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
+          <h2 id="admin-user-directory-title" className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-4">
+            {t('navigation.userDirectoryTitle') || 'User Directory'}
+          </h2>
+          <UserManagement />
         </div>
       )}
 

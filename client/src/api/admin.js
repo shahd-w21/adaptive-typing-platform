@@ -3,7 +3,14 @@
 // The analytics endpoint (GET /admin/analytics) is not yet implemented server-side
 // (pending BE-22). When the server returns 404 this module falls back to a
 // validated fixture so the UI can be built and tested without the real endpoint.
-import { analyticsFiltersSchema, analyticsResponseSchema } from '@typeflow/shared';
+import {
+  analyticsFiltersSchema,
+  analyticsResponseSchema,
+  adminUserFiltersSchema,
+  adminUserListSchema,
+  adminUserSchema,
+  createAdminSchema,
+} from '@typeflow/shared';
 import { request, ApiError } from './client.js';
 
 // ---------------------------------------------------------------------------
@@ -124,4 +131,271 @@ export async function fetchAnalytics(filters = {}, { signal } = {}) {
   }
 
   return parsed.data;
+}
+
+// ---------------------------------------------------------------------------
+// Draft FE-18 user-management boundary
+// ---------------------------------------------------------------------------
+
+const INITIAL_ADMIN_USERS = [
+  {
+    id: '10000000-0000-4000-8000-000000000001',
+    name: 'Omar Salah',
+    email: 'omar@example.test',
+    role: 'student',
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000002',
+    name: 'Layla Mahmoud',
+    email: 'layla@example.test',
+    role: 'student',
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000003',
+    name: 'Karim Diaa',
+    email: 'karim@example.test',
+    role: 'student',
+    isActive: false,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000004',
+    name: 'System Root',
+    email: 'admin@typeflow.edu',
+    role: 'admin',
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000005',
+    name: 'Mina Adel',
+    email: 'mina@example.test',
+    role: 'student',
+    isActive: true,
+  },
+];
+
+/**
+ * Creates a development-only, account-scoped user-management adapter.
+ * Production deliberately fails closed and never substitutes fixture state
+ * for real authorization. Shared/public DTOs never include secrets or credentials.
+ *
+ * @param {{ id?: string, role?: string }} user
+ * @param {{ mode?: 'fixture'|'unavailable', csrfToken?: string|null }} [options]
+ * @returns {object} User list and state-changing methods.
+ */
+export function createAdminUsersApi(
+  user,
+  { mode = import.meta.env?.DEV ? 'fixture' : 'unavailable', csrfToken = null } = {},
+) {
+  if (mode !== 'fixture') {
+    const unavailable = async () => {
+      throw new ApiError('User management is not connected to an API yet.', {
+        code: 'FEATURE_UNAVAILABLE',
+      });
+    };
+    return {
+      source: 'unavailable',
+      list: unavailable,
+      deactivate: unavailable,
+      delete: unavailable,
+      createAdmin: unavailable,
+    };
+  }
+
+  let users = INITIAL_ADMIN_USERS.map((item) => ({
+    ...item,
+  }));
+  const failedOnce = new Set();
+
+  function decorate(items) {
+    const activeAdmins = users.filter(
+      (item) => item.role === 'admin' && item.isActive,
+    );
+    return items.map((item) => ({
+      ...item,
+      isLastActiveAdmin:
+        item.role === 'admin'
+        && item.isActive
+        && activeAdmins.length === 1,
+    }));
+  }
+
+  function requireFixtureWrite() {
+    if (user?.role?.toLowerCase() !== 'admin') {
+      throw new ApiError('You do not have permission to perform this action.', {
+        status: 403,
+        code: 'FORBIDDEN',
+      });
+    }
+    if (!csrfToken) {
+      throw new ApiError('Your security token is missing or invalid.', {
+        status: 403,
+        code: 'CSRF_FAILED',
+      });
+    }
+  }
+
+  function validateWriteFailure(input) {
+    if (
+      input?.email === 'retry@example.test'
+      || input?.id === '10000000-0000-4000-8000-000000000005'
+    ) {
+      const key = input.email || input.id;
+      if (!failedOnce.has(key)) {
+        failedOnce.add(key);
+        throw new ApiError('The request could not be completed.', {
+          status: 503,
+          code: 'SERVICE_UNAVAILABLE',
+        });
+      }
+    }
+  }
+
+  async function list(filters = {}) {
+    const parsed = adminUserFiltersSchema.safeParse(filters);
+    if (!parsed.success) {
+      throw new ApiError('Invalid user search parameters.', {
+        status: 400,
+        code: 'INVALID_REQUEST',
+      });
+    }
+
+    const { search, page, pageSize } = parsed.data;
+    const query = search.toLowerCase();
+    const filtered = users.filter((item) =>
+      `${item.name} ${item.email} ${item.role}`
+        .toLowerCase()
+        .includes(query),
+    );
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const items = decorate(
+      filtered.slice((safePage - 1) * pageSize, safePage * pageSize),
+    );
+    const payload = {
+      items,
+      page: safePage,
+      pageSize,
+      totalItems,
+      totalPages,
+    };
+    const validated = adminUserListSchema.safeParse(payload);
+    if (!validated.success) {
+      throw new ApiError('Invalid user response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return Promise.resolve(validated.data);
+  }
+
+  async function deactivate(id) {
+    requireFixtureWrite();
+    const target = users.find((item) => item.id === id);
+    if (!target) {
+      throw new ApiError('The requested resource is unavailable.', {
+        status: 404,
+        code: 'NOT_FOUND',
+      });
+    }
+    validateWriteFailure({ id });
+    if (target.role === 'admin' && target.isActive) {
+      const otherActiveAdmins = users.filter(
+        (item) => item.id !== id
+          && item.role === 'admin'
+          && item.isActive,
+      );
+      if (otherActiveAdmins.length === 0) {
+        throw new ApiError('Another active administrator is required.', {
+          status: 409,
+          code: 'LAST_ADMIN',
+        });
+      }
+    }
+    users = users.map((item) =>
+      item.id === id ? { ...item, isActive: false } : item,
+    );
+    const updated = users.find((item) => item.id === id);
+    const validated = adminUserSchema.safeParse(decorate([updated])[0]);
+    if (!validated.success) {
+      throw new ApiError('Invalid user response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return Promise.resolve(validated.data);
+  }
+
+  async function deleteUser(id) {
+    requireFixtureWrite();
+    const target = users.find((item) => item.id === id);
+    if (!target) {
+      throw new ApiError('The requested resource is unavailable.', {
+        status: 404,
+        code: 'NOT_FOUND',
+      });
+    }
+    validateWriteFailure({ id });
+    if (target.role === 'admin' && target.isActive) {
+      const otherActiveAdmins = users.filter(
+        (item) => item.id !== id
+          && item.role === 'admin'
+          && item.isActive,
+      );
+      if (otherActiveAdmins.length === 0) {
+        throw new ApiError('Another active administrator is required.', {
+          status: 409,
+          code: 'LAST_ADMIN',
+        });
+      }
+    }
+    users = users.filter((item) => item.id !== id);
+    return Promise.resolve({ id, deleted: true });
+  }
+
+  async function createAdmin(input) {
+    requireFixtureWrite();
+    const parsed = createAdminSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new ApiError('Check the administrator fields and try again.', {
+        status: 400,
+        code: 'INVALID_REQUEST',
+      });
+    }
+    validateWriteFailure(parsed.data);
+    if (users.some(
+      (item) => item.email.toLowerCase() === parsed.data.email.toLowerCase(),
+    )) {
+      throw new ApiError('This email is already registered.', {
+        status: 409,
+        code: 'EMAIL_REGISTERED',
+      });
+    }
+    const created = {
+      id: crypto.randomUUID(),
+      name: parsed.data.name,
+      email: parsed.data.email,
+      role: 'admin',
+      isActive: true,
+    };
+    users = [created, ...users];
+    const validated = adminUserSchema.safeParse(decorate([created])[0]);
+    if (!validated.success) {
+      throw new ApiError('Invalid user response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return Promise.resolve(validated.data);
+  }
+
+  return {
+    source: 'fixture',
+    list,
+    deactivate,
+    delete: deleteUser,
+    createAdmin,
+  };
 }
