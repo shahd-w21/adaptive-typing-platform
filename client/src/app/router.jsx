@@ -44,6 +44,8 @@ import { ProfileView } from '../features/profile/ProfileView.jsx';
 import { CourseLibraryPage } from '../features/courses/pages/CourseLibraryPage.jsx';
 import { CourseDetailPage } from '../features/courses/pages/CourseDetailPage.jsx';
 import { MyCoursesPage } from '../features/courses/pages/MyCoursesPage.jsx';
+import { CoursePathPage } from '../features/courses/pages/CoursePathPage.jsx';
+
 import { useAuth } from '../hooks/useAuth.js';
 import { useTranslation } from '../i18n/useTranslation.js';
 import { useTypingSession } from '../features/typing/hooks/useTypingSession.js';
@@ -438,16 +440,22 @@ function AppRoutes() {
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth,
   );
+  const [fixtureSession, setFixtureSession] = useState(null);
   const assignment = session.assignment;
   const activeSessionConfig =
     assignment || session.result
       ? {
           sessionId: assignment?.sessionId ?? session.result.sessionId,
-          mode: 'Adaptive Practice',
+          mode: assignment?.mode ?? 'Adaptive Practice',
           assignedText: assignment?.text ?? '',
           source: 'server',
+          courseId: assignment?.courseId ?? fixtureSession?.courseId,
+          lessonId: assignment?.lessonId ?? fixtureSession?.lessonId,
+          enrollmentId: assignment?.enrollmentId ?? fixtureSession?.enrollmentId,
         }
-      : null;
+      : fixtureSession?.ownerId === user?.id
+        ? fixtureSession
+        : null;
   const [deviceGuidanceOpen, setDeviceGuidanceOpen] = useState(false);
 
   useEffect(() => {
@@ -462,17 +470,33 @@ function AppRoutes() {
   };
 
   /** Launch one desktop attempt; phone guidance returns without API or fixture creation. */
-  const launchTyping = async (config) => {
+  const launchTyping = async (config = {}) => {
     // Check the live viewport before any request. A guidance-only visit must not
     // allocate a server assignment; resizing an existing attempt keeps its state.
     if (window.innerWidth < 1024) {
       setDeviceGuidanceOpen(true);
       return;
     }
-    if (config.serverPractice || activeSessionConfig?.source === 'server') {
+    if (config?.serverPractice || activeSessionConfig?.source === 'server') {
       if (await session.controller.startPractice()) {
         navigate('/typing');
       }
+      return;
+    }
+    if (config?.courseId || config?.mode || config?.assignedText) {
+      setFixtureSession({
+        ownerId: user?.id,
+        sessionId: `fixture-${Date.now()}`,
+        mode: config.mode || 'Sample Practice',
+        assignedText:
+          config.assignedText ||
+          'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl; reed feed seek keel free',
+        source: 'development-fixture',
+        courseId: config.courseId,
+        lessonId: config.lessonId,
+        enrollmentId: config.enrollmentId,
+      });
+      navigate('/typing');
       return;
     }
     if (await session.controller.startPractice()) {
@@ -480,9 +504,11 @@ function AppRoutes() {
     }
   };
 
+
   /** Local logout always clears private state, even if server revocation fails. */
   const handleLogout = async () => {
     session.controller.clear();
+    setFixtureSession(null);
     navigate('/', { replace: true });
     try {
       await signOut();
@@ -629,6 +655,27 @@ function AppRoutes() {
               <Route path="/forum" element={<ForumView />} />
               <Route path="/courses" element={<CourseLibraryPage />} />
               <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+              <Route
+                path="/courses/:courseId/path"
+                element={
+                  <CoursePathPage
+                    onStartLesson={(lesson, context) =>
+                      launchTyping({
+                        mode: lesson.title,
+                        courseId: context.courseId,
+                        lessonId: lesson.id,
+                        enrollmentId: context.enrollmentId,
+                        type: lesson.type,
+                      })
+                    }
+                    activeSession={activeSessionConfig}
+                    onAbandonActiveSession={() => {
+                      session.controller.clear();
+                      setFixtureSession(null);
+                    }}
+                  />
+                }
+              />
               <Route path="/my-courses" element={<MyCoursesPage />} />
               <Route path="/typing" element={null} />
             </Route>

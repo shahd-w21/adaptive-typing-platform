@@ -17,6 +17,7 @@ export function OfficialResult({
   assignedText = '',
   typedText = '',
   isOfficial = true,
+  showRewards = true,
   busy = false,
   onContinue,
   onRetry,
@@ -176,11 +177,10 @@ export function OfficialResult({
       {isOfficial && (
         <div className="mb-8 flex flex-col gap-5">
           {/* Rewards Earned Card */}
-          {(Number.isFinite(xpEarned) ||
-            Number.isFinite(streakDays) ||
+          {( (showRewards && (Number.isFinite(xpEarned) || Number.isFinite(streakDays))) ||
             reason) && (
             <div className="rounded-card border border-border-subtle bg-surface p-5 sm:p-6">
-              {(Number.isFinite(xpEarned) ||
+              {showRewards && (Number.isFinite(xpEarned) ||
                 Number.isFinite(streakDays)) && (
                 <>
                   <div className="flex items-center gap-2 mb-3 text-reward-text">

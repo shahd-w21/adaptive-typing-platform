@@ -1,8 +1,9 @@
-// Existing admin sections; shared navigation reflows without removing actions.
+﻿﻿// Existing admin sections; shared navigation reflows without removing actions.
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { useAdminPing } from './hooks/useAdmin.js';
 import { AdminCoursesPage } from './courses/pages/AdminCoursesPage.jsx';
+import { AnalyticsPanel } from './components/AnalyticsPanel.jsx';
 
 export function AdminView() {
   const { isRTL, t } = useTranslation();
@@ -110,6 +111,14 @@ export function AdminView() {
             <p className="text-[14px] text-muted leading-[22px]">
               All submission payloads are verified against server-stored assigned passages. No unvalidated characters or locked keygroups were introduced. Fallback offline generators are fully operational.
             </p>
+          </div>
+
+          {/* Live analytics panel (GET /admin/analytics, BE-22) */}
+          <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)]">
+            <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-5">
+              Platform Analytics
+            </h2>
+            <AnalyticsPanel />
           </div>
         </div>
       )}

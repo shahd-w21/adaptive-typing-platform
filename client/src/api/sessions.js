@@ -20,6 +20,29 @@ export function startPracticeSession(csrfToken) {
 }
 
 /**
+ * Request a course lesson typing assignment within validated course/lesson bounds.
+ *
+ * @param {string} csrfToken Authenticated write token from the current auth session.
+ * @param {object} [context={}] Course assignment context.
+ * @param {string} [context.courseId] Target course ID.
+ * @param {string} [context.enrollmentId] Owned enrollment ID.
+ * @param {string} [context.lessonId] Target lesson ID.
+ * @returns {Promise<object>} Validated server assignment.
+ */
+export function startCourseSession(csrfToken, { courseId, enrollmentId, lessonId } = {}) {
+  const body = { mode: 'practice' };
+  if (courseId) body.courseId = courseId;
+  if (enrollmentId) body.enrollmentId = enrollmentId;
+  if (lessonId) body.lessonId = lessonId;
+  return request('/sessions', {
+    method: 'POST',
+    csrfToken,
+    body,
+  });
+}
+
+
+/**
  * Submit a recorder snapshot; only events and finishTimeMs are sent in the body.
  *
  * @param {string} sessionId Session ID placed in the URL, never copied into the body.

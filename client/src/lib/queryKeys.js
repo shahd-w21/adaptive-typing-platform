@@ -1,3 +1,5 @@
+import { progressFiltersSchema, analyticsFiltersSchema } from '@typeflow/shared';
+
 /**
  * Central TanStack Query cache addresses, not API URLs or permission checks.
  * Protected data is grouped by account so users cannot share cached results.
@@ -26,6 +28,25 @@ function unfiltered(filters = {}) {
   }
   return {};
 }
+
+/** Validate and normalize draft progress filters so cache keys never collide. */
+function normalizeProgressFilters(filters = {}) {
+  const parsed = progressFiltersSchema.safeParse(filters);
+  if (!parsed.success) {
+    throw new TypeError('Invalid progress filter parameters');
+  }
+  return parsed.data;
+}
+
+/** Validate and normalize analytics filters so cache keys never collide. */
+function normalizeAnalyticsFilters(filters = {}) {
+  const parsed = analyticsFiltersSchema.safeParse(filters);
+  if (!parsed.success) {
+    throw new TypeError('Invalid analytics filter parameters');
+  }
+  return parsed.data;
+}
+
 /** Build a resource-specific factory: resource('progress')(userId, filters). */
 const resource = (name) => (ownerId, filters) => [
   ...owner(ownerId),
@@ -42,6 +63,12 @@ export const queryKeys = {
   dashboard: resource('dashboard'),
   path: resource('learning-path'),
   progress: resource('progress'),
+  // Owner-scoped cache key for future/draft filtered progress queries.
+  progressFiltered: (ownerId, filters = {}) => [
+    ...owner(ownerId),
+    'progress-filtered',
+    normalizeProgressFilters(filters),
+  ],
   gamification: resource('gamification'),
   adminAccess: resource('admin-access'),
   sessions: resource('sessions'),
@@ -62,6 +89,13 @@ export const queryKeys = {
   },
   // Student owned enrollments
   myCourses: resource('my-courses'),
+  // Student course path for an enrolled course
+  coursePath: (ownerId, courseId) => {
+    if (typeof courseId !== 'string' || !courseId.trim()) {
+      throw new TypeError('A course ID is required');
+    }
+    return [...owner(ownerId), 'course-path', courseId];
+  },
   // Admin course management and draft authoring (owner-scoped)
   adminCourses: (ownerId, filters = {}) => [...owner(ownerId), 'admin-courses', filters],
   adminCourse: (ownerId, courseId) => {
@@ -70,4 +104,10 @@ export const queryKeys = {
     }
     return [...owner(ownerId), 'admin-course', courseId];
   },
+  // Owner-scoped cache key for draft analytics queries; window param is normalised.
+  analytics: (ownerId, filters = {}) => [
+    ...owner(ownerId),
+    'analytics',
+    normalizeAnalyticsFilters(filters),
+  ],
 };

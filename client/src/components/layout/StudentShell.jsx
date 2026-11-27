@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n/useTranslation.js';
 import { AppearanceSelector } from '../controls/AppearanceSelector.jsx';
 import { LanguageSelector } from '../controls/LanguageSelector.jsx';
+import { RewardNotifications } from '../../features/gamification/components/RewardNotifications.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
 import { BrandLogo } from '../ui/BrandLogo.jsx';
 import {
@@ -164,6 +165,7 @@ export function StudentShell({
 
         {/* Page Content */}
         <main id="main-content" tabIndex={-1} className="mx-auto my-0 w-full min-w-0 max-w-[var(--content-max)] flex-1 px-4 py-6 sm:px-6 sm:py-8 xl:px-8 [&_h1]:tracking-[-0.035em] [&_h1]:leading-tight">
+          {role === 'student' && <RewardNotifications />}
           {children}
         </main>
       </div>
