@@ -270,6 +270,43 @@
       "student": "Student"
     }
   },
+  "adminContent": {
+    "title": "Content and generation management",
+    "description": "Review draft word lists, blocked words, exercise themes and key prerequisites. Content changes require validation before activation.",
+    "wordLists": "English word list",
+    "blockedWords": "Blocked words",
+    "themeLabel": "Exercise theme",
+    "themeAppearanceNote": "This is an exercise topic, separate from Light or Dark interface appearance.",
+    "keyGroup": "Key group keys",
+    "prerequisites": "Prerequisite key-group IDs",
+    "prerequisitesPlaceholder": "Leave empty for a starter group",
+    "validationPreview": "Content validation preview",
+    "validationPassed": "Validation passed",
+    "validationFailed": "Validation found issues",
+    "beginnerPreview": "Beginner preview",
+    "advancedPreview": "Advanced preview",
+    "validate": "Validate and preview",
+    "activate": "Activate new content version",
+    "confirmTitle": "Activate this content version?",
+    "confirmDescription": "This development fixture creates a new immutable content version. Running assignments keep their captured text and rules."
+  },
+  "adminSettings": {
+    "title": "Versioned learning settings",
+    "futureOnly": "Activation affects future sessions only. Running, completed and previously assigned sessions keep their captured settings.",
+    "accuracyGate": "Raw accuracy gate (%)",
+    "reductionBoundary": "Difficulty reduction boundary (%)",
+    "latencyCutoff": "Initial latency cutoff (ms)",
+    "expectedVersion": "Expected current version",
+    "conflictHelp": "A mismatch represents an expected-current-version conflict and requires refreshing before activation.",
+    "activate": "Activate new settings version",
+    "confirmTitle": "Activate a new settings version?",
+    "confirmDescription": "Create an immutable settings version for future sessions. This does not retroactively change running or completed sessions.",
+    "validationGate": "Raw accuracy gate must be between 80% and 99%.",
+    "validationReduction": "Difficulty reduction boundary must be between 70% and 94%.",
+    "validationOrder": "The difficulty reduction boundary must be below the raw accuracy gate.",
+    "validationLatency": "Initial latency cutoff must be between 500 ms and 5000 ms.",
+    "validationVersion": "Expected current version must use the vX.Y.Z format."
+  },
   "analytics": {
     "windowLabel": "Reporting window",
     "window7d": "Last 7 days",

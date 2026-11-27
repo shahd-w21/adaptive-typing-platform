@@ -5,11 +5,13 @@ import { useAdminPing } from './hooks/useAdmin.js';
 import { AdminCoursesPage } from './courses/pages/AdminCoursesPage.jsx';
 import { AnalyticsPanel } from './components/AnalyticsPanel.jsx';
 import { UserManagement } from './components/UserManagement.jsx';
+import { ContentManagement } from './components/ContentManagement.jsx';
+import { SettingsManagement } from './components/SettingsManagement.jsx';
 
 export function AdminView() {
   const { t } = useTranslation();
   const adminPing = useAdminPing();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'settings' | 'moderation'
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Mock platform analytics per SYS-44
   const platformStats = {
@@ -44,6 +46,7 @@ export function AdminView() {
             { id: 'overview', label: t('adminNav.overview') },
             { id: 'courses', label: t('adminNav.courses') || 'Courses & Drafts' },
             { id: 'users', label: t('adminNav.users') },
+            { id: 'content', label: t('adminNav.content') },
             { id: 'settings', label: t('adminNav.settings') },
             { id: 'moderation', label: t('adminNav.moderation') },
           ].map((tab) => (
@@ -130,43 +133,15 @@ export function AdminView() {
         </div>
       )}
 
+      {activeTab === 'content' && (
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card">
+          <ContentManagement />
+        </div>
+      )}
+
       {activeTab === 'settings' && (
-        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card [transition:translate_var(--motion-fast),_box-shadow_var(--motion-fast),_border-color_var(--motion-fast)] max-w-160">
-          <h2 className="font-display rtl:font-arabic text-[20px] leading-[30px] font-bold mb-2">Versioned Learning Settings</h2>
-          <p className="text-[14px] text-muted mb-5">
-            Changes create a new immutable version for future sessions without altering completed histories.
-          </p>
-
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="block text-[14px] font-bold mb-1.5">
-                Raw Accuracy Gate (% required to increase difficulty)
-              </label>
-              <input type="number" defaultValue={95} min={80} max={99} className="h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] w-30"  />
-            </div>
-
-            <div>
-              <label className="block text-[14px] font-bold mb-1.5">
-                Difficulty Reduction Threshold (drops difficulty if below)
-              </label>
-              <input type="number" defaultValue={90} min={70} max={94} className="h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] w-30"  />
-            </div>
-
-            <div>
-              <label className="block text-[14px] font-bold mb-1.5">
-                Maximum Initial Latency Cutoff (ms)
-              </label>
-              <input type="number" defaultValue={2000} className="h-12 py-0 px-4 font-body rtl:font-arabic text-[16px] text-ink bg-surface border-2 border-border-control rounded-control [transition:border-color_var(--motion-fast),_box-shadow_var(--motion-fast)] focus:outline-none focus:border-focus-ring focus:shadow-[0_0_0_3px_rgba(6,_102,_223,_0.2)] w-40"  />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => alert('New immutable version activated: v1.3.0')}
-              className="inline-flex items-center justify-center gap-2 h-12 py-0 px-6 font-body rtl:font-arabic text-[16px] font-bold text-action-foreground bg-action-primary border-0 rounded-full cursor-pointer no-underline shadow-primary [transition:background-color_var(--motion-fast),_box-shadow_var(--motion-fast)] enabled:hover:bg-action-hover enabled:active:bg-action-pressed enabled:active:shadow-none disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed disabled:shadow-none self-start mt-3"
-            >
-              Activate New Version
-            </button>
-          </div>
+        <div className="bg-surface border border-border-subtle rounded-card p-6 shadow-card">
+          <SettingsManagement />
         </div>
       )}
 

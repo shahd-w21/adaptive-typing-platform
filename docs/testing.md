@@ -2,6 +2,17 @@
 
 **Status: target acceptance plan plus dated implementation evidence; unrecorded checks remain unverified.** Use [setup](../README.md#quick-start) for verified commands when available and SRS sections 8–10 and 15 for acceptance rules.
 
+## FE-23 admin content and settings verification — 27 November 2026
+
+FE-23 adds the development content-management and versioned learning-settings UI for SYS-42–43 and SYS-45.
+
+| Check | Evidence / result |
+| --- | --- |
+| Unit tests | `client/tests/unit/admin-content-settings.test.js` passed 6 checks: English key-compatible validation, duplicate/prerequisite/blocked-content errors, activation versions, settings bounds, stale-version conflict and production fail-closed boundaries |
+| Browser checks | `client/tests/e2e/admin-content-settings.spec.js` passed 3 Chrome checks: validation preview/confirmation activation, feasibility and stale-version errors, and Arabic Dark 320px axe WCAG 2.1 AA reflow |
+| Static/build checks | Root lint and production build passed; the existing >500 kB bundle-size warning remains |
+| Boundary | Word lists, themes, key groups and settings are development fixtures only. Production fails closed. Running assignments keep captured text/settings; activation UI does not claim retroactive changes |
+
 ## FE-18 admin user-management verification — 27 November 2026
 
 FE-18 adds the protected Admin user-directory UI for search, pagination, account deactivation/deletion, admin creation, confirmation and last-active-admin protection.

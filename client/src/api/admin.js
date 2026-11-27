@@ -10,6 +10,10 @@ import {
   adminUserListSchema,
   adminUserSchema,
   createAdminSchema,
+  adminContentSchema,
+  contentValidationSchema,
+  learningSettingsSchema,
+  activateLearningSettingsSchema,
 } from '@typeflow/shared';
 import { request, ApiError } from './client.js';
 
@@ -397,5 +401,333 @@ export function createAdminUsersApi(
     deactivate,
     delete: deleteUser,
     createAdmin,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Draft FE-23 content and settings boundary
+// ---------------------------------------------------------------------------
+
+const INITIAL_ADMIN_CONTENT = {
+  version: 'v1.2.0',
+  wordLists: [
+    {
+      id: 'home-row-en',
+      language: 'en',
+      words: ['ask', 'sad', 'dad', 'fall', 'lass', 'salad'],
+      source: 'team-authored',
+    },
+  ],
+  blockedWords: {
+    words: ['blocked-example'],
+  },
+  themes: [
+    {
+      id: 'everyday',
+      label: 'Everyday words',
+      wordListIds: ['home-row-en'],
+    },
+  ],
+  keyGroups: [
+    {
+      id: 'home-row',
+      label: 'Home row',
+      keys: ['a', 's', 'd', 'f', 'j', 'k', 'l'],
+      prerequisiteGroupIds: [],
+    },
+  ],
+};
+
+/**
+ * Creates an explicit development-only content-authoring adapter.
+ * Production fails closed because FE-23 route contracts and server validation
+ * are still pending. The fixture never changes scoring or exercise assignments.
+ *
+ * @param {{ role?: string }} user
+ * @param {{ mode?: 'fixture'|'unavailable', csrfToken?: string|null }} [options]
+ * @returns {object}
+ */
+export function createAdminContentApi(
+  user,
+  { mode = import.meta.env?.DEV ? 'fixture' : 'unavailable', csrfToken = null } = {},
+) {
+  if (mode !== 'fixture') {
+    const unavailable = async () => {
+      throw new ApiError('Content management is not connected to an API yet.', {
+        code: 'FEATURE_UNAVAILABLE',
+      });
+    };
+    return {
+      source: 'unavailable',
+      get: unavailable,
+      validate: unavailable,
+      activate: unavailable,
+    };
+  }
+
+  let content = {
+    ...INITIAL_ADMIN_CONTENT,
+    wordLists: INITIAL_ADMIN_CONTENT.wordLists.map((item) => ({
+      ...item,
+      words: [...item.words],
+    })),
+    blockedWords: {
+      words: [...INITIAL_ADMIN_CONTENT.blockedWords.words],
+    },
+    themes: INITIAL_ADMIN_CONTENT.themes.map((item) => ({
+      ...item,
+      wordListIds: [...item.wordListIds],
+    })),
+    keyGroups: INITIAL_ADMIN_CONTENT.keyGroups.map((item) => ({
+      ...item,
+      keys: [...item.keys],
+      prerequisiteGroupIds: [...item.prerequisiteGroupIds],
+    })),
+  };
+
+  function requireWrite() {
+    if (user?.role?.toLowerCase() !== 'admin') {
+      throw new ApiError('You do not have permission to perform this action.', {
+        status: 403,
+        code: 'FORBIDDEN',
+      });
+    }
+    if (!csrfToken) {
+      throw new ApiError('Your security token is missing or invalid.', {
+        status: 403,
+        code: 'CSRF_FAILED',
+      });
+    }
+  }
+
+  async function get() {
+    const parsed = adminContentSchema.safeParse(content);
+    if (!parsed.success) {
+      throw new ApiError('Invalid content response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return parsed.data;
+  }
+
+  function normalizeDraft(input) {
+    return {
+      version: input.version || content.version,
+      wordLists: [
+        {
+          id: 'home-row-en',
+          language: 'en',
+          words: input.words,
+          source: input.source || 'team-authored',
+        },
+      ],
+      blockedWords: {
+        words: input.blockedWords,
+      },
+      themes: [
+        {
+          id: 'everyday',
+          label: input.themeLabel,
+          wordListIds: ['home-row-en'],
+        },
+      ],
+      keyGroups: [
+        {
+          id: 'home-row',
+          label: 'Home row',
+          keys: input.keys,
+          prerequisiteGroupIds: input.prerequisites,
+        },
+      ],
+    };
+  }
+
+  async function validate(input) {
+    requireWrite();
+    const draft = normalizeDraft(input);
+    const errors = [];
+    const parsed = adminContentSchema.safeParse(draft);
+    if (!parsed.success) {
+      errors.push('One or more content fields are missing or invalid.');
+    }
+
+    const uniqueKeys = new Set(draft.keyGroups[0].keys);
+    if (uniqueKeys.size !== draft.keyGroups[0].keys.length) {
+      errors.push('Key-group membership contains duplicates.');
+    }
+    for (const prerequisite of draft.keyGroups[0].prerequisiteGroupIds) {
+      if (!draft.keyGroups.some((group) => group.id === prerequisite)) {
+        errors.push(`Missing prerequisite group: ${prerequisite}.`);
+      }
+    }
+    for (const word of draft.wordLists[0].words) {
+      if ([...word].some((character) => !draft.keyGroups[0].keys.includes(character))) {
+        errors.push(`Word is outside the active key alphabet: ${word}.`);
+      }
+      if (draft.blockedWords.words.includes(word)) {
+        errors.push(`Blocked word is present in the word list: ${word}.`);
+      }
+    }
+
+    const nextVersion = draft.version === 'v1.2.0' ? 'v1.2.1' : draft.version;
+    const payload = {
+      valid: errors.length === 0,
+      version: nextVersion,
+      errors,
+      preview: {
+        beginner: draft.wordLists[0].words.slice(0, 3).join(' '),
+        advanced: draft.wordLists[0].words.slice(-3).join(' '),
+      },
+    };
+    const validated = contentValidationSchema.safeParse(payload);
+    if (!validated.success) {
+      throw new ApiError('Invalid validation response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return validated.data;
+  }
+
+  async function activate(input) {
+    requireWrite();
+    const validation = await validate(input);
+    if (!validation.valid) {
+      throw new ApiError('Correct the content validation errors before activation.', {
+        status: 400,
+        code: 'INVALID_REQUEST',
+      });
+    }
+
+    content = normalizeDraft({
+      ...input,
+      version: validation.version,
+    });
+    const parsed = adminContentSchema.safeParse(content);
+    if (!parsed.success) {
+      throw new ApiError('Invalid content response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    content = parsed.data;
+    return {
+      activated: true,
+      version: content.version,
+    };
+  }
+
+  return {
+    source: 'fixture',
+    get,
+    validate,
+    activate,
+  };
+}
+
+let fixtureLearningSettings = {
+  currentVersion: 'v1.2.0',
+  rawAccuracyGatePercent: 95,
+  difficultyReductionPercent: 90,
+  initialLatencyCutoffMs: 2000,
+};
+
+/**
+ * Creates a development-only versioned learning-settings adapter.
+ * It models expected-version conflicts and future-session-only activation.
+ *
+ * @param {{ role?: string }} user
+ * @param {{ mode?: 'fixture'|'unavailable', csrfToken?: string|null }} [options]
+ * @returns {object}
+ */
+export function createAdminSettingsApi(
+  user,
+  { mode = import.meta.env?.DEV ? 'fixture' : 'unavailable', csrfToken = null } = {},
+) {
+  if (mode !== 'fixture') {
+    const unavailable = async () => {
+      throw new ApiError('Learning settings are not connected to an API yet.', {
+        code: 'FEATURE_UNAVAILABLE',
+      });
+    };
+    return {
+      source: 'unavailable',
+      get: unavailable,
+      activate: unavailable,
+    };
+  }
+
+  async function get() {
+    const parsed = learningSettingsSchema.safeParse(fixtureLearningSettings);
+    if (!parsed.success) {
+      throw new ApiError('Invalid learning settings response from server.', {
+        status: 500,
+        code: 'CONTRACT_ERROR',
+      });
+    }
+    return parsed.data;
+  }
+
+  async function activate(input) {
+    if (user?.role?.toLowerCase() !== 'admin') {
+      throw new ApiError('You do not have permission to perform this action.', {
+        status: 403,
+        code: 'FORBIDDEN',
+      });
+    }
+    if (!csrfToken) {
+      throw new ApiError('Your security token is missing or invalid.', {
+        status: 403,
+        code: 'CSRF_FAILED',
+      });
+    }
+
+    const parsed = activateLearningSettingsSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new ApiError('Check the learning settings and try again.', {
+        status: 400,
+        code: 'INVALID_REQUEST',
+      });
+    }
+    if (
+      parsed.data.expectedCurrentVersion
+      !== fixtureLearningSettings.currentVersion
+    ) {
+      throw new ApiError('The settings version changed. Refresh and review it again.', {
+        status: 409,
+        code: 'CONFLICT',
+      });
+    }
+    if (
+      parsed.data.difficultyReductionPercent
+      >= parsed.data.rawAccuracyGatePercent
+    ) {
+      throw new ApiError(
+        'The difficulty reduction boundary must remain below the raw accuracy gate.',
+        {
+          status: 400,
+          code: 'INVALID_REQUEST',
+        },
+      );
+    }
+
+    const nextVersionNumber =
+      Number(fixtureLearningSettings.currentVersion.match(/v(\d+)\.(\d+)\.(\d+)/)?.[3] || 0)
+      + 1;
+    const nextVersion = `v1.2.${nextVersionNumber}`;
+    fixtureLearningSettings = {
+      currentVersion: nextVersion,
+      rawAccuracyGatePercent: parsed.data.rawAccuracyGatePercent,
+      difficultyReductionPercent: parsed.data.difficultyReductionPercent,
+      initialLatencyCutoffMs: parsed.data.initialLatencyCutoffMs,
+    };
+    return { activated: true, ...fixtureLearningSettings };
+  }
+
+  return {
+    source: 'fixture',
+    get,
+    activate,
   };
 }
